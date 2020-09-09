@@ -1,0 +1,3 @@
+query users(username="tonny",id=1) {
+   username
+}

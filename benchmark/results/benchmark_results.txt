@@ -1,0 +1,93 @@
+-- Benchmark results for an Express server returning json response:
+Parameters:
+1 active instance
+Mem utilization: 124MB
+CPU utilization: 16%
+
+wrk -t12 -c10000 -d1m --latency http://localhost:3001/
+Running 1m test @ http://localhost:3001/
+  12 threads and 10000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   292.21ms   91.26ms   1.95s    79.21%
+    Req/Sec     1.10k   818.47     4.30k    71.66%
+  Latency Distribution
+     50%  311.36ms
+     75%  336.27ms
+     90%  367.28ms
+     99%  492.19ms
+  779300 requests in 1.00m, 173.17MB read
+  Socket errors: connect 1897, read 0, write 0, timeout 2674
+Requests/sec:  12966.97
+Transfer/sec:      2.88MB
+
+-- Benchmark results for an Nestjs server + Graphql Server returning JSON response:
+Parameters:
+1 active instance
+Mem utilization: 174MB
+CPU utilization: 16%
+
+wrk -c10000 -t12 -d1m -s ./graphql.lua --latency http://localhost:4000/graphql
+Running 1m test @ http://localhost:4000/graphql
+  12 threads and 10000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   671.80ms  219.87ms   1.32s    73.64%
+    Req/Sec   414.61    460.72     4.14k    87.02%
+  Latency Distribution
+     50%  745.86ms
+     75%  774.96ms
+     90%  860.97ms
+     99%    1.24s 
+  243010 requests in 1.00m, 61.65MB read
+  Socket errors: connect 1877, read 0, write 0, timeout 2319
+Requests/sec:   4043.44
+Transfer/sec:      1.03MB
+
+
+-- Benchmark results for apollo-server graphql implementation
+Parameters:
+4 active instance
+Mem utilization: 174MB
+CPU utilization: 16%
+
+wrk -c10000 -t12 -d1m -s ./graphql.lua --latency http://localhost:5000/
+Running 1m test @ http://localhost:5000/
+  12 threads and 10000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   218.53ms   55.42ms   1.96s    73.86%
+    Req/Sec     0.99k   595.90     3.18k    66.92%
+  Latency Distribution
+     50%  212.63ms
+     75%  248.23ms
+     90%  287.49ms
+     99%  384.67ms
+  603825 requests in 1.00m, 139.93MB read
+  Socket errors: connect 1877, read 0, write 0, timeout 1065
+Requests/sec:  10046.38
+Transfer/sec:      2.33MB
+
+ 		--- ROUND 2 ---
+
+-- Benchmark results for an Nestjs server + Graphql Server returning JSON response:
+Parameters:
+4 active instance
+
+Below specs @ instance
+Mem utilization: 114MB-
+CPU utilization: 16%
+
+wrk -c10000 -t12 -d1m -s ./graphql.lua --latency http://localhost:4000/graphql
+Running 1m test @ http://localhost:4000/graphql
+  12 threads and 10000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   225.66ms   66.98ms   1.93s    70.95%
+    Req/Sec   843.21    500.15     3.40k    64.80%
+  Latency Distribution
+     50%  217.81ms
+     75%  263.91ms
+     90%  312.26ms
+     99%  416.53ms
+  496978 requests in 1.00m, 126.07MB read
+  Socket errors: connect 1877, read 0, write 0, timeout 1036
+Requests/sec:   8268.97
+Transfer/sec:      2.10MB
+
