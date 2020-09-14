@@ -3,10 +3,8 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { jwtConstants } from './constants';
 import { JwtPayload } from './jwt-payload.interface';
-import { UserService } from 'src/modules/user/providers/user.service';
-import { User } from 'src/modules/user/models/institution-user.model';
 import { AuthService } from './auth.service';
-import { BaseUser } from '../user/models/base-user.model';
+import { User } from '../user/models/user.model';
 
 
 
@@ -22,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         });
     }
 
-    async validate(payload: JwtPayload): Promise<BaseUser> {
+    async validate(payload: JwtPayload): Promise<User> {
         const { id } = payload;
         const user = await this.authService.validateUserId(id);
         if (!user) {

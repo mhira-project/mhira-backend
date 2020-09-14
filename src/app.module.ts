@@ -6,7 +6,6 @@ import { UserModule } from './modules/user/user.module';
 import { configService } from './config/config.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { GraphQLError } from 'graphql';
-import { InstitutionModule } from './modules/institution/institution.module';
 import { SharedModule } from './shared/shared.module';
 import { PermissionModule } from './modules/permission/permission.module';
 
@@ -24,7 +23,6 @@ import { PermissionModule } from './modules/permission/permission.module';
             },
         }),
         UserModule,
-        InstitutionModule,
         AuthModule,
         SharedModule,
         PermissionModule,

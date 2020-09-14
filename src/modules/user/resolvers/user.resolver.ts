@@ -1,5 +1,5 @@
 import { Resolver, Args, Query, Mutation, ResolveField, Parent, Int } from '@nestjs/graphql';
-import { User } from '../models/institution-user.model';
+import { User } from '../models/user.model';
 import { UserService } from '../providers/user.service';
 import { UserUpdateInput } from '../dto/user-update.dto';
 import { UseGuards } from '@nestjs/common';
@@ -10,24 +10,16 @@ import { UserInput } from '../dto/user.input';
 import { PaginatedUser } from '../dto/paginated-user.model';
 import { UserFilter } from '../dto/user.filter';
 import { PaginationArgs } from 'src/shared/pagination/types/pagination.args';
-import { Institution } from 'src/modules/institution/models/institution.model';
-import { InstitutionLoader } from 'src/modules/institution/dataloaders/institution.loader';
-import { UserTypeGuard } from 'src/modules/permission/guards/user-type.guard';
-import { AllowUserType } from 'src/modules/permission/decorators/user-type.decorator';
-import { UserType } from '../models/user-type.enum';
-import { BaseUser } from '../models/base-user.model';
 
-@UseGuards(GqlAuthGuard, UserTypeGuard)
-@AllowUserType(UserType.USER)
+@UseGuards(GqlAuthGuard)
 @Resolver(() => User)
 export class UserResolver {
     constructor(
         private readonly userService: UserService,
-        private readonly institutionLoader: InstitutionLoader,
     ) { }
 
     @Query(() => PaginatedUser)
-    getOwnInstitutionUsers(
+    getUsers(
         @Args() paginationArgs: PaginationArgs,
         @Args() userFilter: UserFilter,
         @CurrentUser() viewer,
@@ -36,43 +28,35 @@ export class UserResolver {
     }
 
     @Mutation(() => User)
-    createInstitutionUser(
+    createUser(
         @Args('input') userInput: UserInput,
-        @CurrentUser() actor: User,
     ): Promise<User> {
-        return this.userService.createOwnInstitutionUser(userInput, actor);
+        return this.userService.createOwnInstitutionUser(userInput);
     }
 
     @Mutation(() => User)
-    updateInstitutionUser(
+    updateUser(
         @Args({ name: 'id', type: () => Int }) userId: number,
         @Args('input') userInputData: UserUpdateInput,
-        @CurrentUser() currentUser: BaseUser,
+        @CurrentUser() currentUser: User,
     ): Promise<User> {
         return this.userService.updateOwnInstitutionUser(userId, userInputData, currentUser);
     }
 
     @Mutation(() => Boolean)
-    deleteInstitutionUser(
+    deleteUser(
         @Args('id') id: number,
-        @CurrentUser() currentUser: BaseUser,
+        @CurrentUser() currentUser: User,
     ): Promise<boolean> {
         return this.userService.deleteOwnInstitutionUser(id, currentUser);
     }
 
     @Mutation(() => Boolean)
-    updateInstitutionUserPassword(
+    updateUserPassword(
         @Args({ name: 'id', type: () => Int }) targetUserId: number,
         @Args('input') updatePasswordInput: UserUpdatePasswordInput,
         @CurrentUser() currentUser: User,
     ): Promise<boolean> {
         return this.userService.changeOwnInstitutionUserPassword(updatePasswordInput, targetUserId, currentUser);
-    }
-
-    @ResolveField(() => Institution)
-    async institution(@Parent() user: User): Promise<Institution> {
-        const institutionId = user.institutionId;
-
-        return this.institutionLoader.findByIds.load(institutionId);
     }
 }

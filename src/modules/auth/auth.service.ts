@@ -1,6 +1,6 @@
 import { Injectable, Logger, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { UserService } from 'src/modules/user/providers/user.service';
-import { BaseUser as User, BaseUser } from 'src/modules/user/models/base-user.model';
+import { User } from 'src/modules/user/models/user.model';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { JwtPayload } from './jwt-payload.interface';
 import { JwtService } from '@nestjs/jwt';
@@ -38,11 +38,11 @@ export class AuthService {
 
         // Find by Email
         if (Validator.isEmail(identifier)) {
-            user = await BaseUser.findOne({ email: identifier });
+            user = await User.findOne({ email: identifier });
         }
         // Find by Phone Number
         else if (Validator.isPhone(identifier)) {
-            user = await BaseUser.findOne({ phone: identifier });
+            user = await User.findOne({ phone: identifier });
         }
         else {
             throw new UnauthorizedException('Invalid identifier provided! Identifier must be a VALID email or phone.');
@@ -60,7 +60,7 @@ export class AuthService {
     async validateUserId(id: number): Promise<User> {
         if (!id) throw new NotFoundException('Invalid ID');
 
-        const user = await BaseUser.findOne({ id });
+        const user = await User.findOne({ id });
         if (!user) {
             throw new NotFoundException();
         }

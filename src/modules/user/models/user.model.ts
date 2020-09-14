@@ -9,15 +9,12 @@ import {
   DeleteDateColumn,
   ManyToMany,
   JoinTable,
-  TableInheritance,
 } from 'typeorm';
 import { Permission } from 'src/modules/permission/models/permission.model';
-import { UserType } from './user-type.enum';
 
 @ObjectType()
 @Entity({ name: 'user' })
-@TableInheritance({ column: { type: 'varchar', name: 'type' } })
-export class BaseUser extends BaseEntity {
+export class User extends BaseEntity {
 
   static searchable = [
     'name',
@@ -28,10 +25,6 @@ export class BaseUser extends BaseEntity {
   @Field(() => Int)
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Field()
-  @Column({ default: UserType.USER })
-  type: UserType;
 
   @Field()
   @Column()
