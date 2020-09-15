@@ -15,7 +15,7 @@ export class PatientResolver {
     ) { }
 
     @Query(() => PatientConnection)
-    listPatients(filter: PatientFilter): Promise<PatientConnection> {
+    getPatients(filter: PatientFilter): Promise<PatientConnection> {
         return this.patientService.list(filter);
     }
 
