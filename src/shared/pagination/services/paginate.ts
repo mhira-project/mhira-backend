@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { PageInfo } from '../types/page-info';
 import { PaginationArgs } from '../types/pagination.args';
-import { SelectQueryBuilder, MoreThan, LessThan } from 'typeorm';
+import { SelectQueryBuilder } from 'typeorm';
 
 /**
  * Based on https://gist.github.com/VojtaSim/6b03466f1964a6c81a3dbf1f8cec8d5c

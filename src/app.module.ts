@@ -8,6 +8,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { GraphQLError } from 'graphql';
 import { SharedModule } from './shared/shared.module';
 import { PermissionModule } from './modules/permission/permission.module';
+import { PatientModule } from './modules/patient/patient.module';
 
 @Module({
     imports: [
@@ -26,6 +27,7 @@ import { PermissionModule } from './modules/permission/permission.module';
         AuthModule,
         SharedModule,
         PermissionModule,
+        PatientModule,
     ],
     controllers: [],
     providers: [],

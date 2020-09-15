@@ -13,7 +13,7 @@ import {
 import { Permission } from 'src/modules/permission/models/permission.model';
 
 @ObjectType()
-@Entity({ name: 'user' })
+@Entity()
 export class User extends BaseEntity {
 
   static searchable = [
