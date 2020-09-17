@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql";
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { GenderEnum } from "./gender.enum";
 
 @ObjectType()
@@ -68,6 +68,15 @@ export class Patient extends BaseEntity {
     @Column({ nullable: true })
     nationality: string;
 
-    // meta: json;
+    @Field()
+    @CreateDateColumn()
+    createdAt: Date;
 
+    @Field()
+    @UpdateDateColumn()
+    updatedAt: Date;
+
+    @Field({ nullable: true })
+    @DeleteDateColumn()
+    deletedAt?: Date;
 }

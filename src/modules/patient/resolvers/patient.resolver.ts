@@ -1,5 +1,6 @@
 import { NotImplementedException } from "@nestjs/common";
-import { Mutation, Query, Resolver } from "@nestjs/graphql";
+import { Args, Int, Mutation, Query, Resolver } from "@nestjs/graphql";
+import { PaginationArgs } from "src/shared/pagination/types/pagination.args";
 import { CreatePatientInput } from "../dto/create-patient.input";
 import { PatientConnection } from "../dto/patient-connection.model";
 import { PatientFilter } from "../dto/patient.filter";
@@ -15,22 +16,31 @@ export class PatientResolver {
     ) { }
 
     @Query(() => PatientConnection)
-    getPatients(filter: PatientFilter): Promise<PatientConnection> {
-        return this.patientService.list(filter);
+    getPatients(
+        @Args() args: PatientFilter,
+    ): Promise<PatientConnection> {
+        return this.patientService.list(args);
     }
 
     @Mutation(() => Patient)
-    createPatient(input: CreatePatientInput): Promise<Patient> {
+    createPatient(
+        @Args('input') input: CreatePatientInput
+    ): Promise<Patient> {
         return this.patientService.create(input);
     }
 
     @Mutation(() => Patient)
-    updatePatient(patientId: number, input: UpdatePatientInput): Promise<Patient> {
+    updatePatient(
+        @Args({ name: 'patientId', type: () => Int }) patientId: number,
+        @Args('input') input: UpdatePatientInput
+    ): Promise<Patient> {
         return this.patientService.update(patientId, input);
     }
 
     @Mutation(() => Boolean)
-    deletePatient(patientId: number): Promise<boolean> {
+    deletePatient(
+        @Args({ name: 'patientId', type: () => Int }) patientId: number
+    ): Promise<boolean> {
         return this.patientService.delete(patientId);
     }
 
