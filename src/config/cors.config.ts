@@ -11,12 +11,8 @@ export const corsConfig = {
 
     origin: [
         // production
-        'https://throughmobile.co.tz',
-        /\.throughmobile\.co.tz$/,
-
-        // staging
-        'https://codeblock.co.tz',
-        /\.codeblock\.co.tz$/,
+        'https://mhira.net',
+        /\.mhira\.net$/,
 
         // local development
         'http://localhost',
