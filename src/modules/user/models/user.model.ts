@@ -12,15 +12,20 @@ import {
 } from 'typeorm';
 import { Permission } from 'src/modules/permission/models/permission.model';
 import { AccessToken } from 'src/modules/auth/models/access-token.model';
+import { GenderEnum } from 'src/modules/patient/models/gender.enum';
 
 @ObjectType()
 @Entity()
 export class User extends BaseEntity {
 
   static searchable = [
-    'name',
+    'firstName',
+    'middleName',
+    'lastName',
     'email',
     'phone',
+    'workID',
+    'address',
   ];
 
   @Field(() => Int)
@@ -28,19 +33,55 @@ export class User extends BaseEntity {
   id: number;
 
   @Field()
-  @Column()
-  name: string;
-
-  @Field()
-  @Column({ unique: true })
-  email: string;
-
-  @Field({ nullable: true })
-  @Column({ unique: true, nullable: true })
-  phone?: string;
+  @Column({ unique: true, comment: 'Login Username' })
+  username: string;
 
   @Column({ comment: 'Hashed password' })
   password: string;
+
+  @Field({ nullable: true, defaultValue: true })
+  @Column({ default: true })
+  active?: boolean;
+
+  @Field()
+  @Column()
+  firstName: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  middleName?: string;
+
+  @Field()
+  @Column()
+  lastName: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  email?: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  phone?: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true, unique: true })
+  workID?: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  address?: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  gender?: GenderEnum;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  birthDate?: Date;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  nationality?: string;
 
   @Field()
   @CreateDateColumn()

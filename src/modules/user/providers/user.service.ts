@@ -85,9 +85,23 @@ export class UserService {
     async updateUser(userId: number, input: UserUpdateInput) {
 
         const targetUser = await User.findOneOrFail({ id: userId });
+
+        targetUser.username = input.username ?? targetUser.username;
+        targetUser.active = input.active ?? targetUser.active;
+
+        targetUser.firstName = input.firstName ?? targetUser.firstName;
+        targetUser.middleName = input.middleName ?? targetUser.middleName;
+        targetUser.lastName = input.lastName ?? targetUser.lastName;
+
         targetUser.email = input.email ?? targetUser.email;
         targetUser.phone = input.phone ?? targetUser.phone;
-        targetUser.name = input.name ?? targetUser.name;
+        targetUser.address = input.address ?? targetUser.address;
+
+        targetUser.gender = input.gender ?? targetUser.gender;
+        targetUser.nationality = input.nationality ?? targetUser.nationality;
+        targetUser.birthDate = input.birthDate ?? targetUser.birthDate;
+
+        targetUser.workID = input.workID ?? targetUser.workID;
 
         return this.userRepository.save(targetUser);
     }

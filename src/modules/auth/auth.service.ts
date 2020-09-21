@@ -36,19 +36,10 @@ export class AuthService {
 
         const { identifier, password } = loginDto;
 
-        let user: User;
-
-        // Find by Email
-        if (Validator.isEmail(identifier)) {
-            user = await User.findOne({ email: identifier });
-        }
-        // Find by Phone Number
-        else if (Validator.isPhone(identifier)) {
-            user = await User.findOne({ phone: identifier });
-        }
-        else {
-            throw new UnauthorizedException('Invalid identifier provided! Identifier must be a VALID email or phone.');
-        }
+        const user = await User.findOne({
+            username: identifier,
+            active: true,
+        });
 
         if (user && (await Hash.compare(password, user.password))) {
             // valid password
