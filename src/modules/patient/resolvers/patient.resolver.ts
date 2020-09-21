@@ -1,5 +1,6 @@
-import { NotImplementedException } from "@nestjs/common";
+import { NotImplementedException, UseGuards } from "@nestjs/common";
 import { Args, Int, Mutation, Query, Resolver } from "@nestjs/graphql";
+import { GqlAuthGuard } from "src/modules/auth/auth.guard";
 import { PaginationArgs } from "src/shared/pagination/types/pagination.args";
 import { CreatePatientInput } from "../dto/create-patient.input";
 import { PatientConnection } from "../dto/patient-connection.model";
@@ -8,6 +9,7 @@ import { UpdatePatientInput } from "../dto/update-patient.input";
 import { Patient } from "../models/patient.model";
 import { PatientService } from "../providers/patient.service";
 
+@UseGuards(GqlAuthGuard)
 @Resolver()
 export class PatientResolver {
 

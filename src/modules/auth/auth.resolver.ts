@@ -12,9 +12,15 @@ import { ChangePasswordRequest } from './dto/change-password-request.dto';
 export class AuthResolver {
   constructor(private readonly authService: AuthService) { }
 
-  @Query(() => LoginResponseDto, { description: 'Login method for Institution Users' })
+  @Mutation(() => LoginResponseDto, { description: 'Login method for Institution Users' })
   login(@Args() loginDto: LoginRequestDto): Promise<LoginResponseDto> {
     return this.authService.login(loginDto);
+  }
+
+  @Mutation(() => Boolean, { description: 'Login method for Institution Users' })
+  @UseGuards(GqlAuthGuard)
+  logout(@CurrentUser() user: User) {
+    return this.authService.logout(user);
   }
 
   // profile

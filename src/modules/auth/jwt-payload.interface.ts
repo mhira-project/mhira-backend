@@ -1,6 +1,11 @@
 export interface JwtPayload {
-  id: number;
-  name: string;
-  role: string;
-  createdAt: Date;
+
+  aud?: string;
+  jti?: string;
+  // iat?: number;
+  // nbf?: number;
+  // exp?: number;
+  sub?: string;
+  scopes?: string[];
+
 }

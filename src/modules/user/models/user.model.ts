@@ -8,9 +8,10 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   ManyToMany,
-  JoinTable,
+  JoinTable, OneToMany
 } from 'typeorm';
 import { Permission } from 'src/modules/permission/models/permission.model';
+import { AccessToken } from 'src/modules/auth/models/access-token.model';
 
 @ObjectType()
 @Entity()
@@ -56,5 +57,8 @@ export class User extends BaseEntity {
   @ManyToMany(() => Permission, permission => permission.roles)
   @JoinTable({ name: 'user_permission' })
   permissions: Permission[];
+
+  @OneToMany(() => AccessToken, token => token.user)
+  accessTokens: AccessToken[];
 
 }
