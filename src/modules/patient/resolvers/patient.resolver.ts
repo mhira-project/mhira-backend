@@ -1,7 +1,7 @@
 import { NotImplementedException, UseGuards } from "@nestjs/common";
-import { Args, Int, Mutation, Query, Resolver } from "@nestjs/graphql";
+import { Args, Int, Mutation, Query, ResolveField, Resolver } from "@nestjs/graphql";
 import { GqlAuthGuard } from "src/modules/auth/auth.guard";
-import { PaginationArgs } from "src/shared/pagination/types/pagination.args";
+import { UserConnection } from "src/modules/user/dto/user-connection.model";
 import { CreatePatientInput } from "../dto/create-patient.input";
 import { PatientConnection } from "../dto/patient-connection.model";
 import { PatientFilter } from "../dto/patient.filter";
@@ -9,7 +9,7 @@ import { UpdatePatientInput } from "../dto/update-patient.input";
 import { Patient } from "../models/patient.model";
 import { PatientService } from "../providers/patient.service";
 
-@Resolver()
+@Resolver(() => Patient)
 @UseGuards(GqlAuthGuard)
 export class PatientResolver {
 
@@ -41,9 +41,47 @@ export class PatientResolver {
 
     @Mutation(() => Boolean)
     deletePatient(
-        @Args({ name: 'patientId', type: () => Int }) patientId: number
+        @Args({ name: 'id', type: () => Int }) patientId: number
     ): Promise<boolean> {
         return this.patientService.delete(patientId);
+    }
+
+    @Mutation(() => Boolean)
+    assignClinician(
+        @Args({ name: 'userId', type: () => Int }) clinicianId: number
+    ): Promise<boolean> {
+        throw new NotImplementedException();
+    }
+
+    @Mutation(() => Boolean)
+    unassignClinician(
+        @Args({ name: 'userId', type: () => Int }) clinicianId: number
+    ): Promise<boolean> {
+        throw new NotImplementedException();
+    }
+
+    @Mutation(() => Boolean)
+    assignInformant(
+        @Args({ name: 'userId', type: () => Int }) informantId: number
+    ): Promise<boolean> {
+        throw new NotImplementedException();
+    }
+
+    @Mutation(() => Boolean)
+    unassignInformant(
+        @Args({ name: 'userId', type: () => Int }) informantId: number
+    ): Promise<boolean> {
+        throw new NotImplementedException();
+    }
+
+    @ResolveField(() => UserConnection)
+    clinicians(): Promise<UserConnection> {
+        throw new NotImplementedException();
+    }
+
+    @ResolveField(() => UserConnection)
+    informants(): Promise<UserConnection> {
+        throw new NotImplementedException();
     }
 
 }
