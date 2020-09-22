@@ -19,9 +19,9 @@ import { GraphQLError } from 'graphql';
             debug: false, // disables stack trace
             formatError: (error: GraphQLError) => {
                 if (typeof error.message === 'string') {
-                    return new GraphQLError(error.message, null, null, null, error.path, null, error.extensions);
+                    return new GraphQLError(error.message, null, null, null, error.path, error, error.extensions);
                 }
-                return new GraphQLError(error.message['message'], null, null, null, error.path, null, error.extensions);
+                return new GraphQLError(error.message['message'], null, null, null, error.path, error, error.extensions);
             },
         }),
         UserModule,
