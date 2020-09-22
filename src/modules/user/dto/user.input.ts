@@ -1,5 +1,5 @@
 import { InputType, Field } from '@nestjs/graphql';
-import { IsPhoneNumber } from 'class-validator';
+import { IsOptional, IsPhoneNumber } from 'class-validator';
 import { GenderEnum } from 'src/modules/patient/models/gender.enum';
 
 @InputType()
@@ -26,6 +26,7 @@ export class UserInput {
   @Field({ nullable: true })
   email?: string;
 
+  @IsOptional()
   @IsPhoneNumber('TZ')
   @Field({ nullable: true })
   phone?: string;

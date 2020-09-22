@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UserService } from 'src/modules/user/providers/user.service';
 import { User } from 'src/modules/user/models/user.model';
 import { LoginResponseDto } from './dto/login-response.dto';
@@ -6,11 +6,11 @@ import { JwtPayload } from './jwt-payload.interface';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { LoginRequestDto } from './dto/login-request.dto';
 import { ChangePasswordRequest } from './dto/change-password-request.dto';
-import { Validator } from 'src/shared/helpers/validator.helper';
 import { Hash } from 'src/shared/helpers/hash.helper';
 import { AccessToken } from './models/access-token.model';
 import * as dayjs from 'dayjs';
 import { authConfig } from 'src/config/auth.config';
+import { AuthenticationError } from 'apollo-server-express';
 
 @Injectable()
 export class AuthService {
@@ -45,14 +45,14 @@ export class AuthService {
             // valid password
             return user;
         } else {
-            throw new UnauthorizedException('Invalid Credentials');
+            throw new AuthenticationError('Invalid Credentials');
         }
 
     }
 
     async validateAccessToken(tokenId: string): Promise<User> {
 
-        if (!tokenId) throw new NotFoundException('Invalid Token ID');
+        if (!tokenId) throw new AuthenticationError('Authentication error! No access token provided.');
 
         const token = await AccessToken
             .findOne({
@@ -63,7 +63,7 @@ export class AuthService {
                 relations: ['user']
             });
 
-        if (!token) throw new UnauthorizedException();
+        if (!token || !token.user) throw new AuthenticationError('Session expired! Please login.');
 
         return token.user;
     }

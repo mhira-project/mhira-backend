@@ -9,8 +9,8 @@ import { UpdatePatientInput } from "../dto/update-patient.input";
 import { Patient } from "../models/patient.model";
 import { PatientService } from "../providers/patient.service";
 
-@UseGuards(GqlAuthGuard)
 @Resolver()
+@UseGuards(GqlAuthGuard)
 export class PatientResolver {
 
     constructor(

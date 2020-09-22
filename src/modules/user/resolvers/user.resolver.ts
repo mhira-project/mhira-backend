@@ -1,18 +1,17 @@
-import { Resolver, Args, Query, Mutation, ResolveField, Parent, Int } from '@nestjs/graphql';
+import { Resolver, Args, Query, Mutation, Int } from '@nestjs/graphql';
 import { User } from '../models/user.model';
 import { UserService } from '../providers/user.service';
 import { UserUpdateInput } from '../dto/user-update.dto';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
-import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
 import { UserUpdatePasswordInput } from '../dto/user-update-password.dto';
 import { UserInput } from '../dto/user.input';
 import { UserConnection } from '../dto/user-connection.model';
 import { UserFilter } from '../dto/user.filter';
 import { PaginationArgs } from 'src/shared/pagination/types/pagination.args';
 
-@UseGuards(GqlAuthGuard)
 @Resolver(() => User)
+@UseGuards(GqlAuthGuard)
 export class UserResolver {
     constructor(
         private readonly userService: UserService,
