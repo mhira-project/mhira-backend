@@ -33,7 +33,7 @@ export class PatientResolver {
 
     @Mutation(() => Patient)
     updatePatient(
-        @Args({ name: 'patientId', type: () => Int }) patientId: number,
+        @Args({ name: 'id', type: () => Int }) patientId: number,
         @Args('input') input: UpdatePatientInput
     ): Promise<Patient> {
         return this.patientService.update(patientId, input);
