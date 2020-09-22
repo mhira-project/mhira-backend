@@ -24,6 +24,13 @@ export class PatientResolver {
         return this.patientService.list(args);
     }
 
+    @Query(() => Patient)
+    getPatient(
+        @Args('id') patientId: number,
+    ): Promise<Patient> {
+        return this.patientService.getOne(patientId);
+    }
+
     @Mutation(() => Patient)
     createPatient(
         @Args('input') input: CreatePatientInput

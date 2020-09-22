@@ -29,7 +29,7 @@ export class UserService {
     ) { }
 
 
-    async listUsers(paginationArgs: PaginationArgs, filter: UserFilter): Promise<UserConnection> {
+    async list(paginationArgs: PaginationArgs, filter: UserFilter): Promise<UserConnection> {
 
         const query = this.userRepository
             .createQueryBuilder('user')
@@ -41,6 +41,10 @@ export class UserService {
         }
 
         return paginate(query, paginationArgs);
+    }
+
+    getOne(id: number): Promise<User> {
+        return this.userRepository.findOneOrFail({ id });
     }
 
     async createUser(userInput: UserInput): Promise<User> {

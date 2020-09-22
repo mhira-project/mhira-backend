@@ -31,6 +31,11 @@ export class PatientService {
         return paginate(query, filter);
     }
 
+    async getOne(id: number): Promise<Patient> {
+
+        return this.patientRepository.findOneOrFail({ id });
+    }
+
     async create(input: CreatePatientInput): Promise<Patient> {
         // TODO Authorize create for user
         // # User can create resource

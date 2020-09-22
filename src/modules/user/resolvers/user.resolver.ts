@@ -22,7 +22,14 @@ export class UserResolver {
         @Args() paginationArgs: PaginationArgs,
         @Args() userFilter: UserFilter,
     ): Promise<UserConnection> {
-        return this.userService.listUsers(paginationArgs, userFilter);
+        return this.userService.list(paginationArgs, userFilter);
+    }
+
+    @Query(() => User)
+    getUser(
+        @Args('id') userId: number,
+    ): Promise<User> {
+        return this.userService.getOne(userId);
     }
 
     @Mutation(() => User)
