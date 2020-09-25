@@ -5,7 +5,7 @@ import { Patient } from "./patient.model";
 
 @ObjectType()
 @Entity('patient_case_manager')
-@Unique('uq_patient_case_managers', ['patientId', 'clinicianId'])
+// @Unique(['patientId', 'clinicianId'])
 export class PatientCaseManager extends BaseEntity {
 
     @PrimaryGeneratedColumn()

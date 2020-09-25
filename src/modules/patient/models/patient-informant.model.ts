@@ -1,11 +1,11 @@
 import { ObjectType } from "@nestjs/graphql";
 import { User } from "src/modules/user/models/user.model";
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 import { Patient } from "./patient.model";
 
 @ObjectType()
 @Entity('patient_informant')
-@Unique('uq_patient_informants', ['patientId', 'informantId'])
+// @Unique(['patientId', 'informantId'])
 export class PatientInformant extends BaseEntity {
 
     @PrimaryGeneratedColumn()
