@@ -13,6 +13,8 @@ import {
 import { Permission } from 'src/modules/permission/models/permission.model';
 import { AccessToken } from 'src/modules/auth/models/access-token.model';
 import { GenderEnum } from 'src/modules/patient/models/gender.enum';
+import { PatientCaseManager } from 'src/modules/patient/models/patient-case-manager.model';
+import { Patient } from 'src/modules/patient/models/patient.model';
 
 @ObjectType()
 @Entity()
@@ -101,5 +103,8 @@ export class User extends BaseEntity {
 
   @OneToMany(() => AccessToken, token => token.user)
   accessTokens: AccessToken[];
+
+  @ManyToMany(() => Patient, (patient) => patient.caseManagers)
+  patients: Patient[];
 
 }

@@ -53,42 +53,4 @@ export class PatientResolver {
         return this.patientService.delete(patientId);
     }
 
-    @Mutation(() => Boolean)
-    assignClinician(
-        @Args({ name: 'userId', type: () => Int }) clinicianId: number
-    ): Promise<boolean> {
-        throw new NotImplementedException();
-    }
-
-    @Mutation(() => Boolean)
-    unassignClinician(
-        @Args({ name: 'userId', type: () => Int }) clinicianId: number
-    ): Promise<boolean> {
-        throw new NotImplementedException();
-    }
-
-    @Mutation(() => Boolean)
-    assignInformant(
-        @Args({ name: 'userId', type: () => Int }) informantId: number
-    ): Promise<boolean> {
-        throw new NotImplementedException();
-    }
-
-    @Mutation(() => Boolean)
-    unassignInformant(
-        @Args({ name: 'userId', type: () => Int }) informantId: number
-    ): Promise<boolean> {
-        throw new NotImplementedException();
-    }
-
-    @ResolveField(() => UserConnection)
-    clinicians(): Promise<UserConnection> {
-        throw new NotImplementedException();
-    }
-
-    @ResolveField(() => UserConnection)
-    informants(): Promise<UserConnection> {
-        throw new NotImplementedException();
-    }
-
 }
