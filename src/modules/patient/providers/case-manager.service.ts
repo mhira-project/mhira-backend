@@ -40,12 +40,12 @@ export class CaseManagerService {
     // }
 
     async unassignPatientInformant(patientId: number, informantId: number): Promise<boolean> {
-        const result = await PatientInformant.createQueryBuilder()
+        const result = await PatientInformant.createQueryBuilder('informant')
+            .delete()
             .where({
                 patientId,
                 informantId,
             })
-            .delete()
             .execute()
 
 
@@ -75,11 +75,11 @@ export class CaseManagerService {
     async unassignPatientCaseManager(patientId: number, caseManagerId: number): Promise<boolean> {
 
         const result = await PatientCaseManager.createQueryBuilder()
+            .delete()
             .where({
                 patientId,
                 caseManagerId,
             })
-            .delete()
             .execute()
 
         return result.affected > 0;
