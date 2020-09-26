@@ -40,7 +40,7 @@ export class CaseManagerService {
     // }
 
     async unassignPatientInformant(patientId: number, informantId: number): Promise<boolean> {
-        const result = await PatientCaseManager.createQueryBuilder()
+        const result = await PatientInformant.createQueryBuilder()
             .where({
                 patientId,
                 informantId,
