@@ -1,27 +1,27 @@
 import { ObjectType } from "@nestjs/graphql";
 import { User } from "src/modules/user/models/user.model";
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Patient } from "./patient.model";
 
 @ObjectType()
 @Entity('patient_case_manager')
-// @Unique(['patientId', 'clinicianId'])
+// @Index(['patientId', 'caseManagerId'], { unique: true })
 export class PatientCaseManager extends BaseEntity {
 
-    @PrimaryGeneratedColumn()
-    id: number;
+    // @PrimaryGeneratedColumn()
+    // id: number;
 
-    @Column()
+    @PrimaryColumn()
     patientId: number;
 
-    @Column()
-    clinicianId: number;
+    @PrimaryColumn()
+    caseManagerId: number;
 
     @ManyToOne(() => Patient)
     patient: Patient;
 
     @ManyToOne(() => User)
-    clinician: User;
+    caseManager: User;
 
     @CreateDateColumn()
     createdAt: Date;

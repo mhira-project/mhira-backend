@@ -1,7 +1,6 @@
-import { NotImplementedException, UseGuards } from "@nestjs/common";
-import { Args, Int, Mutation, Query, ResolveField, Resolver } from "@nestjs/graphql";
+import { UseGuards } from "@nestjs/common";
+import { Args, Int, Mutation, Query, Resolver } from "@nestjs/graphql";
 import { GqlAuthGuard } from "src/modules/auth/auth.guard";
-import { UserConnection } from "src/modules/user/dto/user-connection.model";
 import { CreatePatientInput } from "../dto/create-patient.input";
 import { PatientConnection } from "../dto/patient-connection.model";
 import { PatientFilter } from "../dto/patient.filter";

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { UserService } from 'src/modules/user/providers/user.service';
 import { User } from 'src/modules/user/models/user.model';
 import { LoginResponseDto } from './dto/login-response.dto';
@@ -14,6 +14,8 @@ import { AuthenticationError } from 'apollo-server-express';
 
 @Injectable()
 export class AuthService {
+
+    private readonly logger = new Logger('AuthService');
 
     constructor(
         private userService: UserService,
@@ -41,13 +43,20 @@ export class AuthService {
             active: true,
         });
 
-        if (user && (await Hash.compare(password, user.password))) {
-            // valid password
-            return user;
-        } else {
+        // invalid username
+        if (!user) {
+            this.logger.debug(`Invalid Username: ${identifier}`);
+            throw new AuthenticationError('Invalid Credentials');
+        }
+        const verifyResult = await Hash.compare(password, user.password)
+
+        // invalid password
+        if (!verifyResult) {
+            this.logger.debug(`Invalid Password for user: ${user.username}`);
             throw new AuthenticationError('Invalid Credentials');
         }
 
+        return user;
     }
 
     async validateAccessToken(tokenId: string): Promise<User> {

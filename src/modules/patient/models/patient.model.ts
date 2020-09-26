@@ -83,12 +83,10 @@ export class Patient extends BaseEntity {
     @DeleteDateColumn()
     deletedAt?: Date;
 
-    @ManyToMany(() => User, (clinician) => clinician.patients)
-    @JoinTable({ name: 'patient_case_manager' })
-    caseManagers: PatientCaseManager[];
+    @OneToMany(() => PatientCaseManager, (patientCaseManager) => patientCaseManager.patient)
+    patientToCaseManager: PatientCaseManager[];
 
-    @ManyToMany(() => User)
-    @JoinTable({ name: 'patient_informant' })
-    informants: PatientInformant[];
+    @ManyToMany(() => PatientInformant, (oatientInformant) => oatientInformant.patient)
+    patientToInformant: PatientInformant[];
 
 }
