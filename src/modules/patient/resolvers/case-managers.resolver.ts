@@ -3,6 +3,7 @@ import { Args, Int, Mutation, Query, Resolver } from "@nestjs/graphql";
 import { GqlAuthGuard } from "src/modules/auth/auth.guard";
 import { UserConnection } from "src/modules/user/dto/user-connection.model";
 import { PaginationArgs } from "src/shared/pagination/types/pagination.args";
+import { CaseManagerFilter } from "../dto/case-manager.filter";
 import { Patient } from "../models/patient.model";
 import { CaseManagerService } from "../providers/case-manager.service";
 
@@ -49,10 +50,9 @@ export class PatientClinicianResolver {
 
     @Query(() => UserConnection)
     getPatientCaseManagers(
-        @Args({ name: 'patientId', type: () => Int }) patientId: number,
-        @Args() paginationArgs: PaginationArgs,
+        @Args() caseManagerFilter: CaseManagerFilter,
     ): Promise<UserConnection> {
-        return this.caseManagerService.getPatientCaseManagers(patientId, paginationArgs);
+        return this.caseManagerService.getPatientCaseManagers(caseManagerFilter);
     }
 
     @Query(() => UserConnection)
@@ -61,11 +61,6 @@ export class PatientClinicianResolver {
         @Args() paginationArgs: PaginationArgs,
     ): Promise<UserConnection> {
         return this.caseManagerService.getPatientInformants(patientId, paginationArgs);
-    }
-
-    @Query(() => UserConnection)
-    getCaseManagers(): Promise<UserConnection> {
-        throw new NotImplementedException();
     }
 
 }

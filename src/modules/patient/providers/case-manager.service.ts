@@ -4,6 +4,7 @@ import { UserConnection } from "src/modules/user/dto/user-connection.model";
 import { User } from "src/modules/user/models/user.model";
 import { paginate } from "src/shared/pagination/services/paginate";
 import { PaginationArgs } from "src/shared/pagination/types/pagination.args";
+import { CaseManagerFilter } from "../dto/case-manager.filter";
 import { PatientConnection } from "../dto/patient-connection.model";
 import { PatientCaseManager } from "../models/patient-case-manager.model";
 import { PatientInformant } from "../models/patient-informant.model";
@@ -26,18 +27,39 @@ export class CaseManagerService {
         return paginate(query, paginationArgs, 'informant.id');
     }
 
-    getPatientCaseManagers(patientId: number, paginationArgs: PaginationArgs): Promise<UserConnection> {
+    getPatientCaseManagers(caseManagerFilter: CaseManagerFilter): Promise<UserConnection> {
 
         const query = User
-            .createQueryBuilder('caseManager')
-            .innerJoin("caseManager.patientToCaseManager", "patientCaseManager", "patientCaseManager.patientId = :patientId", { patientId })
+            .createQueryBuilder('caseManager');
 
-        return paginate(query, paginationArgs, 'caseManager.id');
+        // Filter by patientId
+        if (caseManagerFilter.patientId) {
+            query.innerJoin(
+                "caseManager.patientToCaseManager",
+                "patientCaseManager",
+                "patientCaseManager.patientId = :patientId",
+                { patientId: caseManagerFilter.patientId });
+        }
+
+        // Filter by Case Manager Id
+        else if (caseManagerFilter.caseManagerId) {
+            query.innerJoin(
+                "caseManager.patientToCaseManager",
+                "patientCaseManager",
+                "patientCaseManager.caseManagerId = :caseManagerId",
+                { caseManagerId: caseManagerFilter.caseManagerId });
+        }
+
+        // Filter all case-managers
+        else {
+            query.innerJoin(
+                "caseManager.patientToCaseManager",
+                "patientCaseManager",
+            );
+        }
+
+        return paginate(query, caseManagerFilter, 'caseManager.id');
     }
-
-    // getCaseManagerPatients(clinicianId: number): Promise<PatientConnection> {
-    //     throw new Error("Method not implemented.");
-    // }
 
     async unassignPatientInformant(patientId: number, informantId: number): Promise<boolean> {
         const result = await PatientInformant.createQueryBuilder('informant')
@@ -47,7 +69,6 @@ export class CaseManagerService {
                 informantId,
             })
             .execute()
-
 
         return result.affected > 0;
     }
