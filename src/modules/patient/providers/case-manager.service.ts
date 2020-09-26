@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserConnection } from "src/modules/user/dto/user-connection.model";
 import { User } from "src/modules/user/models/user.model";
+import { applySearchQuery } from "src/shared/helpers/search.helper";
 import { paginate } from "src/shared/pagination/services/paginate";
 import { PaginationArgs } from "src/shared/pagination/types/pagination.args";
 import { CaseManagerFilter } from "../dto/case-manager.filter";
@@ -31,6 +32,11 @@ export class CaseManagerService {
 
         const query = User
             .createQueryBuilder('caseManager');
+
+        // apply global search
+        if (caseManagerFilter.searchKeyword) {
+            applySearchQuery(query, caseManagerFilter.searchKeyword, User.searchable)
+        }
 
         // Filter by patientId
         if (caseManagerFilter.patientId) {
