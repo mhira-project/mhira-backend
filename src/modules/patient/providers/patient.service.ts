@@ -19,16 +19,37 @@ export class PatientService {
 
     async list(filter: PatientFilter): Promise<PatientConnection> {
 
-        const query = this.patientRepository.createQueryBuilder()
+        const query = this.patientRepository.createQueryBuilder('patient')
             .select();
 
         if (filter.searchKeyword) {
-
             applySearchQuery(query, filter.searchKeyword, Patient.searchable);
-
         }
 
-        return paginate(query, filter);
+        // Apply status filter
+        if (filter.active === true || filter.active === false) {
+            query.where('patient.active = :active', { active: filter.active });
+        }
+
+        // Apply createdAt filters
+        if (filter.createdAtFrom) {
+            query.where('patient.createdAt >= :createdAtFrom', { createdAtFrom: filter.createdAtFrom });
+        }
+
+        if (filter.createdAtTo) {
+            query.where('patient.createdAt <= :createdAtTo', { createdAtTo: filter.createdAtTo });
+        }
+
+        // Filter by Case Manager Id
+        if (filter.caseManagerId) {
+            query.innerJoin(
+                "patient.patientToCaseManager",
+                "patientCaseManager",
+                "patientCaseManager.caseManagerId = :caseManagerId",
+                { caseManagerId: filter.caseManagerId });
+        }
+
+        return paginate(query, filter, 'patient.id');
     }
 
     async getOne(id: number): Promise<Patient> {
