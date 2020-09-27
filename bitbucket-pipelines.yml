@@ -1,38 +1,53 @@
+--- 
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
 # We are using chybie/node-aws-cli image which contains npm and aws-cli tools
-# 
-# Also you need to specify AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in 
+#
+# Also you need to specify AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in
 # pipeline environment variables for push to s3 to work
-# 
+#
 # Pipeline is configured to run only on master branch, but you can configure
 # additional branches if required
-# -----
 image: node:latest
 
 pipelines:
   branches:
-      master:
-        - step:
-            name: Build
-            caches:
+    master:
+      - step:
+          name: Build
+          caches:
               - node
-            script:
+          script:
               - npm install
               - npm run build
-            artifacts:
+          artifacts:
               - dist/*
-        - step:
-            name: Deploy to EC2
-            script:
-              - rsync -zrSlh --stats --delete \
-                    $BITBUCKET_CLONE_DIR/dist \
-                    deploy@api.mhira.net:/var/www/api.mhira.net/dist
-              - rsync -zrSlh --stats --delete\
-                    $BITBUCKET_CLONE_DIR/node_modules \
-                    deploy@api.mhira.net:/var/www/api.mhira.net/node_modules
-        - step:
-            name: Restart PM2
-            script:
-              - ssh deploy@api.mhira.net 'pm2 restart MHIRA-API'
-
+      - step:
+          name: Deploy to EC2
+          script:
+            - pipe: atlassian/rsync-deploy:0.4.3
+              variables:
+                USER: 'deploy'
+                SERVER: 'api.mhira.net'
+                REMOTE_PATH: '/var/www/api.mhira.net/dist'
+                LOCAL_PATH: './dist'
+                # SSH_KEY: '<string>' # Optional.
+                # SSH_PORT: '<string>' # Optional.
+                # EXTRA_ARGS: '<string>' # Optional.
+                # DEBUG: '<boolean>' # Optional.
+                DELETE_FLAG: 'TRUE' # Optional.
+            - pipe: atlassian/rsync-deploy:0.4.3
+              variables:
+                USER: 'deploy'
+                SERVER: 'api.mhira.net'
+                REMOTE_PATH: '/var/www/api.mhira.net/node_modules'
+                LOCAL_PATH: './node_modules'
+                # SSH_KEY: '<string>' # Optional.
+                # SSH_PORT: '<string>' # Optional.
+                # EXTRA_ARGS: '<string>' # Optional.
+                # DEBUG: '<boolean>' # Optional.
+                DELETE_FLAG: 'TRUE' # Optional.
+      - step:
+          name: Restart PM2
+          script:
+            - ssh deploy@api.mhira.net 'pm2 restart MHIRA-API'
