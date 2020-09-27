@@ -46,7 +46,7 @@ pipelines:
                 # SSH_PORT: '<string>' # Optional.
                 # EXTRA_ARGS: '<string>' # Optional.
                 # DEBUG: '<boolean>' # Optional.
-                DELETE_FLAG: 'TRUE' # Optional.
+                DELETE_FLAG: 'true' # Optional.
       - step:
           name: Restart PM2
           script:
