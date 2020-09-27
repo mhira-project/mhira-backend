@@ -1,0 +1,38 @@
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+# We are using chybie/node-aws-cli image which contains npm and aws-cli tools
+# 
+# Also you need to specify AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in 
+# pipeline environment variables for push to s3 to work
+# 
+# Pipeline is configured to run only on master branch, but you can configure
+# additional branches if required
+# -----
+image: node:latest
+
+pipelines:
+  branches:
+      master:
+        - step:
+            name: Build
+            caches:
+              - node
+            script:
+              - npm install
+              - npm run build
+            artifacts:
+              - dist/*
+        - step:
+            name: Deploy to EC2
+            script:
+              - rsync -zrSlh --stats --delete \
+                    $BITBUCKET_CLONE_DIR/dist \
+                    deploy@api.mhira.net:/var/www/api.mhira.net/dist
+              - rsync -zrSlh --stats --delete\
+                    $BITBUCKET_CLONE_DIR/node_modules \
+                    deploy@api.mhira.net:/var/www/api.mhira.net/node_modules
+        - step:
+            name: Restart PM2
+            script:
+              - ssh deploy@api.mhira.net 'pm2 restart MHIRA-API'
+
