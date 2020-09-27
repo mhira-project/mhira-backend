@@ -32,7 +32,7 @@ pipelines:
                   # SSH_PORT: '<string>' # Optional.
                   # EXTRA_ARGS: '<string>' # Optional.
                   # DEBUG: '<boolean>' # Optional.
-                  # DELETE_FLAG: 'true' # Optional.
+                  DELETE_FLAG: 'true' # Optional.
               - pipe: atlassian/rsync-deploy:0.4.3
                 variables:
                   USER: 'deploy'
@@ -43,6 +43,6 @@ pipelines:
                   # SSH_PORT: '<string>' # Optional.
                   EXTRA_ARGS: '--links' # Optional.
                   # DEBUG: '<boolean>' # Optional.
-                  # DELETE_FLAG: 'true' # Optional.
+                  DELETE_FLAG: 'true' # Optional.
               - ssh deploy@api.mhira.net 'pm2 restart MHIRA-API'
           
