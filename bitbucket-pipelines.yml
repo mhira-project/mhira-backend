@@ -22,6 +22,7 @@ pipelines:
               - npm run build
           artifacts:
               - dist/*
+              - node_modules/*
       - step:
           name: Deploy to EC2
           script:
