@@ -20,14 +20,14 @@ pipelines:
           script:
               - npm install
               - npm run build
-              - ssh deploy@api.mhira.net 'rm -rf /var/www/api.mhira.net/dist'
-              - ssh deploy@api.mhira.net 'rm -rf /var/www/api.mhira.net/node_modules'
+              # - ssh deploy@api.mhira.net 'rm -rf /var/www/api.mhira.net/dist'
+              # - ssh deploy@api.mhira.net 'rm -rf /var/www/api.mhira.net/node_modules'
               - pipe: atlassian/rsync-deploy:0.4.3
                 variables:
                   USER: 'deploy'
                   SERVER: 'api.mhira.net'
                   REMOTE_PATH: '/var/www/api.mhira.net/dist'
-                  LOCAL_PATH: './dist'
+                  LOCAL_PATH: './dist/*'
                   # SSH_KEY: '<string>' # Optional.
                   # SSH_PORT: '<string>' # Optional.
                   # EXTRA_ARGS: '<string>' # Optional.
@@ -38,7 +38,7 @@ pipelines:
                   USER: 'deploy'
                   SERVER: 'api.mhira.net'
                   REMOTE_PATH: '/var/www/api.mhira.net/node_modules'
-                  LOCAL_PATH: './node_modules'
+                  LOCAL_PATH: './node_modules/*'
                   # SSH_KEY: '<string>' # Optional.
                   # SSH_PORT: '<string>' # Optional.
                   EXTRA_ARGS: '--links' # Optional.
