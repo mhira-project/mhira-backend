@@ -1,0 +1,139 @@
+# Create own autocompletion on vscode, follow below link
+# 1. install vscode YAML plugin (redhat.vscode-yaml)
+# 2. configure yaml schema for ".mhira.yml" files by adding
+#   "yaml.schemas": {
+#        "/Users/tumaini/workspace/docs/codeblock/mhira/mhira-api/docs/questionnaire.json": ".mhira.yml"
+#    }
+# to your vscode config. Link below give more guidance on how to do this.
+# 3. Create your questionaire files with extension .mhira.yml
+# and editing them on vscode will be assisted with auto-completion and intellisense.
+## https://dev.to/brpaz/how-to-create-your-own-auto-completion-for-json-and-yaml-files-on-vs-code-with-the-help-of-json-schema-k1i
+
+version: '0.0.1'
+id: 'SaMPLe-01-en'
+name: 'Sample Questionnaire'
+abbreviation: 'SaMPLe-01'
+language: 'EN'
+timeToComplete: '1 hour'
+description: |-
+    A short desciption about this questionaire. This will be displayed in questionaire catalog (repository).
+
+    Description can be multi-line, and can include as much detail about this questionaire as needed.
+copyright: 'Bob C & Jane S (2018)'
+license: 'Creative Commons license'
+website: 'https://coolwebsite.com/about-our-sample-quetionnaire'
+references:
+    - 'Cameron E & Diaz S (2018). Culture-adapted version German USA of the self-report questionnaire SaMPLe-001.'
+icd10: '<sample value>'
+localAdaptation: '<sample value>'
+screeningOrDiagnosis: '<sample value>'
+lists:
+    - id: yes_no
+      order: 'sorted'
+      items:
+          - value: true
+            label: 'Yes'
+            shortcut: 'Y'
+          - value: false
+            label: 'No'
+            shortcut: 'N'
+
+    - id: sample_checkbox_list
+      order: 'random'
+      items:
+          - value: true
+            label: 'Yes'
+            shortcut: 'Y'
+            # sortOrder: 1000
+          - value: false
+            label: 'No'
+            shortcut: 'N'
+            # sortOrder: 1000
+
+    - id: agree_scale
+      order: 'sorted'
+      items:
+          - value: 1
+            label: 'I strongly disagree'
+            shortcut: '1'
+          - value: 2
+            label: 'I disagree'
+            shortcut: '2'
+          - value: 3
+            label: 'I neither agree or disagree'
+            shortcut: '3'
+          - value: 4
+            label: 'I agree'
+            shortcut: '4'
+          - value: 5
+            label: 'I strongly agree'
+            shortcut: '5'
+
+questions:
+    - id: T1
+      type: text
+      text: 'Example text question. Enter any free text'
+      help: '<additional helpful explaination about the question, to be displayed as a tooltip, or qn description>'
+      isOptional: true
+      isPersonalInformation: false
+      validationRules:
+          minimum: 10
+          maximum: 20
+          regex: /^([a-zA-Z0-9._-])+$/
+      validationMessages:
+          regex: 'Value entered must contain letters and characters "." "_" "-" only'
+      displayProperties:
+          width: 10
+          height: 4
+
+    - id: N1
+      type: number
+      text: 'Example number question.'
+      help: '<additional helpful explaination about the question, to be displayed as a tooltip, or qn description>'
+      isOptional: true
+      isPersonalInformation: false
+      validationRules:
+          minimum: 0
+          maximum: 100
+          precision: 10,2
+          regex: '<sample number regex>'
+      validationMessages:
+          regex: 'Please enter a valid number format eg: 0XXXX'
+
+    - id: C1
+      type: choice
+      text: 'Example multiple choice question.'
+      help: 'Help text (optional)'
+      isOptional: true
+      isPersonalInformation: false
+      options: yes_no
+      displayProperties:
+          representation: <select|dropdown>
+
+    - id: X1
+      type: checkbox
+      text: 'Example checkbox question.'
+      help: 'Help text - Select all that best apply to you (optional)'
+      isOptional: true
+      isPersonalInformation: false
+      options: sample_checkbox_list
+      validationRules:
+          minimum: 1
+          maximum: 3
+      validationMessages:
+          minimum: 'Select atleast 1'
+          maximum: 'Select atmost 3 choices'
+
+    - id: T1
+      type: time
+      text: 'Example time question. When did you go to bed yersterday?'
+      help: 'Help text - Select a time (optional)'
+      isOptional: true
+      isPersonalInformation: false
+
+    - id: D1
+      type: date
+      text: 'Example date question. When is was wedding day?'
+      help: 'Help text - Select a time (optional)'
+      isOptional: true
+      isPersonalInformation: false

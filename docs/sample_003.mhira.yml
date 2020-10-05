@@ -1,0 +1,92 @@
+# Create own autocompletion on vscode, follow below link
+# 1. install vscode YAML plugin (redhat.vscode-yaml)
+# 2. configure yaml schema for ".mhira.yml" files by adding
+#   "yaml.schemas": {
+#        "/Users/tumaini/workspace/docs/codeblock/mhira/mhira-api/docs/questionnaire.json": ".mhira.yml"
+#    }
+# to your vscode config. Link below give more guidance on how to do this.
+# 3. Create your questionaire files with extension .mhira.yml
+# and editing them on vscode will be assisted with auto-completion and intellisense.
+## https://dev.to/brpaz/how-to-create-your-own-auto-completion-for-json-and-yaml-files-on-vs-code-with-the-help-of-json-schema-k1i
+
+version: '0.0.1'
+id: 'LoPF-Q-12-18-en'
+name: 'Levels of Personality Functioning Questionnaire for 12-18 year olds'
+abbreviation: 'LoPF-Q'
+language: ['EN', 'SW']
+timeToComplete: '1 hour'
+description: |-
+    On the following questionaire you will find statements people might use to describe their attitudes,
+    opinions, interests, and other personal feelings. For each statement, please select one of the
+    following five answers based on how you feel in general. Please answer every statement,
+    even if you are not completely sure of the answer.
+
+    Remember, there are no right or wrong answers – just select the choice which best
+    describes how you generally feel. Some statements may seem similar to you; these items
+    should be viewed as an opportunity to describe yourself more fully and accurately.
+copyright: 'Sharp C & Vanwoerden S (2018)'
+license: 'Creative Commons license'
+website: 'https://www.researchgate.net/publication/330228938_Assessment_of_Personality_Functioning_in_Adolescents_With_the_LoPF-Q_12-18_Self-Report_Questionnaire'
+references:
+    - 'Sharp C & Vanwoerden S (2018). Culture-adapted version German USA of the self-report questionnaire LoPF-Q 12-18 (Levels of Personality Functioning Questionnaire; authors Goth & Schmeck) - Short manual . Offenbach: academic tests. https://academic-tests.com.'
+icd10: '<sample value>'
+localAdaptation: '<sample value>'
+screeningOrDiagnosis: '<sample value>'
+lists:
+    - id: agree_scale
+      order: 'sorted'
+      items:
+          - value: 1
+            label: 'I strongly disagree'
+          - value: 2
+            label: 'I disagree'
+          - value: 3
+            label: 'I neither agree or disagree'
+          - value: 4
+            label: 'I agree'
+          - value: 5
+            label: 'I strongly agree'
+
+questions:
+    - id: Q1
+      type: choice
+      text: 'I know exactly how to make my friends happy.'
+      options: agree_scale
+
+    - id: Q2
+      type: choice
+      text: 'I am uncomfortable making eye contact during a conversation.'
+      options: agree_scale
+
+    - id: Q3
+      type: choice
+      text: 'I often have a bad opinion about myself.'
+      options: agree_scale
+
+    - id: Q4
+      type: choice
+      text: 'I am often worried about getting hurt in friendships.'
+      options: agree_scale
+      condition: '([Q1] = 4 OR [Q1] = 5) AND ([Q2] = 1 OR [Q2] = 2) NOT [Q3] = 4'
+
+    - id: Q5
+      type: choice
+      text: 'I am very moved when I see someone crying or in pain. '
+      options: agree_scale
+      branch:
+          # Choice for Q5 is either 1 or 2
+          - condition: '[Q5] = 1 OR [Q5] = 2'
+            next: Q6
+          # default condition
+          - condition: '*'
+            next: Q7
+
+    - id: Q6
+      type: choice
+      text: 'I get uncomfortable when others notice how I am feeling.'
+      options: agree_scale
+
+    - id: Q7
+      type: choice
+      text: 'Often I don´t know what to do with my life. '
+      options: agree_scale

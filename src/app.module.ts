@@ -9,6 +9,8 @@ import { SharedModule } from './shared/shared.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { PatientModule } from './modules/patient/patient.module';
 import { GraphQLError } from 'graphql';
+import { QuestionnaireModule } from './modules/questionnaire/questionnaire.module';
+import { AssessmentModule } from './modules/assessment/assessment.module';
 
 @Module({
     imports: [
@@ -29,6 +31,8 @@ import { GraphQLError } from 'graphql';
         SharedModule,
         PermissionModule,
         PatientModule,
+        QuestionnaireModule,
+        AssessmentModule,
     ],
     controllers: [],
     providers: [],
