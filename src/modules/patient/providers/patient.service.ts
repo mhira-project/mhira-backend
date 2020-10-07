@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { applySearchQuery } from "src/shared/helpers/search.helper";
 import { paginate } from "src/shared/pagination/services/paginate";
 import { CreatePatientInput } from "../dto/create-patient.input";
-import { PatientConnection } from "../dto/patient-connection.model";
+import { PatientConnectionDto } from "../dto/patient-connection.model";
 import { PatientFilter } from "../dto/patient.filter";
 import { UpdatePatientInput } from "../dto/update-patient.input";
 import { Patient } from "../models/patient.model";
@@ -17,7 +17,7 @@ export class PatientService {
         private readonly patientRepository: PatientRepository,
     ) { }
 
-    async list(filter: PatientFilter): Promise<PatientConnection> {
+    async list(filter: PatientFilter): Promise<PatientConnectionDto> {
 
         const query = this.patientRepository.createQueryBuilder('patient')
             .select();

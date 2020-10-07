@@ -4,4 +4,4 @@ import { Patient } from "../models/patient.model";
 
 
 @ObjectType()
-export class PatientConnection extends Paginated(Patient) { }
+export class PatientConnectionDto extends Paginated(Patient) { }

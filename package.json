@@ -22,6 +22,8 @@
         "test:e2e": "jest --config ./test/jest-e2e.json"
     },
     "dependencies": {
+        "@nestjs-query/query-graphql": "^0.20.2",
+        "@nestjs-query/query-typeorm": "^0.20.2",
         "@nestjs/bull": "^0.1.2",
         "@nestjs/common": "^7.3.2",
         "@nestjs/config": "^0.4.2",
@@ -43,6 +45,7 @@
         "dataloader": "^2.0.0",
         "dayjs": "^1.8.36",
         "graphql": "^15.0.0",
+        "graphql-relay": "^0.6.0",
         "graphql-tools": "^5.0.0",
         "moment": "^2.27.0",
         "nest-schedule": "^0.6.4",

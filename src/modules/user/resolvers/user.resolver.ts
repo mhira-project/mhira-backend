@@ -6,7 +6,7 @@ import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { UserUpdatePasswordInput } from '../dto/user-update-password.dto';
 import { UserInput } from '../dto/user.input';
-import { UserConnection } from '../dto/user-connection.model';
+import { UserConnectionDto } from '../dto/user-connection.model';
 import { UserFilter } from '../dto/user.filter';
 import { PaginationArgs } from 'src/shared/pagination/types/pagination.args';
 
@@ -17,11 +17,11 @@ export class UserResolver {
         private readonly userService: UserService,
     ) { }
 
-    @Query(() => UserConnection)
+    @Query(() => UserConnectionDto)
     getUsers(
         @Args() paginationArgs: PaginationArgs,
         @Args() userFilter: UserFilter,
-    ): Promise<UserConnection> {
+    ): Promise<UserConnectionDto> {
         return this.userService.list(paginationArgs, userFilter);
     }
 

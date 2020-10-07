@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import { PageInfo } from '../types/page-info';
+import { PageInfoDto } from '../types/page-info';
 import { PaginationArgs } from '../types/pagination.args';
 import { SelectQueryBuilder } from 'typeorm';
 
@@ -99,7 +99,7 @@ export async function paginate<T>(
         };
     });
 
-    const pageInfo = new PageInfo();
+    const pageInfo = new PageInfoDto();
     pageInfo.startCursor = edges.length > 0 ? edges[0].cursor : null;
     pageInfo.endCursor = edges.length > 0 ? edges.slice(-1)[0].cursor : null;
 

@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { UserConnection } from "src/modules/user/dto/user-connection.model";
+import { UserConnectionDto } from "src/modules/user/dto/user-connection.model";
 import { User } from "src/modules/user/models/user.model";
 import { applySearchQuery } from "src/shared/helpers/search.helper";
 import { paginate } from "src/shared/pagination/services/paginate";
 import { PaginationArgs } from "src/shared/pagination/types/pagination.args";
 import { CaseManagerFilter } from "../dto/case-manager.filter";
-import { PatientConnection } from "../dto/patient-connection.model";
+import { PatientConnectionDto } from "../dto/patient-connection.model";
 import { PatientCaseManager } from "../models/patient-case-manager.model";
 import { PatientInformant } from "../models/patient-informant.model";
 import { PatientRepository } from "../repositories/patient.repository";
@@ -19,7 +19,7 @@ export class CaseManagerService {
         private readonly patientRepository: PatientRepository,
     ) { }
 
-    getPatientInformants(patientId: number, paginationArgs: PaginationArgs): Promise<UserConnection> {
+    getPatientInformants(patientId: number, paginationArgs: PaginationArgs): Promise<UserConnectionDto> {
 
         const query = User
             .createQueryBuilder('informant')
@@ -28,7 +28,7 @@ export class CaseManagerService {
         return paginate(query, paginationArgs, 'informant.id');
     }
 
-    getPatientCaseManagers(caseManagerFilter: CaseManagerFilter): Promise<UserConnection> {
+    getPatientCaseManagers(caseManagerFilter: CaseManagerFilter): Promise<UserConnectionDto> {
 
         const query = User
             .createQueryBuilder('caseManager');

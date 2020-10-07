@@ -15,7 +15,7 @@ import { Hash } from 'src/shared/helpers/hash.helper';
 import { ChangePasswordRequest } from 'src/modules/auth/dto/change-password-request.dto';
 import { PaginationArgs } from 'src/shared/pagination/types/pagination.args';
 import { UserFilter } from '../dto/user.filter';
-import { UserConnection } from '../dto/user-connection.model';
+import { UserConnectionDto } from '../dto/user-connection.model';
 import { paginate } from 'src/shared/pagination/services/paginate';
 import { applySearchQuery } from 'src/shared/helpers/search.helper';
 
@@ -29,7 +29,7 @@ export class UserService {
     ) { }
 
 
-    async list(paginationArgs: PaginationArgs, filter: UserFilter): Promise<UserConnection> {
+    async list(paginationArgs: PaginationArgs, filter: UserFilter): Promise<UserConnectionDto> {
 
         const query = this.userRepository
             .createQueryBuilder('user')

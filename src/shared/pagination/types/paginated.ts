@@ -1,6 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Type } from '@nestjs/common';
-import { PageInfo } from './page-info';
+import { PageInfoDto } from './page-info';
 
 
 /**
@@ -9,7 +9,7 @@ import { PageInfo } from './page-info';
  * @param classRef 
  */
 export function Paginated<T>(classRef: Type<T>): any {
-    @ObjectType(`${classRef.name}Edge`, { isAbstract: true })
+    @ObjectType(`${classRef.name}EdgeDto`, { isAbstract: true })
     abstract class EdgeType {
         @Field(() => String)
         cursor: string;
@@ -23,8 +23,8 @@ export function Paginated<T>(classRef: Type<T>): any {
         @Field(() => [EdgeType], { nullable: true })
         edges: EdgeType[];
 
-        @Field(() => PageInfo, { nullable: true })
-        pageInfo: PageInfo;
+        @Field(() => PageInfoDto, { nullable: true })
+        pageInfo: PageInfoDto;
     }
     return PaginatedType;
 }

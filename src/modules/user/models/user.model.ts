@@ -16,6 +16,7 @@ import { GenderEnum } from 'src/modules/patient/models/gender.enum';
 import { PatientCaseManager } from 'src/modules/patient/models/patient-case-manager.model';
 import { Patient } from 'src/modules/patient/models/patient.model';
 import { PatientInformant } from 'src/modules/patient/models/patient-informant.model';
+import { FilterableField } from '@nestjs-query/query-graphql';
 
 @ObjectType()
 @Entity()
@@ -31,62 +32,62 @@ export class User extends BaseEntity {
     'address',
   ];
 
-  @Field(() => Int)
+  @FilterableField(() => Int)
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Field()
+  @FilterableField()
   @Column({ unique: true, comment: 'Login Username' })
   username: string;
 
   @Column({ comment: 'Hashed password' })
   password: string;
 
-  @Field({ nullable: true, defaultValue: true })
+  @FilterableField({ nullable: true, defaultValue: true })
   @Column({ default: true })
   active?: boolean;
 
-  @Field()
+  @FilterableField()
   @Column()
   firstName: string;
 
-  @Field({ nullable: true })
+  @FilterableField({ nullable: true })
   @Column({ nullable: true })
   middleName?: string;
 
-  @Field()
+  @FilterableField()
   @Column()
   lastName: string;
 
-  @Field({ nullable: true })
+  @FilterableField({ nullable: true })
   @Column({ nullable: true })
   email?: string;
 
-  @Field({ nullable: true })
+  @FilterableField({ nullable: true })
   @Column({ nullable: true })
   phone?: string;
 
-  @Field({ nullable: true })
+  @FilterableField({ nullable: true })
   @Column({ nullable: true, unique: true })
   workID?: string;
 
-  @Field({ nullable: true })
+  @FilterableField({ nullable: true })
   @Column({ nullable: true })
   address?: string;
 
-  @Field({ nullable: true })
+  @FilterableField({ nullable: true })
   @Column({ nullable: true })
   gender?: GenderEnum;
 
-  @Field({ nullable: true })
+  @FilterableField({ nullable: true })
   @Column({ nullable: true })
   birthDate?: Date;
 
-  @Field({ nullable: true })
+  @FilterableField({ nullable: true })
   @Column({ nullable: true })
   nationality?: string;
 
-  @Field()
+  @FilterableField()
   @CreateDateColumn()
   createdAt: Date;
 

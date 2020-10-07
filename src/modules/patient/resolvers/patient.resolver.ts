@@ -2,7 +2,7 @@ import { UseGuards } from "@nestjs/common";
 import { Args, Int, Mutation, Query, Resolver } from "@nestjs/graphql";
 import { GqlAuthGuard } from "src/modules/auth/auth.guard";
 import { CreatePatientInput } from "../dto/create-patient.input";
-import { PatientConnection } from "../dto/patient-connection.model";
+import { PatientConnectionDto } from "../dto/patient-connection.model";
 import { PatientFilter } from "../dto/patient.filter";
 import { UpdatePatientInput } from "../dto/update-patient.input";
 import { Patient } from "../models/patient.model";
@@ -16,10 +16,10 @@ export class PatientResolver {
         private readonly patientService: PatientService,
     ) { }
 
-    @Query(() => PatientConnection)
+    @Query(() => PatientConnectionDto)
     getPatients(
         @Args() args: PatientFilter,
-    ): Promise<PatientConnection> {
+    ): Promise<PatientConnectionDto> {
         return this.patientService.list(args);
     }
 

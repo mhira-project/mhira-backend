@@ -1,3 +1,4 @@
+import { FilterableField } from "@nestjs-query/query-graphql";
 import { Field, Int, ObjectType } from "@nestjs/graphql";
 import { User } from "src/modules/user/models/user.model";
 import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
@@ -19,59 +20,59 @@ export class Patient extends BaseEntity {
         'address',
     ];
 
-    @Field(() => Int)
+    @FilterableField(() => Int)
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Field()
+    @FilterableField()
     @Column({ default: true })
     active: boolean;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ nullable: true, unique: true })
     medicalRecordNo: string;
 
-    @Field()
+    @FilterableField()
     @Column()
     firstName: string;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ nullable: true })
     middleName: string;
 
-    @Field()
+    @FilterableField()
     @Column()
     lastName: string;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ nullable: true })
     phone: string;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ nullable: true })
     email: string;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ nullable: true })
     address: string;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ nullable: true })
     gender: GenderEnum;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ nullable: true })
     birthDate: Date;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ type: 'char', length: 2, nullable: true })
     birthCountryCode: string;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ nullable: true })
     nationality: string;
 
-    @Field()
+    @FilterableField()
     @CreateDateColumn()
     createdAt: Date;
 

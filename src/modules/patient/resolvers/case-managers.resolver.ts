@@ -1,7 +1,7 @@
 import { NotImplementedException, UseGuards } from "@nestjs/common";
 import { Args, Int, Mutation, Query, Resolver } from "@nestjs/graphql";
 import { GqlAuthGuard } from "src/modules/auth/auth.guard";
-import { UserConnection } from "src/modules/user/dto/user-connection.model";
+import { UserConnectionDto } from "src/modules/user/dto/user-connection.model";
 import { PaginationArgs } from "src/shared/pagination/types/pagination.args";
 import { CaseManagerFilter } from "../dto/case-manager.filter";
 import { Patient } from "../models/patient.model";
@@ -48,18 +48,18 @@ export class PatientClinicianResolver {
         return this.caseManagerService.unassignPatientInformant(patientId, informantId);
     }
 
-    @Query(() => UserConnection)
+    @Query(() => UserConnectionDto)
     getPatientCaseManagers(
         @Args() caseManagerFilter: CaseManagerFilter,
-    ): Promise<UserConnection> {
+    ): Promise<UserConnectionDto> {
         return this.caseManagerService.getPatientCaseManagers(caseManagerFilter);
     }
 
-    @Query(() => UserConnection)
+    @Query(() => UserConnectionDto)
     getPatientInformants(
         @Args({ name: 'patientId', type: () => Int }) patientId: number,
         @Args() paginationArgs: PaginationArgs,
-    ): Promise<UserConnection> {
+    ): Promise<UserConnectionDto> {
         return this.caseManagerService.getPatientInformants(patientId, paginationArgs);
     }
 
