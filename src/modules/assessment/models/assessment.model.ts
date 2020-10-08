@@ -1,34 +1,48 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql";
+import { FilterableField, Relation } from "@nestjs-query/query-graphql";
+import { Field, GraphQLISODateTime, Int, ObjectType } from "@nestjs/graphql";
 import { Questionnaire } from "src/modules/questionnaire/models/questionnaire.model";
-import { BaseEntity, Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @ObjectType()
+@Relation('questionnaires', () => Questionnaire)
 @Entity()
 export class Assessment extends BaseEntity {
 
-    @Field(() => Int)
+    @FilterableField(() => Int)
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Field({ nullable: true })
+    @FilterableField(() => GraphQLISODateTime, { nullable: true })
     @Column({ nullable: true })
     date?: Date;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ nullable: true })
     name: string;
 
-    @Field(() => Int)
+    @FilterableField(() => Int)
     @Column()
     patientId: number;
 
-    @Field(() => Int)
+    @FilterableField(() => Int)
     @Column()
     clinicianId: number;
 
-    @Field(() => Int)
+    @FilterableField(() => Int)
     @Column()
     informantId: number;
+
+    @FilterableField(() => GraphQLISODateTime)
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @FilterableField(() => GraphQLISODateTime)
+    @UpdateDateColumn()
+    updatedAt: Date;
+
+    @Field(() => GraphQLISODateTime, { nullable: true })
+    @DeleteDateColumn()
+    deletedAt?: Date;
 
     @ManyToMany(() => Questionnaire, questionnaire => questionnaire.assessments)
     @JoinTable({ name: 'assessment_questionnaire' })

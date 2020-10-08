@@ -1,4 +1,5 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql";
+import { FilterableField } from "@nestjs-query/query-graphql";
+import { Field, GraphQLISODateTime, Int, ObjectType } from "@nestjs/graphql";
 import { Assessment } from "src/modules/assessment/models/assessment.model";
 import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { List } from "./list.model";
@@ -20,63 +21,63 @@ export class Questionnaire extends BaseEntity {
         'icd10',
     ];
 
-    @Field(() => Int)
+    @FilterableField(() => Int)
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Field()
+    @FilterableField()
     @Column()
     name: string;
 
-    @Field()
+    @FilterableField()
     @Column()
     version: string;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ nullable: true })
     abbreviation?: string;
 
-    @Field()
+    @FilterableField()
     @Column()
     language?: string;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ nullable: true })
     timeToComplete?: string;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ nullable: true })
     description?: string;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ nullable: true })
     copyright?: string;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ nullable: true })
     license?: string;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ nullable: true })
     website?: string;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ nullable: true })
     references?: string;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @Column({ nullable: true })
     icd10?: string;
 
-    @Field()
+    @FilterableField(() => GraphQLISODateTime)
     @CreateDateColumn()
     createdAt: Date;
 
-    @Field()
+    @FilterableField(() => GraphQLISODateTime)
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @Field({ nullable: true })
+    @Field(() => GraphQLISODateTime, { nullable: true })
     @DeleteDateColumn()
     deletedAt?: Date;
 
