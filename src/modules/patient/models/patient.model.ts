@@ -1,5 +1,6 @@
 import { FilterableField } from "@nestjs-query/query-graphql";
 import { Field, Int, ObjectType } from "@nestjs/graphql";
+import { Assessment } from "src/modules/assessment/models/assessment.model";
 import { User } from "src/modules/user/models/user.model";
 import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { GenderEnum } from "./gender.enum";
@@ -89,5 +90,8 @@ export class Patient extends BaseEntity {
 
     @ManyToMany(() => PatientInformant, (oatientInformant) => oatientInformant.patient)
     patientToInformant: PatientInformant[];
+
+    @OneToMany(() => Assessment, (assessment) => assessment.patient)
+    assessments: Assessment;
 
 }
