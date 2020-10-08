@@ -24,13 +24,17 @@ export class Assessment extends BaseEntity {
     @Column()
     patientId: number;
 
-    @FilterableField(() => Int)
-    @Column()
-    clinicianId: number;
+    @FilterableField(() => Int, { nullable: true })
+    @Column({ nullable: true })
+    clinicianId?: number;
 
-    @FilterableField(() => Int)
-    @Column()
-    informantId: number;
+    @FilterableField(() => Int, { nullable: true })
+    @Column({ nullable: true })
+    informantId?: number;
+
+    @FilterableField({ nullable: true })
+    @Column({ default: 'PENDING' })
+    status: string;
 
     @FilterableField(() => GraphQLISODateTime)
     @CreateDateColumn()
