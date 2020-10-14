@@ -96,7 +96,7 @@ export class AuthService {
     private async generateToken(user: User): Promise<string> {
 
         // revoke all previous tokens
-        await this.logout(user);
+        // await this.logout(user);
 
         // Issue new token
         const token = new AccessToken;
