@@ -11,6 +11,7 @@ import { PatientModule } from './modules/patient/patient.module';
 import { GraphQLError } from 'graphql';
 import { QuestionnaireModule } from './modules/questionnaire/questionnaire.module';
 import { AssessmentModule } from './modules/assessment/assessment.module';
+import { SettingModule } from './modules/setting/setting.module';
 
 @Module({
     imports: [
@@ -33,6 +34,7 @@ import { AssessmentModule } from './modules/assessment/assessment.module';
         PatientModule,
         QuestionnaireModule,
         AssessmentModule,
+        SettingModule,
     ],
     controllers: [],
     providers: [],
