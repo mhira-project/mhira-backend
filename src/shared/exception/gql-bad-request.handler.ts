@@ -15,6 +15,6 @@ export class GqlBadRequestHandler implements GqlExceptionFilter {
             ? response['message']
             : response['message'][0];
 
-        throw new UserInputError(exception.message, { messages: response['message'] })
+        throw new UserInputError(message, { messages: response['message'] })
     }
 }
