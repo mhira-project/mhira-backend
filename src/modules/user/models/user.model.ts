@@ -14,11 +14,13 @@ import { Permission } from 'src/modules/permission/models/permission.model';
 import { AccessToken } from 'src/modules/auth/models/access-token.model';
 import { GenderEnum } from 'src/modules/patient/models/gender.enum';
 import { PatientCaseManager } from 'src/modules/patient/models/patient-case-manager.model';
-import { Patient } from 'src/modules/patient/models/patient.model';
 import { PatientInformant } from 'src/modules/patient/models/patient-informant.model';
-import { FilterableField } from '@nestjs-query/query-graphql';
+import { FilterableField, Relation } from '@nestjs-query/query-graphql';
+import { Role } from 'src/modules/permission/models/role.model';
 
 @ObjectType()
+@Relation('roles', () => Role)
+@Relation('permissions', () => Permission)
 @Entity()
 export class User extends BaseEntity {
 
@@ -99,9 +101,13 @@ export class User extends BaseEntity {
   @DeleteDateColumn()
   deletedAt: Date;
 
-  @ManyToMany(() => Permission, permission => permission.roles)
+  @ManyToMany(() => Permission, permission => permission.users)
   @JoinTable({ name: 'user_permission' })
   permissions: Permission[];
+
+  @ManyToMany(() => Role, role => role.users)
+  @JoinTable({ name: 'user_role' })
+  roles: Role[];
 
   @OneToMany(() => AccessToken, token => token.user)
   accessTokens: AccessToken[];

@@ -12,9 +12,11 @@ import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Role } from './role.model';
 import { GuardType } from './guard-type.enum';
 import { FilterableField, Relation } from '@nestjs-query/query-graphql';
+import { User } from 'src/modules/user/models/user.model';
 
 @ObjectType()
 @Relation('roles', () => Role)
+@Relation('users', () => User)
 @Entity()
 export class Permission extends BaseEntity {
 
@@ -44,5 +46,8 @@ export class Permission extends BaseEntity {
 
     @ManyToMany(() => Role, role => role.permissions)
     roles: Role[];
+
+    @ManyToMany(() => User, user => user.permissions)
+    users: User[];
 
 }
