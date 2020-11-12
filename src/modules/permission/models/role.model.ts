@@ -16,8 +16,8 @@ import { FilterableField, Relation } from '@nestjs-query/query-graphql';
 import { User } from 'src/modules/user/models/user.model';
 
 @ObjectType()
-@Relation('permissions', () => Permission)
-@Relation('users', () => User)
+@Relation('permissions', () => [Permission])
+@Relation('users', () => [User])
 @Entity()
 export class Role extends BaseEntity {
 

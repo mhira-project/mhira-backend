@@ -15,12 +15,13 @@ import { AccessToken } from 'src/modules/auth/models/access-token.model';
 import { GenderEnum } from 'src/modules/patient/models/gender.enum';
 import { PatientCaseManager } from 'src/modules/patient/models/patient-case-manager.model';
 import { PatientInformant } from 'src/modules/patient/models/patient-informant.model';
-import { FilterableField, Relation } from '@nestjs-query/query-graphql';
+import { FilterableField, KeySet, Relation } from '@nestjs-query/query-graphql';
 import { Role } from 'src/modules/permission/models/role.model';
 
 @ObjectType()
-@Relation('roles', () => Role)
-@Relation('permissions', () => Permission)
+@KeySet(['id'])
+@Relation('roles', () => [Role])
+@Relation('permissions', () => [Permission])
 @Entity()
 export class User extends BaseEntity {
 
