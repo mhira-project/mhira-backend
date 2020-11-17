@@ -48,6 +48,13 @@ export class AuthService {
             this.logger.debug(`Invalid Username: ${identifier}`);
             throw new AuthenticationError('Invalid Credentials');
         }
+
+        // deactivated user
+        if (!user.active) {
+            this.logger.debug(`Deactivated User: ${identifier}`);
+            throw new AuthenticationError('User deactivated. Contact your administrator for support!');
+        }
+
         const verifyResult = await Hash.compare(password, user.password)
 
         // invalid password
