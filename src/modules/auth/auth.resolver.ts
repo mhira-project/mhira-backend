@@ -7,6 +7,7 @@ import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from './auth.guard';
 import { CurrentUser } from './auth-user.decorator';
 import { ChangePasswordRequest } from './dto/change-password-request.dto';
+import { Permission } from '../permission/models/permission.model';
 
 @Resolver(() => User)
 export class AuthResolver {
@@ -28,6 +29,15 @@ export class AuthResolver {
   @UseGuards(GqlAuthGuard)
   getUserProfile(@CurrentUser() user: User): Promise<User> {
     return Promise.resolve(user);
+  }
+
+
+  // permission grants
+  @Query(() => [Permission], { description: 'Get User Permission Grants. ' })
+  @UseGuards(GqlAuthGuard)
+  userPermissionGrants(@CurrentUser() user: User): Promise<Permission[]> {
+
+    return this.authService.userPermissionGrants(user);
   }
 
   // change password

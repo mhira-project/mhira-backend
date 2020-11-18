@@ -11,6 +11,9 @@ import { AccessToken } from './models/access-token.model';
 import * as dayjs from 'dayjs';
 import { authConfig } from 'src/config/auth.config';
 import { AuthenticationError } from 'apollo-server-express';
+import { Permission } from '../permission/models/permission.model';
+import { Any } from 'typeorm';
+import { Role } from '../permission/models/role.model';
 
 @Injectable()
 export class AuthService {
@@ -88,6 +91,30 @@ export class AuthService {
 
         return this.userService.changeOwnPassword(changePasswordRequest, user);
 
+    }
+
+    async userPermissionGrants(userInput: User): Promise<Permission[]> {
+
+        // re-select the user
+        const user = await User.findOne({
+            relations: ['permissions', 'roles'],
+            where: { id: userInput.id },
+        });
+
+        const directPermissions = user.permissions;
+
+        const roleIds = user.roles.map(role => role.id);
+
+        const roles = await Role.find({
+            relations: ['permissions'],
+            where: { id: Any(roleIds) },
+        });
+
+        const rolePermissions = roles.flatMap(role => (role.permissions));
+
+        const permissions = [...new Set([...directPermissions, ...rolePermissions])]
+
+        return permissions;
     }
 
     async logout(user: User): Promise<boolean> {
