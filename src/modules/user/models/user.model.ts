@@ -17,6 +17,7 @@ import { PatientCaseManager } from 'src/modules/patient/models/patient-case-mana
 import { PatientInformant } from 'src/modules/patient/models/patient-informant.model';
 import { FilterableField, KeySet, Relation } from '@nestjs-query/query-graphql';
 import { Role } from 'src/modules/permission/models/role.model';
+import { UserPreviousPassword } from './user-previous-password.model';
 
 @ObjectType()
 @KeySet(['id'])
@@ -93,6 +94,9 @@ export class User extends BaseEntity {
     @FilterableField(() => GraphQLISODateTime, { nullable: true })
     @Column({ nullable: true })
     passwordExpiresAt: Date;
+
+    @OneToMany(() => UserPreviousPassword, password => password.user)
+    previousPasswords: UserPreviousPassword[];
 
     @FilterableField(() => GraphQLISODateTime)
     @CreateDateColumn()

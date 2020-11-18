@@ -18,6 +18,9 @@ import { paginate } from 'src/shared/pagination/services/paginate';
 import { applySearchQuery } from 'src/shared/helpers/search.helper';
 import { CreateUserInput } from '../dto/create-user.input';
 import { UpdateUserInput } from '../dto/update-user.input';
+import * as moment from 'moment';
+import { UserPreviousPassword } from '../models/user-previous-password.model';
+import { SettingService } from 'src/modules/setting/providers/setting.service';
 
 @Injectable()
 export class UserService {
@@ -25,7 +28,8 @@ export class UserService {
     private readonly logger = new Logger('UserService');
 
     constructor(
-        @InjectRepository(UserRepository) private userRepository: UserRepository,
+        @InjectRepository(UserRepository) private readonly userRepository: UserRepository,
+        private readonly setting: SettingService,
     ) { }
 
 
@@ -79,8 +83,46 @@ export class UserService {
             throw new BadRequestException('Password confirmation mismatch! Provided password and password confirmation did not match.');
         }
 
-        targetUser.password = await Hash.make(changePasswordRequest.newPassword);
-        targetUser.save();
+        // set cutoff date to last 12 months
+        const cutOffDays = await this.setting.getKey('passwordReUseCutoffInDays');
+
+        const cutOffDate = moment().subtract(cutOffDays, 'days').format('YYYY-MM-DD');
+
+        //check to see if password was once used in a 12months timeline.
+        const prevPasswords = await UserPreviousPassword
+            .createQueryBuilder('passwords')
+            .where('passwords.userId = :userId', { userId: targetUser.id })
+            .where('passwords.createdAt >= :cutOffDate', { cutOffDate })
+            .getMany();
+
+        for (const prevPassword of prevPasswords) {
+            const isSamePassword = await Hash.compare(changePasswordRequest.newPassword, prevPassword.password);
+
+            // throw exception if password recently used
+            if (isSamePassword) {
+                throw new BadRequestException(`Password was once used in the last ${cutOffDays} days! Please enter another password!`);
+            }
+        }
+
+        // Save last password in previous passwords
+        const prevPasswordInstance = UserPreviousPassword.create({
+            password: targetUser.password,
+            user: targetUser,
+        });
+
+        await prevPasswordInstance.save();
+
+        // Update new password
+        const hashedPassword = await Hash.make(changePasswordRequest.newPassword);
+        targetUser.password = hashedPassword;
+
+        // Set expiry date for new password
+        const passwordLifeTime = await this.setting.getKey('passwordLifeTimeInDays');
+
+        targetUser.passwordExpiresAt = moment().add(passwordLifeTime, 'days').toDate();
+
+        // save password
+        await targetUser.save();
 
         return true;
     }

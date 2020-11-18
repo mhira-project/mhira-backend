@@ -4,18 +4,24 @@ import { Field, ObjectType } from "@nestjs/graphql";
 export class SettingDto {
 
     @Field({ nullable: true })
-    systemLocale: string;
+    systemLocale?: string;
 
     @Field({ nullable: true })
-    systemTimezone: string;
+    systemTimezone?: string;
 
     @Field({ nullable: true })
-    dateFormat: string;
+    dateFormat?: string;
 
     @Field({ nullable: true })
-    timeFormat: string;
+    timeFormat?: string;
 
     @Field({ nullable: true })
-    dateTimeFormat: string;
+    dateTimeFormat?: string;
+
+    @Field({ nullable: true })
+    passwordLifeTimeInDays?: number;
+
+    @Field({ nullable: true })
+    passwordReUseCutoffInDays?: number;
 
 }

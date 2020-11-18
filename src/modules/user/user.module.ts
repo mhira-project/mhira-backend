@@ -8,9 +8,11 @@ import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { User } from './models/user.model';
 import { UserCrudService } from './providers/user-crud.service';
 import { UserCrudResolver } from './resolvers/user-crud.resolver';
+import { SettingModule } from '../setting/setting.module';
 
 @Module({
     imports: [
+        SettingModule,
         TypeOrmModule.forFeature([
             UserRepository,
         ]),

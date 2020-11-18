@@ -12,4 +12,9 @@ export class SettingService {
         return defaultConfig;
     }
 
+    async getKey<K extends keyof SettingDto>(key?: K): Promise<SettingDto[K]> {
+
+        return defaultConfig[key]
+    }
+
 }
