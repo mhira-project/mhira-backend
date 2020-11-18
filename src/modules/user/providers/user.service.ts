@@ -8,8 +8,6 @@ import {
 import { User } from '../models/user.model';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from '../repositories/user.repository';
-import { UserInput } from '../dto/user.input';
-import { UserUpdateInput } from '../dto/user-update.dto';
 import { UserUpdatePasswordInput } from '../dto/user-update-password.dto';
 import { Hash } from 'src/shared/helpers/hash.helper';
 import { ChangePasswordRequest } from 'src/modules/auth/dto/change-password-request.dto';
@@ -18,6 +16,8 @@ import { UserFilter } from '../dto/user.filter';
 import { UserConnectionDto } from '../dto/user-connection.model';
 import { paginate } from 'src/shared/pagination/services/paginate';
 import { applySearchQuery } from 'src/shared/helpers/search.helper';
+import { CreateUserInput } from '../dto/create-user.input';
+import { UpdateUserInput } from '../dto/update-user.input';
 
 @Injectable()
 export class UserService {
@@ -47,7 +47,7 @@ export class UserService {
         return this.userRepository.findOneOrFail({ id });
     }
 
-    async createUser(userInput: UserInput): Promise<User> {
+    async createUser(userInput: CreateUserInput): Promise<User> {
 
         const user = this.userRepository.create(userInput);
         user.password = await Hash.make(userInput.password);
@@ -86,7 +86,7 @@ export class UserService {
     }
 
 
-    async updateUser(userId: number, input: UserUpdateInput) {
+    async updateUser(userId: number, input: UpdateUserInput) {
 
         const targetUser = await User.findOneOrFail({ id: userId });
 

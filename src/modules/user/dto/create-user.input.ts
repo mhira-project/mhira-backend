@@ -3,7 +3,7 @@ import { IsOptional, IsPhoneNumber } from 'class-validator';
 import { GenderEnum } from 'src/modules/patient/models/gender.enum';
 
 @InputType()
-export class UserInput {
+export class CreateUserInput {
 
   @Field()
   username: string;

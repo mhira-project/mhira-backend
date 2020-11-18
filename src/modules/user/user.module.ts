@@ -5,9 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserRepository } from './repositories/user.repository';
 import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
 import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
-import { UserUpdateInput } from './dto/user-update.dto';
-import { UserInput } from './dto/user.input';
 import { User } from './models/user.model';
+import { UserCrudService } from './providers/user-crud.service';
+import { UserCrudResolver } from './resolvers/user-crud.resolver';
 
 @Module({
     imports: [
@@ -19,17 +19,14 @@ import { User } from './models/user.model';
             // and provide a QueryService
             imports: [NestjsQueryTypeOrmModule.forFeature([User])],
             // describe the resolvers you want to expose
-            resolvers: [{
-                DTOClass: User,
-                EntityClass: User,
-                CreateDTOClass: UserInput,
-                UpdateDTOClass: UserUpdateInput,
-            }],
+            resolvers: [],
         }),
     ],
     providers: [
-        UserService,
-        UserResolver,
+        UserService, // deprecated
+        UserResolver, // deprecated
+        UserCrudService,
+        UserCrudResolver,
     ],
     exports: [
         UserService
