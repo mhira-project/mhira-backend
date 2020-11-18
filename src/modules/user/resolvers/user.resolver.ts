@@ -59,6 +59,6 @@ export class UserResolver {
         @Args({ name: 'id', type: () => Int }) targetUserId: number,
         @Args('input') updatePasswordInput: UserUpdatePasswordInput,
     ): Promise<boolean> {
-        return this.userService.changePassword(updatePasswordInput, targetUserId);
+        return this.userService.changePassword(updatePasswordInput, targetUserId, true);
     }
 }

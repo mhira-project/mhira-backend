@@ -72,7 +72,7 @@ export class UserService {
 
     }
 
-    async changePassword(changePasswordRequest: UserUpdatePasswordInput, targetUser: User | number): Promise<boolean> {
+    async changePassword(changePasswordRequest: UserUpdatePasswordInput, targetUser: User | number, requireChangePassword = false): Promise<boolean> {
 
         if (typeof targetUser === 'number') {
             targetUser = await User.findOneOrFail(targetUser);
@@ -119,7 +119,12 @@ export class UserService {
         // Set expiry date for new password
         const passwordLifeTime = await this.setting.getKey('passwordLifeTimeInDays');
 
-        targetUser.passwordExpiresAt = moment().add(passwordLifeTime, 'days').toDate();
+        if (requireChangePassword) {
+            targetUser.passwordExpiresAt = moment().toDate();
+        } else {
+            targetUser.passwordExpiresAt = moment().add(passwordLifeTime, 'days').toDate();
+        }
+
 
         // save password
         await targetUser.save();
