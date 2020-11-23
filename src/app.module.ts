@@ -12,6 +12,7 @@ import { GraphQLError } from 'graphql';
 import { QuestionnaireModule } from './modules/questionnaire/questionnaire.module';
 import { AssessmentModule } from './modules/assessment/assessment.module';
 import { SettingModule } from './modules/setting/setting.module';
+import { DepartmentModule } from './modules/department/department.module';
 
 @Module({
     imports: [
@@ -35,6 +36,7 @@ import { SettingModule } from './modules/setting/setting.module';
         QuestionnaireModule,
         AssessmentModule,
         SettingModule,
+        DepartmentModule,
     ],
     controllers: [],
     providers: [],

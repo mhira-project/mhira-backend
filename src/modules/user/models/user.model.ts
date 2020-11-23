@@ -18,11 +18,13 @@ import { PatientInformant } from 'src/modules/patient/models/patient-informant.m
 import { FilterableField, KeySet, Relation } from '@nestjs-query/query-graphql';
 import { Role } from 'src/modules/permission/models/role.model';
 import { UserPreviousPassword } from './user-previous-password.model';
+import { Department } from 'src/modules/department/models/department.model';
 
 @ObjectType()
 @KeySet(['id'])
 @Relation('roles', () => [Role])
 @Relation('permissions', () => [Permission])
+@Relation('departments', () => [Department])
 @Entity()
 export class User extends BaseEntity {
 
@@ -117,6 +119,10 @@ export class User extends BaseEntity {
     @ManyToMany(() => Role, role => role.users)
     @JoinTable({ name: 'user_role' })
     roles: Role[];
+
+    @ManyToMany(() => Department, department => department.users)
+    @JoinTable({ name: 'user_department' })
+    departments: Department[];
 
     @OneToMany(() => AccessToken, token => token.user)
     accessTokens: AccessToken[];
