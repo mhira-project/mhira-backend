@@ -28,7 +28,7 @@ export class Department extends BaseEntity {
 
     @FilterableField({ nullable: true })
     @Column({ nullable: true })
-    descrption?: string;
+    description?: string;
 
     @FilterableField({ nullable: true, defaultValue: true })
     @Column({ default: true })
