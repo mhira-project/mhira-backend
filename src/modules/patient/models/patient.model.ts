@@ -1,8 +1,9 @@
 import { FilterableField, Relation } from "@nestjs-query/query-graphql";
 import { Field, Int, ObjectType } from "@nestjs/graphql";
 import { Assessment } from "src/modules/assessment/models/assessment.model";
+import { Department } from "src/modules/department/models/department.model";
 import { User } from "src/modules/user/models/user.model";
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { GenderEnum } from "./gender.enum";
 import { PatientCaseManager } from "./patient-case-manager.model";
 import { PatientInformant } from "./patient-informant.model";
@@ -86,6 +87,10 @@ export class Patient extends BaseEntity {
     @Field({ nullable: true })
     @DeleteDateColumn()
     deletedAt?: Date;
+
+    @ManyToMany(() => Department, department => department.patients)
+    @JoinTable({ name: 'patient_department' })
+    departments: Department[];
 
     @OneToMany(() => PatientCaseManager, (patientCaseManager) => patientCaseManager.patient)
     patientToCaseManager: PatientCaseManager[];

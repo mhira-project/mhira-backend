@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { FilterableField, KeySet, Relation } from '@nestjs-query/query-graphql';
 import { User } from 'src/modules/user/models/user.model';
+import { Patient } from 'src/modules/patient/models/patient.model';
 
 @ObjectType()
 @KeySet(['id'])
@@ -48,5 +49,8 @@ export class Department extends BaseEntity {
 
     @ManyToMany(() => User, user => user.departments)
     users: User[];
+
+    @ManyToMany(() => Patient, patient => patient.departments)
+    patients: User[];
 
 }
