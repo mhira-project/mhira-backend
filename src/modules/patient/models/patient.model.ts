@@ -1,4 +1,4 @@
-import { FilterableField } from "@nestjs-query/query-graphql";
+import { FilterableField, Relation } from "@nestjs-query/query-graphql";
 import { Field, Int, ObjectType } from "@nestjs/graphql";
 import { Assessment } from "src/modules/assessment/models/assessment.model";
 import { User } from "src/modules/user/models/user.model";
@@ -8,6 +8,8 @@ import { PatientCaseManager } from "./patient-case-manager.model";
 import { PatientInformant } from "./patient-informant.model";
 
 @ObjectType()
+@Relation('caseManagers', () => [User], { disableUpdate: true, relationName: 'patientToCaseManager' })
+@Relation('informants', () => [User], { disableUpdate: true, relationName: 'patientToInformant' })
 @Entity()
 export class Patient extends BaseEntity {
 

@@ -16,28 +16,28 @@ export class PatientResolver {
         private readonly patientService: PatientService,
     ) { }
 
-    @Query(() => PatientConnectionDto)
+    @Query(() => PatientConnectionDto, { deprecationReason: "Replaced with `patients` query" })
     getPatients(
         @Args() args: PatientFilter,
     ): Promise<PatientConnectionDto> {
         return this.patientService.list(args);
     }
 
-    @Query(() => Patient)
+    @Query(() => Patient, { deprecationReason: "Replaced with `patient` query" })
     getPatient(
         @Args('id') patientId: number,
     ): Promise<Patient> {
         return this.patientService.getOne(patientId);
     }
 
-    @Mutation(() => Patient)
+    @Mutation(() => Patient, { deprecationReason: "Replaced with `createOnePatient` and `createManyPatients` mutation" })
     createPatient(
         @Args('input') input: CreatePatientInput
     ): Promise<Patient> {
         return this.patientService.create(input);
     }
 
-    @Mutation(() => Patient)
+    @Mutation(() => Patient, { deprecationReason: "Replaced with `updateOnePatient` and `updateManyPatients` mutation" })
     updatePatient(
         @Args({ name: 'id', type: () => Int }) patientId: number,
         @Args('input') input: UpdatePatientInput
@@ -45,7 +45,7 @@ export class PatientResolver {
         return this.patientService.update(patientId, input);
     }
 
-    @Mutation(() => Boolean)
+    @Mutation(() => Boolean, { deprecationReason: "Replaced with `deleteOnePatient` and `deleteManyPatients` mutation" })
     deletePatient(
         @Args({ name: 'id', type: () => Int }) patientId: number
     ): Promise<boolean> {
