@@ -5,6 +5,7 @@ import { Department } from "src/modules/department/models/department.model";
 import { User } from "src/modules/user/models/user.model";
 import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { GenderEnum } from "./gender.enum";
+import { Informant } from "./informant.model";
 
 @ObjectType()
 @Relation('caseManagers', () => [User], { nullable: true, disableUpdate: true })
@@ -92,6 +93,9 @@ export class Patient extends BaseEntity {
     @ManyToMany(() => Department, department => department.patients)
     @JoinTable({ name: 'patient_department' })
     departments: Department[];
+
+    @OneToMany(() => Informant, informant => informant.patient)
+    informants: Informant[];
 
     @OneToMany(() => Assessment, (assessment) => assessment.patient)
     assessments: Assessment;
