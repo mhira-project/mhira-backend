@@ -21,7 +21,7 @@ export class RelationshipType extends BaseEntity {
 
     @FilterableField()
     @Column()
-    name: number;
+    name: string;
 
     @FilterableField()
     @CreateDateColumn()
