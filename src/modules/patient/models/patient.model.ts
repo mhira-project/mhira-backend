@@ -5,12 +5,9 @@ import { Department } from "src/modules/department/models/department.model";
 import { User } from "src/modules/user/models/user.model";
 import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { GenderEnum } from "./gender.enum";
-import { PatientCaseManager } from "./patient-case-manager.model";
-import { PatientInformant } from "./patient-informant.model";
 
 @ObjectType()
-@Relation('caseManagers', () => [User], { nullable: true, disableUpdate: true, relationName: 'patientToCaseManager' })
-@Relation('informants', () => [User], { nullable: true, disableUpdate: true, relationName: 'patientToInformant' })
+@Relation('caseManagers', () => [User], { nullable: true, disableUpdate: true })
 @Entity()
 export class Patient extends BaseEntity {
 
@@ -88,15 +85,13 @@ export class Patient extends BaseEntity {
     @DeleteDateColumn()
     deletedAt?: Date;
 
+    @ManyToMany(() => User, user => user.patients)
+    @JoinTable({ name: 'patient_case_manager' })
+    caseManagers: User[];
+
     @ManyToMany(() => Department, department => department.patients)
     @JoinTable({ name: 'patient_department' })
     departments: Department[];
-
-    @OneToMany(() => PatientCaseManager, (patientCaseManager) => patientCaseManager.patient)
-    patientToCaseManager: PatientCaseManager[];
-
-    @ManyToMany(() => PatientInformant, (oatientInformant) => oatientInformant.patient)
-    patientToInformant: PatientInformant[];
 
     @OneToMany(() => Assessment, (assessment) => assessment.patient)
     assessments: Assessment;

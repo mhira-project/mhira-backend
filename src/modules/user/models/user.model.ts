@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int, GraphQLISODateTime } from '@nestjs/graphql';
+import { ObjectType, Int, GraphQLISODateTime } from '@nestjs/graphql';
 import {
     Entity,
     PrimaryGeneratedColumn,
@@ -13,12 +13,11 @@ import {
 import { Permission } from 'src/modules/permission/models/permission.model';
 import { AccessToken } from 'src/modules/auth/models/access-token.model';
 import { GenderEnum } from 'src/modules/patient/models/gender.enum';
-import { PatientCaseManager } from 'src/modules/patient/models/patient-case-manager.model';
-import { PatientInformant } from 'src/modules/patient/models/patient-informant.model';
 import { FilterableField, KeySet, Relation } from '@nestjs-query/query-graphql';
 import { Role } from 'src/modules/permission/models/role.model';
 import { UserPreviousPassword } from './user-previous-password.model';
 import { Department } from 'src/modules/department/models/department.model';
+import { Patient } from 'src/modules/patient/models/patient.model';
 
 @ObjectType()
 @KeySet(['id'])
@@ -124,13 +123,10 @@ export class User extends BaseEntity {
     @JoinTable({ name: 'user_department' })
     departments: Department[];
 
+    @ManyToMany(() => Patient, patient => patient.caseManagers)
+    patients: Patient[];
+
     @OneToMany(() => AccessToken, token => token.user)
     accessTokens: AccessToken[];
-
-    @OneToMany(() => PatientCaseManager, (patientCaseManager) => patientCaseManager.caseManager)
-    patientToCaseManager: PatientCaseManager[];
-
-    @OneToMany(() => PatientInformant, (patientToInformant) => patientToInformant.informant)
-    patientToInformant: PatientInformant[];
 
 }
