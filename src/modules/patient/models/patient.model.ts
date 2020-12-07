@@ -8,8 +8,10 @@ import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinTab
 import { EmergencyContact } from "./emergency-contact.model";
 import { GenderEnum } from "./gender.enum";
 import { Informant } from "./informant.model";
+import { PatientStatus } from "./patient-status.model";
 
 @ObjectType()
+@Relation('status', () => PatientStatus, { nullable: true, disableUpdate: true })
 @Relation('caseManagers', () => [User], { nullable: true, disableUpdate: true })
 @Relation('informants', () => [Informant], { nullable: true, disableUpdate: true })
 @Relation('emergencyContacts', () => [EmergencyContact], { nullable: true, disableUpdate: true })
@@ -31,9 +33,13 @@ export class Patient extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @FilterableField()
+    @FilterableField({ deprecationReason: 'Replaced with status field relation' })
     @Column({ default: true })
     active: boolean;
+
+    @FilterableField({ nullable: true })
+    @Column({ nullable: true })
+    statusId: number;
 
     @FilterableField({ nullable: true })
     @Column({ nullable: true, unique: true })
@@ -118,6 +124,9 @@ export class Patient extends BaseEntity {
     @Field({ nullable: true })
     @DeleteDateColumn()
     deletedAt?: Date;
+
+    @ManyToOne(() => PatientStatus, status => status.patients)
+    status: PatientStatus;
 
     @ManyToMany(() => User, user => user.patients)
     @JoinTable({ name: 'patient_case_manager' })
