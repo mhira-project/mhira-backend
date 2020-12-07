@@ -2,13 +2,18 @@ import { FilterableField, Relation } from "@nestjs-query/query-graphql";
 import { Field, Int, ObjectType } from "@nestjs/graphql";
 import { Assessment } from "src/modules/assessment/models/assessment.model";
 import { Department } from "src/modules/department/models/department.model";
+import { Country } from "src/modules/lists/models/country.model";
 import { User } from "src/modules/user/models/user.model";
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { EmergencyContact } from "./emergency-contact.model";
 import { GenderEnum } from "./gender.enum";
 import { Informant } from "./informant.model";
 
 @ObjectType()
 @Relation('caseManagers', () => [User], { nullable: true, disableUpdate: true })
+@Relation('informants', () => [Informant], { nullable: true, disableUpdate: true })
+@Relation('emergencyContacts', () => [EmergencyContact], { nullable: true, disableUpdate: true })
+@Relation('country', () => Country, { nullable: true, disableUpdate: true, disableRemove: true })
 @Entity()
 export class Patient extends BaseEntity {
 
@@ -52,11 +57,39 @@ export class Patient extends BaseEntity {
 
     @FilterableField({ nullable: true })
     @Column({ nullable: true })
-    email: string;
+    phone2: string;
 
     @FilterableField({ nullable: true })
     @Column({ nullable: true })
+    email: string;
+
+    @FilterableField({ nullable: true, deprecationReason: 'Replaced with address subfields' })
+    @Column({ nullable: true })
     address: string;
+
+    @FilterableField({ nullable: true })
+    @Column({ nullable: true })
+    addressStreet: string;
+
+    @FilterableField({ nullable: true })
+    @Column({ nullable: true })
+    addressNumber: string;
+
+    @FilterableField({ nullable: true })
+    @Column({ nullable: true })
+    addressApartment: string;
+
+    @FilterableField({ nullable: true })
+    @Column({ nullable: true })
+    addressPlace: string;
+
+    @FilterableField({ nullable: true })
+    @Column({ nullable: true })
+    addressPostalCode: string;
+
+    @FilterableField({ nullable: true })
+    @Column({ nullable: true })
+    addressCountryId: number;
 
     @FilterableField({ nullable: true })
     @Column({ nullable: true })
@@ -97,7 +130,13 @@ export class Patient extends BaseEntity {
     @OneToMany(() => Informant, informant => informant.patient)
     informants: Informant[];
 
+    @OneToMany(() => EmergencyContact, contact => contact.patient)
+    emergencyContacts: EmergencyContact[];
+
     @OneToMany(() => Assessment, (assessment) => assessment.patient)
     assessments: Assessment;
+
+    @ManyToOne(() => Country)
+    country: Country;
 
 }
