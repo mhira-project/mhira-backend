@@ -5,13 +5,12 @@ import {
     Column,
     CreateDateColumn,
     DeleteDateColumn,
-    ManyToOne,
+    Entity,
     OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from "typeorm";
 import { Patient } from "./patient.model";
-import { RelationshipType } from "./relationship-type.model";
 
 @ObjectType()
 @Relation('patients', () => [Patient],
@@ -21,6 +20,7 @@ import { RelationshipType } from "./relationship-type.model";
         disableRemove: true
     }
 )
+@Entity()
 export class PatientStatus extends BaseEntity {
 
     @FilterableField(() => Int)
