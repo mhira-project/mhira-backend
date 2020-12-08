@@ -12,10 +12,10 @@ import { PatientStatus } from "./patient-status.model";
 
 @ObjectType()
 @Relation('status', () => PatientStatus, { nullable: true, disableUpdate: true })
-@Relation('caseManagers', () => [User], { nullable: true, disableUpdate: true })
-@Relation('informants', () => [Informant], { nullable: true, disableUpdate: true })
-@Relation('emergencyContacts', () => [EmergencyContact], { nullable: true, disableUpdate: true })
-@Relation('country', () => Country, { nullable: true, disableUpdate: true, disableRemove: true })
+@Relation('caseManagers', () => [User], { nullable: true })
+@Relation('informants', () => [Informant], { nullable: true })
+@Relation('emergencyContacts', () => [EmergencyContact], { nullable: true })
+@Relation('country', () => Country, { nullable: true })
 @Entity()
 export class Patient extends BaseEntity {
 
