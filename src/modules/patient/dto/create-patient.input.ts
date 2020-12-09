@@ -40,4 +40,22 @@ export class CreatePatientInput {
     @Field({ nullable: true })
     nationality: string;
 
+    @Field({ nullable: true })
+    addressStreet: string;
+
+    @Field({ nullable: true })
+    addressNumber: string;
+
+    @Field({ nullable: true })
+    addressApartment: string;
+
+    @Field({ nullable: true })
+    addressPlace: string;
+
+    @Field({ nullable: true })
+    addressPostalCode: string;
+
+    @Field({ nullable: true })
+    addressCountryId: number;
+
 }
