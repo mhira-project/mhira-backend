@@ -3,6 +3,7 @@ import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { Module } from '@nestjs/common';
 import { CreatePatientInput } from './dto/create-patient.input';
 import { UpdatePatientInput } from './dto/update-patient.input';
+import { EmergencyContact } from './models/emergency-contact.model';
 import { Informant } from './models/informant.model';
 import { Patient } from './models/patient.model';
 import { CaseManagerService } from './providers/case-manager.service';
@@ -15,7 +16,8 @@ import { CaseManagerResolver } from './resolvers/case-manager.resolver';
             // and provide a QueryService
             imports: [NestjsQueryTypeOrmModule.forFeature([
                 Patient,
-                Informant
+                Informant,
+                EmergencyContact,
             ])],
             // describe the resolvers you want to expose
             resolvers: [
@@ -28,6 +30,10 @@ import { CaseManagerResolver } from './resolvers/case-manager.resolver';
                 {
                     DTOClass: Informant,
                     EntityClass: Informant,
+                },
+                {
+                    DTOClass: EmergencyContact,
+                    EntityClass: EmergencyContact,
                 },
             ],
         }),
