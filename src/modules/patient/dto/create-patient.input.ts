@@ -22,8 +22,7 @@ export class CreatePatientInput {
     @Field({ nullable: true })
     phone: string;
 
-    @FilterableField({ nullable: true })
-    @Column({ nullable: true })
+    @Field({ nullable: true })
     phone2: string;
 
     @Field({ nullable: true })
