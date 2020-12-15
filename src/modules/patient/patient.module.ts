@@ -1,6 +1,8 @@
+import { SortDirection } from '@nestjs-query/core';
 import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
 import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { Module } from '@nestjs/common';
+import { GqlAuthGuard } from '../auth/auth.guard';
 import { CreatePatientInput } from './dto/create-patient.input';
 import { UpdatePatientInput } from './dto/update-patient.input';
 import { EmergencyContact } from './models/emergency-contact.model';
@@ -9,6 +11,7 @@ import { Patient } from './models/patient.model';
 import { CaseManagerService } from './providers/case-manager.service';
 import { CaseManagerResolver } from './resolvers/case-manager.resolver';
 
+const guards = [GqlAuthGuard];
 @Module({
     imports: [
         NestjsQueryGraphQLModule.forFeature({
@@ -26,14 +29,20 @@ import { CaseManagerResolver } from './resolvers/case-manager.resolver';
                     EntityClass: Patient,
                     CreateDTOClass: CreatePatientInput,
                     UpdateDTOClass: UpdatePatientInput,
+                    guards: guards,
+                    read: { defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
                 },
                 {
                     DTOClass: Informant,
                     EntityClass: Informant,
+                    guards: guards,
+                    read: { defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
                 },
                 {
                     DTOClass: EmergencyContact,
                     EntityClass: EmergencyContact,
+                    guards: guards,
+                    read: { defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
                 },
             ],
         }),

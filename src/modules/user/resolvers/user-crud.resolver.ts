@@ -1,4 +1,4 @@
-import { UpdateManyResponse, Filter } from '@nestjs-query/core';
+import { UpdateManyResponse, Filter, SortDirection } from '@nestjs-query/core';
 import { CRUDResolver, FilterType, UpdateManyResponseType } from '@nestjs-query/query-graphql';
 import { Resolver, Args, Mutation, ID, ResolveField, Parent } from '@nestjs/graphql';
 import { CreateUserInput } from '../dto/create-user.input';
@@ -10,6 +10,7 @@ import { UserCrudService } from '../providers/user-crud.service';
 export class UserCrudResolver extends CRUDResolver(User, {
     CreateDTOClass: CreateUserInput,
     UpdateDTOClass: UpdateUserInput,
+    read: { defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
 }) {
     constructor(readonly service: UserCrudService) {
         super(service);

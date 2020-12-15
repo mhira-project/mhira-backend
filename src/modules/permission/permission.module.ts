@@ -1,3 +1,4 @@
+import { SortDirection } from '@nestjs-query/core';
 import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
 import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { Module } from '@nestjs/common';
@@ -12,13 +13,18 @@ const guards = [GqlAuthGuard];
         NestjsQueryGraphQLModule.forFeature({
             // import the NestjsQueryTypeOrmModule to register the entity with typeorm
             // and provide a QueryService
-            imports: [NestjsQueryTypeOrmModule.forFeature([Permission, Role])],
+            imports: [
+                NestjsQueryTypeOrmModule.forFeature([
+                    Permission,
+                    Role,
+                ]),
+            ],
             // describe the resolvers you want to expose
             resolvers: [
                 {
                     DTOClass: Permission,
                     EntityClass: Permission,
-                    read: { guards },
+                    read: { guards, defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
                     create: { disabled: true },
                     update: { disabled: true },
                     delete: { disabled: true },
@@ -28,7 +34,7 @@ const guards = [GqlAuthGuard];
                     EntityClass: Role,
                     CreateDTOClass: RoleInput,
                     UpdateDTOClass: RoleInput,
-                    read: { guards },
+                    read: { guards, defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
                     create: { guards },
                     update: { guards },
                     delete: { guards },

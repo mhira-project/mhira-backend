@@ -5,6 +5,7 @@ import { GqlAuthGuard } from '../auth/auth.guard';
 import { CreateAssessmentInput } from './dtos/create-assessment.input';
 import { UpdateAssessmentInput } from './dtos/update-assessment.input';
 import { Assessment } from './models/assessment.model';
+import { SortDirection } from '@nestjs-query/core';
 
 const guards = [GqlAuthGuard];
 @Module({
@@ -12,17 +13,22 @@ const guards = [GqlAuthGuard];
         NestjsQueryGraphQLModule.forFeature({
             // import the NestjsQueryTypeOrmModule to register the entity with typeorm
             // and provide a QueryService
-            imports: [NestjsQueryTypeOrmModule.forFeature([Assessment])],
+            imports: [
+                NestjsQueryTypeOrmModule.forFeature([
+                    Assessment
+                ]),
+            ],
             // describe the resolvers you want to expose
             resolvers: [{
                 DTOClass: Assessment,
                 EntityClass: Assessment,
                 CreateDTOClass: CreateAssessmentInput,
                 UpdateDTOClass: UpdateAssessmentInput,
-                read: { guards },
+                read: { guards, defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
                 create: { guards },
                 update: { guards },
                 delete: { guards },
+
             }],
         }),
     ],
