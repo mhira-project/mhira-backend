@@ -2,6 +2,7 @@ import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
 import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { Module } from '@nestjs/common';
 import { GqlAuthGuard } from '../auth/auth.guard';
+import { RoleInput } from './dtos/role.input';
 import { Permission } from './models/permission.model';
 import { Role } from './models/role.model';
 
@@ -25,6 +26,8 @@ const guards = [GqlAuthGuard];
                 {
                     DTOClass: Role,
                     EntityClass: Role,
+                    CreateDTOClass: RoleInput,
+                    UpdateDTOClass: RoleInput,
                     read: { guards },
                     create: { guards },
                     update: { guards },
