@@ -7,6 +7,7 @@ import { CreatePatientInput } from './dto/create-patient.input';
 import { UpdatePatientInput } from './dto/update-patient.input';
 import { EmergencyContact } from './models/emergency-contact.model';
 import { Informant } from './models/informant.model';
+import { PatientStatus } from './models/patient-status.model';
 import { Patient } from './models/patient.model';
 import { CaseManagerService } from './providers/case-manager.service';
 import { CaseManagerResolver } from './resolvers/case-manager.resolver';
@@ -41,6 +42,12 @@ const guards = [GqlAuthGuard];
                 {
                     DTOClass: EmergencyContact,
                     EntityClass: EmergencyContact,
+                    guards: guards,
+                    read: { defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
+                },
+                {
+                    DTOClass: PatientStatus,
+                    EntityClass: PatientStatus,
                     guards: guards,
                     read: { defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
                 },
