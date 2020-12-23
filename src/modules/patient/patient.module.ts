@@ -22,6 +22,7 @@ const guards = [GqlAuthGuard];
                 Patient,
                 Informant,
                 EmergencyContact,
+                PatientStatus,
             ])],
             // describe the resolvers you want to expose
             resolvers: [
