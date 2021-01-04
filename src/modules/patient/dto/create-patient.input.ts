@@ -8,6 +8,9 @@ export class CreatePatientInput {
     active: boolean;
 
     @Field({ nullable: true })
+    statusId: number;
+
+    @Field({ nullable: true })
     medicalRecordNo: string;
 
     @Field()
