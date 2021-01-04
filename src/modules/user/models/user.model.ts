@@ -8,7 +8,7 @@ import {
     UpdateDateColumn,
     DeleteDateColumn,
     ManyToMany,
-    JoinTable, OneToMany
+    JoinTable, OneToMany, BeforeInsert
 } from 'typeorm';
 import { Permission } from 'src/modules/permission/models/permission.model';
 import { AccessToken } from 'src/modules/auth/models/access-token.model';
@@ -18,6 +18,8 @@ import { Role } from 'src/modules/permission/models/role.model';
 import { UserPreviousPassword } from './user-previous-password.model';
 import { Department } from 'src/modules/department/models/department.model';
 import { Patient } from 'src/modules/patient/models/patient.model';
+import * as moment from 'moment';
+import { Hash } from 'src/shared/helpers/hash.helper';
 
 @ObjectType()
 @KeySet(['id'])
@@ -128,5 +130,15 @@ export class User extends BaseEntity {
 
     @OneToMany(() => AccessToken, token => token.user)
     accessTokens: AccessToken[];
+
+    @BeforeInsert()
+    async beforeInsert() {
+
+        // Expire the default password immediately
+        this.passwordExpiresAt = moment().toDate();
+
+        // Hash the password
+        this.password = await Hash.make(this.password);
+    }
 
 }
