@@ -1,4 +1,4 @@
-import { FilterableField, Relation } from "@nestjs-query/query-graphql";
+import { FilterableField, FilterableRelation } from "@nestjs-query/query-graphql";
 import { Field, Int, ObjectType } from "@nestjs/graphql";
 import { Assessment } from "src/modules/assessment/models/assessment.model";
 import { Department } from "src/modules/department/models/department.model";
@@ -11,11 +11,11 @@ import { Informant } from "./informant.model";
 import { PatientStatus } from "./patient-status.model";
 
 @ObjectType()
-@Relation('status', () => PatientStatus, { nullable: true, disableUpdate: true })
-@Relation('caseManagers', () => [User], { nullable: true })
-@Relation('informants', () => [Informant], { nullable: true })
-@Relation('emergencyContacts', () => [EmergencyContact], { nullable: true })
-@Relation('country', () => Country, { nullable: true })
+@FilterableRelation('status', () => PatientStatus, { nullable: true, disableUpdate: true })
+@FilterableRelation('caseManagers', () => [User], { nullable: true })
+@FilterableRelation('informants', () => [Informant], { nullable: true })
+@FilterableRelation('emergencyContacts', () => [EmergencyContact], { nullable: true })
+@FilterableRelation('country', () => Country, { nullable: true })
 @Entity()
 export class Patient extends BaseEntity {
 
