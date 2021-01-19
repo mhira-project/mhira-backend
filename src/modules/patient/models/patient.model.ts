@@ -4,7 +4,19 @@ import { Assessment } from "src/modules/assessment/models/assessment.model";
 import { Department } from "src/modules/department/models/department.model";
 import { Country } from "src/modules/lists/models/country.model";
 import { User } from "src/modules/user/models/user.model";
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {
+    BaseEntity,
+    Column,
+    CreateDateColumn,
+    DeleteDateColumn,
+    Entity,
+    JoinTable,
+    ManyToMany,
+    ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn,
+} from "typeorm";
 import { EmergencyContact } from "./emergency-contact.model";
 import { GenderEnum } from "./gender.enum";
 import { Informant } from "./informant.model";

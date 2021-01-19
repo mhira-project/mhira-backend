@@ -8,6 +8,8 @@ import {
     ManyToMany,
     JoinTable,
     Column,
+    BeforeUpdate,
+    BeforeRemove,
 } from 'typeorm';
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Permission } from './permission.model';
@@ -24,6 +26,10 @@ export class Role extends BaseEntity {
     @FilterableField(() => Int)
     @PrimaryGeneratedColumn()
     id: number;
+
+    @FilterableField()
+    @Column({ default: false })
+    isSuperAdmin: boolean;
 
     @FilterableField()
     @Column()
@@ -51,5 +57,15 @@ export class Role extends BaseEntity {
 
     @ManyToMany(() => User, user => user.roles)
     users: User[];
+
+    @BeforeUpdate()
+    beforeUpdate() {
+        if (this.isSuperAdmin) throw new Error('Cannot update super admin role');
+    }
+
+    @BeforeRemove()
+    beforeDelete() {
+        if (this.isSuperAdmin) throw new Error('Cannot delete super admin role');
+    }
 
 }
