@@ -14,11 +14,11 @@ import {
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Permission } from './permission.model';
 import { GuardType } from './guard-type.enum';
-import { FilterableField, Relation } from '@nestjs-query/query-graphql';
+import { FilterableField, PagingStrategies, Relation } from '@nestjs-query/query-graphql';
 import { User } from 'src/modules/user/models/user.model';
 
 @ObjectType()
-@Relation('permissions', () => [Permission])
+@Relation('permissions', () => [Permission], { pagingStrategy: PagingStrategies.NONE })
 @Relation('users', () => [User])
 @Entity()
 export class Role extends BaseEntity {
