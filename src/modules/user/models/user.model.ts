@@ -8,7 +8,7 @@ import {
     UpdateDateColumn,
     DeleteDateColumn,
     ManyToMany,
-    JoinTable, OneToMany, BeforeInsert
+    JoinTable, OneToMany, BeforeInsert, BeforeUpdate, BeforeRemove
 } from 'typeorm';
 import { Permission } from 'src/modules/permission/models/permission.model';
 import { AccessToken } from 'src/modules/auth/models/access-token.model';
@@ -42,6 +42,10 @@ export class User extends BaseEntity {
     @FilterableField(() => Int)
     @PrimaryGeneratedColumn()
     id: number;
+
+    @FilterableField()
+    @Column({ default: false })
+    isSuperUser: boolean;
 
     @FilterableField()
     @Column({ unique: true, comment: 'Login Username' })
@@ -139,6 +143,16 @@ export class User extends BaseEntity {
 
         // Hash the password
         this.password = await Hash.make(this.password);
+    }
+
+    @BeforeUpdate()
+    beforeUpdate() {
+        if (this.isSuperUser) throw new Error('Cannot update super user');
+    }
+
+    @BeforeRemove()
+    beforeDelete() {
+        if (this.isSuperUser) throw new Error('Cannot delete super user');
     }
 
 }
