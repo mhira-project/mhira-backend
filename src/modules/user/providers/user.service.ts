@@ -68,6 +68,11 @@ export class UserService {
             throw new UnauthorizedException('Invalid current password provided!');
         }
 
+        // Validate new password differ from old password
+        if (changePasswordRequest.newPassword === changePasswordRequest.currentPassword) {
+            throw new BadRequestException('New password cannot be same as previous password!');
+        }
+
         return this.changePassword(changePasswordRequest, user);
 
     }
