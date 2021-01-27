@@ -12,7 +12,7 @@ image: node:latest
 
 pipelines:
   branches:
-    master:
+    develop:
       - step:
           name: Build
           caches:
