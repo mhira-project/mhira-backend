@@ -1,6 +1,7 @@
 import { InputType, Field } from '@nestjs/graphql';
-import { IsOptional, IsPhoneNumber } from 'class-validator';
+import { IsPhoneNumber } from 'class-validator';
 import { GenderEnum } from 'src/modules/patient/models/gender.enum';
+import { IsOptional } from 'src/shared';
 
 @InputType()
 export class CreateUserInput {

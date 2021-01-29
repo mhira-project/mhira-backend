@@ -1,5 +1,6 @@
 import { ArgsType, Field } from '@nestjs/graphql';
-import { MaxLength, IsOptional } from 'class-validator';
+import { MaxLength } from 'class-validator';
+import { IsOptional } from 'src/shared';
 
 @ArgsType()
 export class UserFilter {
