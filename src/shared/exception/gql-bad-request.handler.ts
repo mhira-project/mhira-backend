@@ -1,16 +1,12 @@
-import { Catch, BadRequestException, HttpException, ArgumentsHost } from '@nestjs/common';
-import { GqlExceptionFilter, GqlArgumentsHost } from '@nestjs/graphql';
+import { Catch, BadRequestException, HttpException } from '@nestjs/common';
+import { GqlExceptionFilter } from '@nestjs/graphql';
 import { UserInputError } from 'apollo-server-express';
-import { GraphQLError } from 'graphql';
 
 
 @Catch(BadRequestException)
 export class GqlBadRequestHandler implements GqlExceptionFilter {
-    catch(exception: HttpException, host: ArgumentsHost) {
-        const gqlHost = GqlArgumentsHost.create(host);
-
+    catch(exception: HttpException) {
         const response = exception.getResponse();
-
         const message = typeof response['message'] === 'string'
             ? response['message']
             : response['message'][0];

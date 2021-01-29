@@ -1,4 +1,3 @@
-import { access } from 'fs';
 import { User } from 'src/modules/user/models/user.model';
 import {
     BaseEntity,

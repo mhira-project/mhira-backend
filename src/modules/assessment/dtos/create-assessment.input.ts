@@ -1,5 +1,5 @@
 import { FilterableField } from "@nestjs-query/query-graphql";
-import { Field, GraphQLISODateTime, InputType, Int, ObjectType } from "@nestjs/graphql";
+import { Field, GraphQLISODateTime, InputType, Int } from "@nestjs/graphql";
 
 @InputType()
 export class CreateAssessmentInput {
