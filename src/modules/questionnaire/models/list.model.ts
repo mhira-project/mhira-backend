@@ -1,4 +1,4 @@
-import { createUnionType, Field, Int, ObjectType, registerEnumType } from "@nestjs/graphql";
+import { Field, Int, registerEnumType } from "@nestjs/graphql";
 import { BaseEntity, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { ListItem } from "./list-item.model";
 import { Questionnaire } from "./questionnaire.model";

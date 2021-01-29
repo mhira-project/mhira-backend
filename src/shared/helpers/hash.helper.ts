@@ -1,6 +1,6 @@
 import * as bcrypt from 'bcryptjs';
 import * as argon2 from 'argon2';
-import { InternalServerErrorException, Logger } from '@nestjs/common';
+import { InternalServerErrorException } from '@nestjs/common';
 
 export class Hash {
 
