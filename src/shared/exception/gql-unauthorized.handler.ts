@@ -1,14 +1,11 @@
-import { Catch, HttpException, ArgumentsHost, UnauthorizedException, Logger } from '@nestjs/common';
-import { GqlExceptionFilter, GqlArgumentsHost } from '@nestjs/graphql';
+import { Catch, HttpException, UnauthorizedException } from '@nestjs/common';
+import { GqlExceptionFilter } from '@nestjs/graphql';
 import { ForbiddenError } from 'apollo-server-express';
 
 @Catch(UnauthorizedException)
 export class GqlUnauthorizedHandler implements GqlExceptionFilter {
-    catch(exception: HttpException, host: ArgumentsHost) {
-        const gqlHost = GqlArgumentsHost.create(host);
-
+    catch(exception: HttpException) {
         const response = exception.getResponse();
-
         const message = typeof response['message'] === 'string'
             ? response['message']
             : response['message'][0];

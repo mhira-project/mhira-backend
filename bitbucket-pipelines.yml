@@ -10,16 +10,48 @@
 # additional branches if required
 image: node:latest
 
+definitions:
+  steps:
+    - step: &install
+        name: Installation
+        caches:
+          - node
+        script:
+          - npm ci
+
+    - step: &lint
+        name: Lint
+        caches:
+          - node
+        script:
+          - npm run lint
+
+    - step: &build
+        name: Build
+        caches:
+          - node
+        script:
+          - npm run build
+        artifacts:
+          - dist/**
+
 pipelines:
-  branches:
-    master:
+  pull-requests:
+    '**':
+      - step: *install
+      - step: *lint
+      - step: *build
+
+  branches:      
+    develop:
+      - step: *install
+      - step: *lint
+      - step: *build
       - step:
-          name: Build
+          name: Deploy
           caches:
-              - node
+            - node
           script:
-              - npm install
-              - npm run build
               # - ssh deploy@api.mhira.net 'rm -rf /var/www/api.mhira.net/dist'
               # - ssh deploy@api.mhira.net 'rm -rf /var/www/api.mhira.net/node_modules'
               - pipe: atlassian/rsync-deploy:0.4.3
