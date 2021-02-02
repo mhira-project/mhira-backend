@@ -14,6 +14,7 @@ import { AssessmentModule } from './modules/assessment/assessment.module';
 import { SettingModule } from './modules/setting/setting.module';
 import { DepartmentModule } from './modules/department/department.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { Upload } from './modules/questionnaire/types/upload.type';
 
 @Module({
     imports: [
@@ -55,12 +56,12 @@ import { MongooseModule } from '@nestjs/mongoose';
         SharedModule,
         PermissionModule,
         PatientModule,
-        QuestionnaireModule,
         AssessmentModule,
         SettingModule,
         DepartmentModule,
+        QuestionnaireModule,
     ],
     controllers: [],
-    providers: [],
+    providers: [Upload],
 })
 export class AppModule {}

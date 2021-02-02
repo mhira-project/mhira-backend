@@ -50,7 +50,7 @@
         "graphql-relay": "^0.6.0",
         "graphql-tools": "^5.0.0",
         "moment": "^2.27.0",
-        "mongoose": "^5.11.14",
+        "mongoose": "^5.10.11",
         "nest-schedule": "^0.6.4",
         "otp-generator": "^1.1.0",
         "passport": "^0.4.1",
