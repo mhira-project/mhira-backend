@@ -1,118 +1,78 @@
-import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
-import { BaseEntity, Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { Questionnaire } from './questionnaire.model';
+import { Answer } from './answer.model';
+import { Translation } from './translation.model';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Types } from 'mongoose';
 
-export enum QuestionType {
+export const questionOptions = { discriminatorKey: 'questionType' };
+
+export const enum questionType {
+    INTEGER = 'integer',
+    DECIMAL = 'decimal',
     TEXT = 'text',
-    NUMBER = 'number',
-    CHOICE = 'choice',
-    CHECKBOX = 'checkbox',
+    SELECT_ONE = 'select_one',
+    SELECT_MULTIPLE = 'select_multiple',
+    DATE = 'date',
     TIME = 'time',
-    DATE = 'date'
-};
-
-registerEnumType(QuestionType, { name: 'QuestionType' });
-
-@ObjectType()
-export class ValidationRules {
-
-    @Field(() => Int)
-    minimum: number;
-
-    @Field(() => Int)
-    maximum: number;
-    // decimalPlaces: number;
-
-    @Field(() => String)
-    regex: RegExp;
+    DATETIME = 'dateTime',
+    NOTE = 'note',
 }
 
-@ObjectType()
-export class ValidationMessages {
+@Schema()
+export class Question {
+    _id: Types.ObjectId;
 
-    @Field(() => String)
-    minimum: string;
+    @Prop()
+    name: string;
 
-    @Field(() => String)
-    maximum: string;
+    @Prop()
+    label: string | Translation[];
 
-    @Field(() => String)
-    regex: string;
+    @Prop()
+    type: questionType;
+
+    @Prop()
+    hint: string | Translation[];
+
+    @Prop()
+    relevant: string;
+
+    @Prop()
+    calculation: string;
+
+    @Prop()
+    constraint: string;
+
+    @Prop()
+    constraintMessage: string | Translation[];
+
+    @Prop()
+    required: boolean;
+
+    @Prop()
+    image: string | Translation[];
+
+    @Prop()
+    choices: Choice[];
+
+    @Prop()
+    answers: Answer[];
 }
 
-@ObjectType()
-export class DisplayProperties {
+export type QuestionDocument = Question & Document;
 
-    @Field(() => Int)
-    height: number;
+export const QuestionSchema = SchemaFactory.createForClass(Question);
 
-    @Field(() => Int)
-    width: number;
+@Schema()
+export class Choice {
+    _id: Types.ObjectId;
 
-    // @Field(() => String)
-    // representation: string;
+    @Prop()
+    name: string;
+
+    @Prop()
+    label: string | Translation[];
 }
 
-@ObjectType()
-@Entity('questionnaire_question')
-export class Question extends BaseEntity {
+export type ChoiceDocument = Choice & Document;
 
-    @Field(() => Int)
-    @PrimaryGeneratedColumn()
-    id: number;
-
-    @Field(() => Int)
-    @Column()
-    questionnaireId: number;
-
-    @Field()
-    @Column()
-    type: QuestionType;
-
-    @Field()
-    @Column()
-    text: string;
-
-    @Field()
-    @Column()
-    help: string;
-
-    @Field()
-    @Column()
-    isOptional: boolean;
-
-    @Field()
-    @Column()
-    isPersonalInformation: boolean;
-
-    @Field()
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @Field()
-    @UpdateDateColumn()
-    updatedAt: Date;
-
-    @Field({ nullable: true })
-    @DeleteDateColumn()
-    deletedAt?: Date;
-
-    // @Field()
-    // @Column()
-    // options: string;
-
-    @Field({ nullable: true })
-    @Column({ type: 'jsonb', nullable: true })
-    validationRules: ValidationRules;
-
-    @Field({ nullable: true })
-    @Column({ type: 'jsonb', nullable: true })
-    validationMessages: ValidationMessages;
-
-    @Field({ nullable: true })
-    @Column({ type: 'jsonb', nullable: true })
-    displayProperties: DisplayProperties;
-
-    @ManyToOne(() => Questionnaire, questionnaire => questionnaire.questions)
-    questionnaire: Questionnaire;
-}
+export const ChoiceSchema = SchemaFactory.createForClass(Choice);

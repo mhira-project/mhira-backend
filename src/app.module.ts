@@ -13,19 +13,41 @@ import { QuestionnaireModule } from './modules/questionnaire/questionnaire.modul
 import { AssessmentModule } from './modules/assessment/assessment.module';
 import { SettingModule } from './modules/setting/setting.module';
 import { DepartmentModule } from './modules/department/department.module';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
     imports: [
+        MongooseModule.forRoot('mongodb://localhost:27017/questionnaireDB'),
         TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
         GraphQLModule.forRoot({
             autoSchemaFile: join(process.cwd(), 'src/schema/schema.gql'),
             context: ({ req }) => ({ req }),
             debug: false, // disables stack trace
+            uploads: {
+                maxFileSize: 20000000, // 20 MB
+                maxFiles: 1,
+            },
             formatError: (error: GraphQLError) => {
                 if (typeof error.message === 'string') {
-                    return new GraphQLError(error.message, null, null, null, error.path, error, error.extensions);
+                    return new GraphQLError(
+                        error.message,
+                        null,
+                        null,
+                        null,
+                        error.path,
+                        error,
+                        error.extensions,
+                    );
                 }
-                return new GraphQLError(error.message['message'], null, null, null, error.path, error, error.extensions);
+                return new GraphQLError(
+                    error.message['message'],
+                    null,
+                    null,
+                    null,
+                    error.path,
+                    error,
+                    error.extensions,
+                );
             },
         }),
         UserModule,
@@ -41,4 +63,4 @@ import { DepartmentModule } from './modules/department/department.module';
     controllers: [],
     providers: [],
 })
-export class AppModule { }
+export class AppModule {}

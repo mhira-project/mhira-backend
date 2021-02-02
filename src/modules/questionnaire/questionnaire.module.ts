@@ -1,28 +1,34 @@
-import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
-import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { GqlAuthGuard } from '../auth/auth.guard';
-import { Questionnaire } from './models/questionnaire.model';
+import { Answer, AnswerSchema } from './models/answer.model';
+import {
+    QuestionGroup,
+    QuestionGroupSchema,
+} from './models/question-group.model';
+import {
+    Choice,
+    ChoiceSchema,
+    Question,
+    QuestionSchema,
+} from './models/question.model';
+import {
+    Questionnaire,
+    QuestionnaireSchema,
+} from './models/questionnaire.schema.model';
+import { Translation, TranslationSchema } from './models/translation.model';
 
 const guards = [GqlAuthGuard];
 @Module({
     imports: [
-        NestjsQueryGraphQLModule.forFeature({
-            // import the NestjsQueryTypeOrmModule to register the entity with typeorm
-            // and provide a QueryService
-            imports: [NestjsQueryTypeOrmModule.forFeature([Questionnaire])],
-            // describe the resolvers you want to expose
-            resolvers: [{
-                DTOClass: Questionnaire,
-                EntityClass: Questionnaire,
-                // CreateDTOClass:
-                // UpdateDTOClass:
-                read: { disabled: false, guards },
-                create: { disabled: true },
-                update: { disabled: true },
-                delete: { disabled: true },
-            }],
-        }),
+        MongooseModule.forFeature([
+            { name: Questionnaire.name, schema: QuestionnaireSchema },
+            { name: QuestionGroup.name, schema: QuestionGroupSchema },
+            { name: Question.name, schema: QuestionSchema },
+            { name: Answer.name, schema: AnswerSchema },
+            { name: Choice.name, schema: ChoiceSchema },
+            { name: Translation.name, schema: TranslationSchema },
+        ]),
     ],
 })
-export class QuestionnaireModule { }
+export class QuestionnaireModule {}

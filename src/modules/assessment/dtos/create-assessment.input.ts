@@ -1,9 +1,8 @@
-import { FilterableField } from "@nestjs-query/query-graphql";
-import { Field, GraphQLISODateTime, InputType, Int } from "@nestjs/graphql";
+import { FilterableField } from '@nestjs-query/query-graphql';
+import { Field, GraphQLISODateTime, InputType, Int } from '@nestjs/graphql';
 
 @InputType()
 export class CreateAssessmentInput {
-
     @FilterableField(() => Int)
     patientId: number;
 
@@ -20,5 +19,4 @@ export class CreateAssessmentInput {
     informantId?: number;
 
     // questionnaires: Questionnaire[];
-
 }
