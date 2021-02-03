@@ -6,7 +6,6 @@ import { LoginRequestDto } from './dto/login-request.dto';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from './auth.guard';
 import { CurrentUser } from './auth-user.decorator';
-import { ChangePasswordRequest } from './dto/change-password-request.dto';
 import { Permission } from '../permission/models/permission.model';
 
 @Resolver(() => User)
@@ -38,18 +37,6 @@ export class AuthResolver {
   userPermissionGrants(@CurrentUser() user: User): Promise<Permission[]> {
 
     return this.authService.userPermissionGrants(user);
-  }
-
-  // change password
-  @Mutation(() => Boolean, { description: 'Change password for currently logged in user' })
-  @UseGuards(GqlAuthGuard)
-  changePassword(
-    @Args() changePasswordRequest: ChangePasswordRequest,
-    @CurrentUser() currentUser: User
-  ): Promise<boolean> {
-
-    return this.authService.changePassword(changePasswordRequest, currentUser);
-
   }
 
   // reset password ?? @TODO

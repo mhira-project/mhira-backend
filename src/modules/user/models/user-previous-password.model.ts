@@ -7,6 +7,9 @@ export class UserPreviousPassword extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Column()
+    userId: number;
+
     @Column({ comment: 'previous hashed password' })
     password: string;
 
