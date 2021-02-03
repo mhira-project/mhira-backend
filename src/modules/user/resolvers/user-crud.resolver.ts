@@ -1,5 +1,5 @@
 import { UpdateManyResponse, Filter, SortDirection } from '@nestjs-query/core';
-import { CreateOneInputType, CRUDResolver, FilterType, UpdateManyResponseType } from '@nestjs-query/query-graphql';
+import { CreateOneInputType, UpdateOneInputType, CRUDResolver, FilterType, UpdateManyResponseType } from '@nestjs-query/query-graphql';
 import { BadRequestException } from '@nestjs/common';
 import { Resolver, Args, Mutation, ID, ResolveField, Parent, InputType } from '@nestjs/graphql';
 import { CreateUserInput } from '../dto/create-user.input';
@@ -12,6 +12,11 @@ export class CreateOneUserInput extends
     CreateOneInputType('user', CreateUserInput) {
 
 }
+
+@InputType()
+export class UpdateOneUserInput extends
+    UpdateOneInputType(UpdateUserInput) {
+}
 @Resolver(() => User)
 export class UserCrudResolver extends CRUDResolver(User, {
     CreateDTOClass: CreateUserInput,
@@ -23,17 +28,54 @@ export class UserCrudResolver extends CRUDResolver(User, {
         super(service);
     }
 
-    // // restore one mutation will update the `deletedAt` column to null.
     @Mutation(() => User)
     async createOneUser(@Args('input', { type: () => CreateOneUserInput }) input: CreateOneUserInput): Promise<User> {
 
         const exists = await User.findOne({ username: input['user'].username });
 
         if (exists) {
-            throw new BadRequestException('Username already taken');
+            throw new BadRequestException('Username already exists');
+        }
+
+        if (!!input['user'].workID) {
+            const exists = await User.createQueryBuilder()
+                .where('username = :workID', { username: input['user'].workID })
+                .getOne()
+
+            if (exists) {
+                throw new BadRequestException('workID already exists');
+            }
         }
 
         return this.service.createOne(input['user']);
+    }
+
+    @Mutation(() => User)
+    async updateOneUser(@Args('input', { type: () => UpdateOneUserInput }) input: UpdateOneUserInput): Promise<User> {
+
+        const { id, update } = input;
+
+        if (!!update.username) {
+            const exists = await User.createQueryBuilder()
+                .where('username = :username AND id <> :id', { username: update.username, id })
+                .getOne()
+
+            if (exists) {
+                throw new BadRequestException('Username already exists');
+            }
+        }
+
+        if (!!update.workID) {
+            const exists = await User.createQueryBuilder()
+                .where('username = :workID AND id <> :id', { username: update.workID, id })
+                .getOne()
+
+            if (exists) {
+                throw new BadRequestException('workID already exists');
+            }
+        }
+
+        return this.service.updateOne(id, update);
     }
 
     // restore one mutation will update the `deletedAt` column to null.
