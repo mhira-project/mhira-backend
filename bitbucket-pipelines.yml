@@ -48,7 +48,7 @@ pipelines:
       - step: *lint
       - step: *build
       - step:
-          name: Deploy
+          name: Deploy Dev
           caches:
             - node
           script:
@@ -58,7 +58,7 @@ pipelines:
                 variables:
                   USER: 'deploy'
                   SERVER: 'api.mhira.net'
-                  REMOTE_PATH: '/var/www/api.mhira.net/dist'
+                  REMOTE_PATH: '/var/www/dev-api.mhira.net/dist'
                   LOCAL_PATH: './dist/*'
                   # SSH_KEY: '<string>' # Optional.
                   # SSH_PORT: '<string>' # Optional.
@@ -69,12 +69,47 @@ pipelines:
                 variables:
                   USER: 'deploy'
                   SERVER: 'api.mhira.net'
-                  REMOTE_PATH: '/var/www/api.mhira.net/node_modules'
+                  REMOTE_PATH: '/var/www/dev-api.mhira.net/node_modules'
                   LOCAL_PATH: './node_modules/*'
                   # SSH_KEY: '<string>' # Optional.
                   # SSH_PORT: '<string>' # Optional.
                   EXTRA_ARGS: '--links' # Optional.
                   # DEBUG: '<boolean>' # Optional.
                   DELETE_FLAG: 'true' # Optional.
-              - ssh deploy@api.mhira.net 'pm2 restart MHIRA-API'
+              - ssh deploy@api.mhira.net 'pm2 restart DEV-MHIRA-API'
+  
+    master:
+      - step: *install
+      - step: *lint
+      - step: *build
+      - step:
+          name: Deploy Staging
+          caches:
+            - node
+          script:
+              # - ssh deploy@api.mhira.net 'rm -rf /var/www/api.mhira.net/dist'
+              # - ssh deploy@api.mhira.net 'rm -rf /var/www/api.mhira.net/node_modules'
+              - pipe: atlassian/rsync-deploy:0.4.3
+                variables:
+                  USER: 'deploy'
+                  SERVER: 'api.mhira.net'
+                  REMOTE_PATH: '/var/www/staging-api.mhira.net/dist'
+                  LOCAL_PATH: './dist/*'
+                  # SSH_KEY: '<string>' # Optional.
+                  # SSH_PORT: '<string>' # Optional.
+                  # EXTRA_ARGS: '<string>' # Optional.
+                  # DEBUG: '<boolean>' # Optional.
+                  DELETE_FLAG: 'true' # Optional.
+              - pipe: atlassian/rsync-deploy:0.4.3
+                variables:
+                  USER: 'deploy'
+                  SERVER: 'api.mhira.net'
+                  REMOTE_PATH: '/var/www/staging-api.mhira.net/node_modules'
+                  LOCAL_PATH: './node_modules/*'
+                  # SSH_KEY: '<string>' # Optional.
+                  # SSH_PORT: '<string>' # Optional.
+                  EXTRA_ARGS: '--links' # Optional.
+                  # DEBUG: '<boolean>' # Optional.
+                  DELETE_FLAG: 'true' # Optional.
+              - ssh deploy@api.mhira.net 'pm2 restart STAGING-MHIRA-API'
           
