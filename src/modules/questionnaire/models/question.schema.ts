@@ -1,12 +1,11 @@
 import { Answer } from './answer.schema';
-import { Translation } from './translation.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Field } from '@nestjs/graphql';
-
-export const questionOptions = { discriminatorKey: 'questionType' };
+import { Field, ObjectType } from '@nestjs/graphql';
 
 export const enum questionType {
+    BEGIN_GROUP = 'begin_group',
+    END_GROUP = 'end_group',
     INTEGER = 'integer',
     DECIMAL = 'decimal',
     TEXT = 'text',
@@ -14,10 +13,12 @@ export const enum questionType {
     SELECT_MULTIPLE = 'select_multiple',
     DATE = 'date',
     TIME = 'time',
-    DATETIME = 'dateTime',
+    DATETIME = 'date_time',
     NOTE = 'note',
+    VISUAL_ANALOG_SCALES = 'visual_analog_scales',
 }
 
+@ObjectType()
 @Schema()
 export class Choice extends Document {
     @Field(() => String)
@@ -27,13 +28,18 @@ export class Choice extends Document {
     @Prop()
     name: string;
 
-    @Field(() => [Translation])
-    @Prop({ type: [Types.ObjectId], ref: Translation.name })
-    label: Translation[];
+    @Field(() => String)
+    @Prop()
+    label: string;
+
+    @Field(() => String)
+    @Prop()
+    image: string;
 }
 
 export const ChoiceSchema = SchemaFactory.createForClass(Choice);
 
+@ObjectType()
 @Schema({ collection: 'questions' })
 export class Question extends Document {
     @Field(() => String)
@@ -43,17 +49,17 @@ export class Question extends Document {
     @Prop()
     name: string;
 
-    @Field(() => [Translation])
-    @Prop({ type: [Types.ObjectId], ref: Translation.name })
-    label: Translation[];
+    @Field(() => String)
+    @Prop()
+    label: string;
 
     @Field(() => String)
     @Prop()
-    type: questionType;
+    type: string;
 
-    @Field(() => [Translation])
-    @Prop({ type: [Types.ObjectId], ref: Translation.name })
-    hint: Translation[];
+    @Field(() => String)
+    @Prop()
+    hint: string;
 
     @Field(() => String)
     @Prop()
@@ -67,21 +73,29 @@ export class Question extends Document {
     @Prop()
     constraint: string;
 
-    @Field(() => [Translation])
+    @Field(() => String)
     @Prop()
-    constraintMessage: Translation[];
+    constraintMessage: string;
+
+    @Field(() => Number)
+    @Prop()
+    min: number;
+
+    @Field(() => Number)
+    @Prop()
+    max: number;
 
     @Field(() => Boolean)
     @Prop()
     required: boolean;
 
-    @Field(() => [Translation])
-    @Prop({ type: [Types.ObjectId], ref: Translation.name })
-    requiredMessage: Translation[];
+    @Field(() => String)
+    @Prop()
+    requiredMessage: string;
 
-    @Field(() => [Translation])
-    @Prop({ type: [Types.ObjectId], ref: Translation.name })
-    image: Translation[];
+    @Field(() => String)
+    @Prop()
+    image: string;
 
     @Field(() => [Choice])
     @Prop({ type: [Types.ObjectId], ref: Choice.name })

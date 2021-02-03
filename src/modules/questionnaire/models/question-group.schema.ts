@@ -1,21 +1,21 @@
-import { Question } from './question.schema';
-import { Translation } from './translation.schema';
+import { Question, QuestionSchema } from './question.schema';
 
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Field } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 
+@ObjectType()
 @Schema()
 export class QuestionGroup extends Document {
     @Field(() => String)
     _id: Types.ObjectId;
 
-    @Field(() => [Translation])
-    @Prop({ type: [Types.ObjectId], ref: Translation.name })
-    label: Translation[];
+    @Field(() => String)
+    @Prop()
+    label: string;
 
     @Field(() => [Question])
-    @Prop({ type: [Types.ObjectId], ref: Question.name })
+    @Prop({ type: QuestionSchema })
     questions: Question[];
 }
 

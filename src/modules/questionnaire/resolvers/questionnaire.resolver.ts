@@ -4,22 +4,31 @@ import { Questionnaire } from '../models/questionnaire.schema';
 
 import {
     CreateQuestionnaireInput,
+    CreateRawQuestionnaireInput,
     ListQuestionnaireInput,
-    UpdateQuestionnaireInput,
 } from '../dtos/questionnaire.input';
 import { QuestionnaireService } from '../services/questionnaire.service';
-import { Types } from 'mongoose';
 
 @Resolver(() => Questionnaire)
 export class QuestionnaireResolver {
     constructor(private questionnaireService: QuestionnaireService) {}
 
+    @Query(() => Questionnaire)
+    questionnaire(@Args('id') questionnaireId: String): Promise<Questionnaire> {
+        let mongoose = require('mongoose');
+        let objectId = mongoose.Types.ObjectId(questionnaireId);
+        return this.questionnaireService.getById(objectId);
+    }
+
     @Query(() => [Questionnaire])
-    async questionnaires(@Args() questionnaireFilter: ListQuestionnaireInput) {
+    async questionnaires(
+        @Args('filters') questionnaireFilter: ListQuestionnaireInput,
+    ) {
         return this.questionnaireService.list(questionnaireFilter);
     }
 
-    /* async questionGroups(
+    @Query(() => [QuestionGroup])
+    async questionGroups(
         @Parent() questionnaire: Questionnaire,
         @Args('populate') populate: boolean,
     ) {
@@ -33,23 +42,21 @@ export class QuestionnaireResolver {
 
             return questionnaire.questionGroups;
         }
-    }*/
+    }
 
-    @Mutation(() => Questionnaire, {
-        deprecationReason: 'Replaced with `createOneUser` mutation',
-    })
+    @Mutation(() => Questionnaire)
     createQuestionnaireWithFile(
         @Args('input') questionnaireInput: CreateQuestionnaireInput,
     ): Promise<Questionnaire> {
         return this.questionnaireService.create(questionnaireInput);
     }
 
-    /*  @Mutation(() => Questionnaire)
-    async createQuestionnaire(
-        @Args('payload') payload: CreateQuestionnaireInput,
+    @Mutation(() => Questionnaire)
+    async createRawQuestionnaire(
+        @Args('payload') questionnaireInput: CreateRawQuestionnaireInput,
     ) {
-        return this.questionnaireService.create(payload);
-    }*/
+        return this.questionnaireService.createRaw(questionnaireInput);
+    }
 
     /*  @Mutation(() => Questionnaire)
     async updateQuestionnaire(

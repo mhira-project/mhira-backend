@@ -26,7 +26,6 @@ import {
     Questionnaire,
     QuestionnaireSchema,
 } from './models/questionnaire.schema';
-import { Translation, TranslationSchema } from './models/translation.schema';
 import { QuestionnaireService } from './services/questionnaire.service';
 import { QuestionnaireResolver } from './resolvers/questionnaire.resolver';
 
@@ -46,7 +45,6 @@ const guards = [GqlAuthGuard];
             },
             { name: DateAnswer.name, schema: DateAnswerSchema },
             { name: Choice.name, schema: ChoiceSchema },
-            { name: Translation.name, schema: TranslationSchema },
         ]),
     ],
     providers: [QuestionnaireService, QuestionnaireResolver],

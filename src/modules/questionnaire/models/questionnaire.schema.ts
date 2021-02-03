@@ -1,5 +1,4 @@
-import { QuestionGroup } from './question-group.schema';
-import { Translation } from './translation.schema';
+import { QuestionGroup, QuestionGroupSchema } from './question-group.schema';
 
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
@@ -12,12 +11,12 @@ export class Questionnaire extends Document {
     _id: Types.ObjectId;
 
     @Field(() => [String])
-    @Prop({ type: [Types.ObjectId], ref: Translation.name })
-    name: Types.ObjectId[];
+    @Prop()
+    name: string;
 
     @Field(() => String)
     @Prop()
-    languages: string;
+    language: string;
 
     @Field(() => String)
     @Prop()
@@ -35,9 +34,9 @@ export class Questionnaire extends Document {
     @Prop()
     timeToComplete: number;
 
-    /* @Field(() => [QuestionGroup])
-    @Prop({ type: [Types.ObjectId], ref: QuestionGroup.name })
-    questionGroups: QuestionGroup[];*/
+    @Field(() => [QuestionGroup])
+    @Prop({ type: QuestionGroupSchema })
+    questionGroups: QuestionGroup[] = [];
 }
 
 export const QuestionnaireSchema = SchemaFactory.createForClass(Questionnaire);
