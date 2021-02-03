@@ -37,16 +37,6 @@ export class UserCrudResolver extends CRUDResolver(User, {
             throw new BadRequestException('Username already exists');
         }
 
-        if (!!input['user'].workID) {
-            const exists = await User.createQueryBuilder()
-                .where('username = :workID', { username: input['user'].workID })
-                .getOne()
-
-            if (exists) {
-                throw new BadRequestException('workID already exists');
-            }
-        }
-
         return this.service.createOne(input['user']);
     }
 
@@ -62,16 +52,6 @@ export class UserCrudResolver extends CRUDResolver(User, {
 
             if (exists) {
                 throw new BadRequestException('Username already exists');
-            }
-        }
-
-        if (!!update.workID) {
-            const exists = await User.createQueryBuilder()
-                .where('username = :workID AND id <> :id', { username: update.workID, id })
-                .getOne()
-
-            if (exists) {
-                throw new BadRequestException('workID already exists');
             }
         }
 
