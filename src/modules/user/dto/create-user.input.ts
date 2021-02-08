@@ -1,11 +1,12 @@
 import { InputType, Field } from '@nestjs/graphql';
-import { IsPhoneNumber } from 'class-validator';
+import { IsLowercase, IsPhoneNumber } from 'class-validator';
 import { GenderEnum } from 'src/modules/patient/models/gender.enum';
 import { IsOptional } from 'src/shared';
 
 @InputType()
 export class CreateUserInput {
 
+  @IsLowercase()
   @Field()
   username: string;
 
