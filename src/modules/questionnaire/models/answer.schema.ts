@@ -4,47 +4,30 @@ import { Document, Types } from 'mongoose';
 
 @ObjectType()
 @Schema({ collection: 'answers' })
-export abstract class Answer extends Document {
+export class Answer extends Document {
     @Field(() => String)
     @Prop()
     _id: Types.ObjectId;
 
     @Field(() => String)
-    @Prop()
-    assessmentId: number;
-}
+    @Prop({ type: Types.ObjectId, ref: 'Question' })
+    question: Types.ObjectId;
 
-@Schema({ collection: 'answers' })
-export class TextAnswer extends Answer {
     @Field(() => String)
     @Prop()
-    value: string;
-}
+    textValue: string;
 
-@Schema({ collection: 'answers' })
-export class MultipleChoiceAnswer extends Answer {
     @Field(() => [String])
     @Prop()
-    value: String[];
-}
+    multipleChoiceValue: String[];
 
-@Schema({ collection: 'answers' })
-export class NumericAnswer extends Answer {
     @Field(() => Number)
     @Prop()
-    value: number;
-}
+    numberValue: number;
 
-@Schema()
-export class DateAnswer extends Answer {
     @Field(() => Date)
     @Prop()
-    value: Date;
+    dateValue: Date;
 }
 
-export const TextAnswerSchema = SchemaFactory.createForClass(TextAnswer);
-export const DateAnswerSchema = SchemaFactory.createForClass(DateAnswer);
-export const NumericAnswerSchema = SchemaFactory.createForClass(NumericAnswer);
-export const MultipleChoiceAnswerSchema = SchemaFactory.createForClass(
-    MultipleChoiceAnswer,
-);
+export const AnswerSchema = SchemaFactory.createForClass(Answer);

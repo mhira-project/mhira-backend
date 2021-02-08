@@ -17,6 +17,4 @@ export class CreateAssessmentInput {
 
     @FilterableField(() => Int, { nullable: true })
     informantId?: number;
-
-    // questionnaires: Questionnaire[];
 }

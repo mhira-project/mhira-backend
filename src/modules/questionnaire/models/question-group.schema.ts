@@ -15,7 +15,7 @@ export class QuestionGroup extends Document {
     label: string;
 
     @Field(() => [Question])
-    @Prop({ type: QuestionSchema })
+    @Prop({ type: [QuestionSchema] })
     questions: Question[];
 }
 

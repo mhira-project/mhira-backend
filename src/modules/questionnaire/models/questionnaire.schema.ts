@@ -35,8 +35,10 @@ export class Questionnaire extends Document {
     timeToComplete: number;
 
     @Field(() => [QuestionGroup])
-    @Prop({ type: QuestionGroupSchema })
+    @Prop({ type: [QuestionGroupSchema] })
     questionGroups: QuestionGroup[] = [];
 }
 
-export const QuestionnaireSchema = SchemaFactory.createForClass(Questionnaire);
+export const QuestionnaireSchema = SchemaFactory.createForClass(
+    Questionnaire,
+).index({ language: 1, abbreviation: 1 }, { unique: true }); // index to ensure that translations for the same questionnaire can be uploaded

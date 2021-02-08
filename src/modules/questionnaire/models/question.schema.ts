@@ -1,4 +1,3 @@
-import { Answer } from './answer.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Field, ObjectType } from '@nestjs/graphql';
@@ -40,7 +39,7 @@ export class Choice extends Document {
 export const ChoiceSchema = SchemaFactory.createForClass(Choice);
 
 @ObjectType()
-@Schema({ collection: 'questions' })
+@Schema()
 export class Question extends Document {
     @Field(() => String)
     _id: Types.ObjectId;
@@ -98,12 +97,12 @@ export class Question extends Document {
     image: string;
 
     @Field(() => [Choice])
-    @Prop({ type: [Types.ObjectId], ref: Choice.name })
+    @Prop({ type: [ChoiceSchema] })
     choices: Choice[];
 
-    @Field(() => [Answer])
-    @Prop({ type: [Types.ObjectId], ref: Answer.name })
-    answers: Answer[];
+    @Field(() => [String])
+    @Prop({ type: [Types.ObjectId], ref: 'assessments.answers' })
+    answers: Types.ObjectId[];
 }
 
 export const QuestionSchema = SchemaFactory.createForClass(Question);

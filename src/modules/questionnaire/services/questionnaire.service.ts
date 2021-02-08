@@ -79,7 +79,6 @@ export class QuestionnaireService {
                 currentGroup.label = label;
                 currentGroup.questions = [];
             } else if (type === questionType.END_GROUP) {
-                currentGroup.save();
                 createdQuestionnaire?.questionGroups?.push(currentGroup);
 
                 currentGroup = null;
@@ -88,7 +87,6 @@ export class QuestionnaireService {
                 question.name = name;
                 question.label = label;
                 question.type = type;
-                question.answers = [];
                 if (
                     question.type &&
                     (question.type.startsWith(
@@ -100,6 +98,7 @@ export class QuestionnaireService {
                 ) {
                     let choiceList = question.type.split(' ');
                     let choiceListName = choiceList[1];
+                    question.type = choiceList[0];
 
                     question.choices = [];
                     choices
@@ -125,8 +124,6 @@ export class QuestionnaireService {
                             question?.choices?.push(choiceEntity);
                         });
                 }
-                question.save();
-                console.log(question);
                 currentGroup?.questions?.push(question);
             }
         }
@@ -157,6 +154,7 @@ export class QuestionnaireService {
     }
 
     update(payload: UpdateQuestionnaireInput) {
+        // TODO: update questionnaire and create a new version out of it...
         /*return this.questionnaireModel
             .findByIdAndUpdate(payload._id, payload, { new: true })
             .exec();*/
