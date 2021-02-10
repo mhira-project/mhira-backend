@@ -1,11 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { UserService } from 'src/modules/user/providers/user.service';
 import { User } from 'src/modules/user/models/user.model';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { JwtPayload } from './jwt-payload.interface';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { LoginRequestDto } from './dto/login-request.dto';
-import { ChangePasswordRequest } from './dto/change-password-request.dto';
 import { Hash } from 'src/shared/helpers/hash.helper';
 import { AccessToken } from './models/access-token.model';
 import * as dayjs from 'dayjs';
@@ -21,7 +19,6 @@ export class AuthService {
     private readonly logger = new Logger('AuthService');
 
     constructor(
-        private userService: UserService,
         private jwtService: JwtService,
     ) { }
 
@@ -85,12 +82,6 @@ export class AuthService {
         if (!token || !token.user) throw new AuthenticationError('Session expired! Please login.');
 
         return token.user;
-    }
-
-    async changePassword(changePasswordRequest: ChangePasswordRequest, user: User): Promise<boolean> {
-
-        return this.userService.changeOwnPassword(changePasswordRequest, user);
-
     }
 
     async userPermissionGrants(userInput: User): Promise<Permission[]> {
