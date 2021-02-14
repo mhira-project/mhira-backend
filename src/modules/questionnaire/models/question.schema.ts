@@ -96,13 +96,17 @@ export class Question extends Document {
     @Prop()
     image: string;
 
+    @Field(() => String)
+    @Prop()
+    appearance: string;
+
+    @Field(() => String)
+    @Prop()
+    default: string;
+
     @Field(() => [Choice])
     @Prop({ type: [ChoiceSchema] })
     choices: Choice[];
-
-    @Field(() => [String])
-    @Prop({ type: [Types.ObjectId], ref: 'assessments.answers' })
-    answers: Types.ObjectId[];
 }
 
 export const QuestionSchema = SchemaFactory.createForClass(Question);

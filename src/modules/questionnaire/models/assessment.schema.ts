@@ -3,12 +3,21 @@ import { Answer, AnswerSchema } from './answer.schema';
 import { Document, Types } from 'mongoose';
 import { Field, ObjectType } from '@nestjs/graphql';
 
+export enum AssessmentStatus {
+    COMPLETED = 'COMPLETED',
+    PENDING = 'PENDING',
+    PARTIALLY_COMPLETED = 'PARTIALLY_COMPLETED',
+    EXPIRED = 'EXPIRED',
+    ARCHIVED = 'ARCHIVED',
+}
+
 export const AssessmentStatusList = [
-    'COMPLETED',
-    'PENDING',
-    'PARTIALLY COMPLETED',
-    'EXPIRED',
-    'ARCHIVED',
+    // TODO: automatically generate list but keep this at the moment
+    AssessmentStatus.COMPLETED,
+    AssessmentStatus.PENDING,
+    AssessmentStatus.PARTIALLY_COMPLETED,
+    AssessmentStatus.EXPIRED,
+    AssessmentStatus.ARCHIVED,
 ];
 
 @ObjectType()
@@ -22,7 +31,11 @@ export class Assessment extends Document {
     @Prop()
     assessmentDate: Date;
 
-    @Prop({ type: 'enum', enum: AssessmentStatusList })
+    @Prop({
+        type: 'enum',
+        enum: AssessmentStatusList,
+        default: AssessmentStatus.PENDING,
+    })
     status: string;
 
     @Field(() => [String])
@@ -32,4 +45,12 @@ export class Assessment extends Document {
     @Field(() => [Answer])
     @Prop({ type: [AnswerSchema] })
     answers: Answer[];
+
+    @Field(() => Date)
+    @Prop({ default: new Date() })
+    createdAt: Date;
+
+    @Field(() => Date)
+    @Prop()
+    updatedAt: Date;
 }

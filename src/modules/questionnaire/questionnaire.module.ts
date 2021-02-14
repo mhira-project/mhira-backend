@@ -13,20 +13,27 @@ import {
     QuestionSchema,
 } from './models/question.schema';
 import {
+    QuestionnaireVersion,
+    QuestionnaireVersionSchema,
+} from './models/questionnaire-version.schema';
+import { QuestionnaireService } from './services/questionnaire.service';
+import { QuestionnaireResolver } from './resolvers/questionnaire.resolver';
+import {
     Questionnaire,
     QuestionnaireSchema,
 } from './models/questionnaire.schema';
-import { QuestionnaireService } from './services/questionnaire.service';
-import { QuestionnaireResolver } from './resolvers/questionnaire.resolver';
 
 const guards = [GqlAuthGuard];
 @Module({
     imports: [
         MongooseModule.forFeature([
             { name: Questionnaire.name, schema: QuestionnaireSchema },
+            {
+                name: QuestionnaireVersion.name,
+                schema: QuestionnaireVersionSchema,
+            },
             { name: Question.name, schema: QuestionSchema },
             { name: QuestionGroup.name, schema: QuestionGroupSchema },
-            { name: Questionnaire.name, schema: QuestionnaireSchema },
             { name: Answer.name, schema: AnswerSchema },
             { name: Choice.name, schema: ChoiceSchema },
         ]),

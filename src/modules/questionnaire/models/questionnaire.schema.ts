@@ -1,18 +1,20 @@
-import { QuestionGroup, QuestionGroupSchema } from './question-group.schema';
-
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
 import { Field, ObjectType } from '@nestjs/graphql';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types, Document } from 'mongoose';
+import { QuestionnaireVersion } from './questionnaire-version.schema';
 
 @ObjectType()
-@Schema({ collection: 'questionnaires' })
+@Schema()
 export class Questionnaire extends Document {
     @Field(() => String)
     _id: Types.ObjectId;
 
     @Field(() => [String])
-    @Prop()
-    name: string;
+    @Prop({
+        type: [Types.ObjectId],
+        ref: QuestionnaireVersion.name,
+    })
+    versions: Types.ObjectId[] = [];
 
     @Field(() => String)
     @Prop()
@@ -22,21 +24,11 @@ export class Questionnaire extends Document {
     @Prop()
     abbreviation: string;
 
-    @Field(() => String)
+    @Field(() => Date)
     @Prop()
-    copyright: string;
+    createdAt: Date;
 
-    @Field(() => String)
-    @Prop()
-    license: string;
-
-    @Field(() => Number)
-    @Prop()
-    timeToComplete: number;
-
-    @Field(() => [QuestionGroup])
-    @Prop({ type: [QuestionGroupSchema] })
-    questionGroups: QuestionGroup[] = [];
+    // TODO: filter newest questionnaire version to copy and use ...
 }
 
 export const QuestionnaireSchema = SchemaFactory.createForClass(

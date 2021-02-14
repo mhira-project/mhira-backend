@@ -23,6 +23,9 @@ export class Assessment extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Column({ nullable: false })
+    questionnaireAssessmentId: String;
+
     @FilterableField(() => GraphQLISODateTime, { nullable: true })
     @Column({ nullable: true })
     date?: Date;

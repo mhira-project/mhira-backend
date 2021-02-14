@@ -1,6 +1,5 @@
 import { Args, Parent, Resolver, Query, Mutation } from '@nestjs/graphql';
 import { QuestionGroup } from '../models/question-group.schema';
-import { Questionnaire } from '../models/questionnaire.schema';
 
 import {
     CreateQuestionnaireInput,
@@ -8,6 +7,7 @@ import {
     ListQuestionnaireInput,
 } from '../dtos/questionnaire.input';
 import { QuestionnaireService } from '../services/questionnaire.service';
+import { Questionnaire } from '../models/questionnaire.schema';
 
 @Resolver(() => Questionnaire)
 export class QuestionnaireResolver {
@@ -25,23 +25,6 @@ export class QuestionnaireResolver {
         @Args('filters') questionnaireFilter: ListQuestionnaireInput,
     ) {
         return this.questionnaireService.list(questionnaireFilter);
-    }
-
-    @Query(() => [QuestionGroup])
-    async questionGroups(
-        @Parent() questionnaire: Questionnaire,
-        @Args('populate') populate: boolean,
-    ) {
-        if (populate) {
-            await questionnaire
-                .populate({
-                    path: 'questionGroups',
-                    model: QuestionGroup.name,
-                })
-                .execPopulate();
-
-            return questionnaire.questionGroups;
-        }
     }
 
     @Mutation(() => Questionnaire)

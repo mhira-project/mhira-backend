@@ -9,15 +9,20 @@ import {
     UpdateQuestionnaireInput,
 } from '../dtos/questionnaire.input';
 import { Questionnaire } from '../models/questionnaire.schema';
+
 import xlsx from 'node-xlsx';
 import { Choice, Question, questionType } from '../models/question.schema';
 import { QuestionGroup } from '../models/question-group.schema';
+import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
+import { FileData } from '../helpers/xlsform-reader.helper';
 
 @Injectable()
 export class QuestionnaireService {
     constructor(
         @InjectModel(Questionnaire.name)
         private questionnaireModel: Model<Questionnaire>,
+        @InjectModel(QuestionnaireVersion.name)
+        private questionnaireVersionModel: Model<QuestionnaireVersion>,
         @InjectModel(QuestionGroup.name)
         private questionGroupModel: Model<QuestionGroup>,
         @InjectModel(Question.name)
@@ -29,17 +34,30 @@ export class QuestionnaireService {
     public async createRaw(questionnaireInput: CreateRawQuestionnaireInput) {
         const createdQuestionnaire = new this.questionnaireModel();
         createdQuestionnaire.language = questionnaireInput.language;
-        createdQuestionnaire.license = questionnaireInput.license;
-        createdQuestionnaire.copyright = questionnaireInput.copyright;
-        createdQuestionnaire.timeToComplete = questionnaireInput.timeToComplete;
 
-        // const fileData = await xlsForm;
+        const createdQuestionnaireVersion = new this.questionnaireVersionModel();
+        createdQuestionnaireVersion.license = questionnaireInput.license;
+        createdQuestionnaireVersion.copyright = questionnaireInput.copyright;
+        createdQuestionnaireVersion.timeToComplete =
+            questionnaireInput.timeToComplete;
 
-        const fileData = xlsx.parse(`${__dirname}/test-xls/PHQ-9.xlsx`); // FIXME: remove after testing
+        //const fileData = await xlsForm;
+
+        const fileData: FileData[] = xlsx.parse(
+            `${__dirname}/test-xls/PHQ-9.xlsx`,
+        ) as any; // FIXME: remove after testing
 
         // link column names to attributes.
         let settings = fileData.filter(sheet => sheet.name === 'settings')[0]
             ?.data;
+
+        const settingsRowDefinitions = settings[0];
+
+        createdQuestionnaire.abbreviation =
+            settings[1][settingsRowDefinitions.indexOf('form_id')];
+
+        createdQuestionnaireVersion.name =
+            settings[1][settingsRowDefinitions.indexOf('form_title')];
 
         let survey = fileData
             .filter(sheet => sheet.name === 'survey')[0]
@@ -79,14 +97,23 @@ export class QuestionnaireService {
                 currentGroup.label = label;
                 currentGroup.questions = [];
             } else if (type === questionType.END_GROUP) {
-                createdQuestionnaire?.questionGroups?.push(currentGroup);
+                createdQuestionnaireVersion?.questionGroups?.push(currentGroup);
 
                 currentGroup = null;
             } else {
-                var question = new this.questionModel();
+                const question = new this.questionModel();
                 question.name = name;
                 question.label = label;
                 question.type = type;
+
+                question.required =
+                    surveyItem[surveyRowDefinitions.indexOf('required')] ===
+                    'yes';
+
+                question.requiredMessage = surveyItem[
+                    surveyRowDefinitions.indexOf('requiredMessage')
+                ] as string;
+
                 if (
                     question.type &&
                     (question.type.startsWith(
@@ -127,6 +154,10 @@ export class QuestionnaireService {
                 currentGroup?.questions?.push(question);
             }
         }
+
+        const version = await createdQuestionnaireVersion.save();
+
+        createdQuestionnaire.versions = [version.id];
 
         return createdQuestionnaire.save();
     }
