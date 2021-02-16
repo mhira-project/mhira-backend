@@ -79,7 +79,7 @@ export class User extends BaseEntity {
     phone?: string;
 
     @FilterableField({ nullable: true })
-    @Column({ nullable: true, unique: true })
+    @Column({ nullable: true })
     workID?: string;
 
     @FilterableField({ nullable: true })

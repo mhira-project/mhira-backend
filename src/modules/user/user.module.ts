@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { UserService } from './providers/user.service';
-import { UserResolver } from './resolvers/user.resolver';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserRepository } from './repositories/user.repository';
 import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
@@ -9,6 +7,8 @@ import { User } from './models/user.model';
 import { UserCrudService } from './providers/user-crud.service';
 import { UserCrudResolver } from './resolvers/user-crud.resolver';
 import { SettingModule } from '../setting/setting.module';
+import { ChangePasswordService } from './providers/change-password.service';
+import { ChangePasswordResolver } from './resolvers/change-password.resolver';
 
 @Module({
     imports: [
@@ -25,13 +25,10 @@ import { SettingModule } from '../setting/setting.module';
         }),
     ],
     providers: [
-        UserService, // deprecated
-        UserResolver, // deprecated
         UserCrudService,
         UserCrudResolver,
-    ],
-    exports: [
-        UserService
+        ChangePasswordService,
+        ChangePasswordResolver,
     ],
 })
 export class UserModule { }
