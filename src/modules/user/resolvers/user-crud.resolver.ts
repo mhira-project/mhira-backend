@@ -35,16 +35,46 @@ export class UserCrudResolver extends CRUDResolver(User, {
 
         // attach no-role Role
         const noRole = await Role.findOne({ code: RoleCode.NO_ROLE });
-        user.roles = [noRole];
-        await user.save();
+        if (noRole) {
+            user.roles = [noRole];
+            await user.save();
+        }
+
 
         return user;
     }
 
     @Mutation(() => User)
-    async updateOneUser(@Args('input', { type: () => UpdateOneUserInput }) input: UpdateOneUserInput): Promise<User> {
+    async updateOneUser(
+        @Args('input', { type: () => UpdateOneUserInput }) input: UpdateOneUserInput,
+        @CurrentUser() currentUser: User,
+    ): Promise<User> {
 
         const { id, update } = input;
+
+        // Reload current user with roles
+        currentUser = await User.findOneOrFail({
+            where: { id: currentUser.id },
+            relations: ['roles'],
+        });
+
+        // Load targetUser with roles
+        const targetUser = await User.findOneOrFail({
+            where: { id },
+            relations: ['roles'],
+        });
+
+        const currentUserMaxRole = currentUser.roles.reduce((prev, current) => {
+            return (prev.heirarchy > current.heirarchy) ? prev : current
+        });
+
+        const targetUserMaxRole = targetUser.roles.reduce((prev, current) => {
+            return (prev.heirarchy > current.heirarchy) ? prev : current
+        });
+
+        if (currentUserMaxRole.heirarchy <= targetUserMaxRole.heirarchy) {
+            throw new BadRequestException('Permission denied to modify user! User has higher role than current user');
+        }
 
         if (!!update.username) {
             const exists = await User.createQueryBuilder()
