@@ -30,7 +30,8 @@ export class ChangePasswordResolver {
     updateUserPassword(
         @Args({ name: 'id', type: () => Int }) targetUserId: number,
         @Args('input') input: ChangePasswordInput,
+        @CurrentUser() currentUser: User,
     ): Promise<boolean> {
-        return this.service.changeOtherUserPassword(input, targetUserId);
+        return this.service.changeOtherUserPassword(input, targetUserId, currentUser.id);
     }
 }

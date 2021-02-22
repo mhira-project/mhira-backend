@@ -37,9 +37,31 @@ export class ChangePasswordService {
 
     }
 
-    async changeOtherUserPassword(input: ChangePasswordInput, targetUserId: number): Promise<boolean> {
+    async changeOtherUserPassword(input: ChangePasswordInput, targetUserId: number, currentUserId: number): Promise<boolean> {
 
-        const targetUser = await User.findOneOrFail(targetUserId);
+        // Reload current user with roles
+        const currentUser = await User.findOneOrFail({
+            where: { id: currentUserId },
+            relations: ['roles'],
+        });
+
+        // Load targetUser with roles
+        const targetUser = await User.findOneOrFail({
+            where: { targetUserId },
+            relations: ['roles'],
+        });
+
+        const currentUserMaxRole = currentUser.roles.reduce((prev, current) => {
+            return (prev.heirarchy > current.heirarchy) ? prev : current
+        });
+
+        const targetUserMaxRole = targetUser.roles.reduce((prev, current) => {
+            return (prev.heirarchy > current.heirarchy) ? prev : current
+        });
+
+        if (currentUserMaxRole.heirarchy <= targetUserMaxRole.heirarchy) {
+            throw new BadRequestException('Permission denied to modify user! User has higher role than current user');
+        }
 
         // Delegate to other operations changePasswordCore
         return this.changePasswordCore(input, targetUser);

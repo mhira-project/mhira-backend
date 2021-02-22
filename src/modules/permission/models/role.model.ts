@@ -37,6 +37,10 @@ export class Role extends BaseEntity {
     code: RoleCode;
 
     @FilterableField()
+    @Column({ default: 10 })
+    heirarchy: number;
+
+    @FilterableField()
     @Column()
     guard: GuardType;
 
