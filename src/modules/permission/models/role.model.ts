@@ -13,9 +13,10 @@ import {
 } from 'typeorm';
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Permission } from './permission.model';
-import { GuardType } from './guard-type.enum';
+import { GuardType } from '../enums/guard-type.enum';
 import { FilterableField, PagingStrategies, Relation } from '@nestjs-query/query-graphql';
 import { User } from 'src/modules/user/models/user.model';
+import { RoleCode } from '../enums/role-code.enum';
 
 @ObjectType()
 @Relation('permissions', () => [Permission], { pagingStrategy: PagingStrategies.NONE })
@@ -28,12 +29,12 @@ export class Role extends BaseEntity {
     id: number;
 
     @FilterableField()
-    @Column({ default: false })
-    isSuperAdmin: boolean;
-
-    @FilterableField()
     @Column()
     name: string;
+
+    @FilterableField({ nullable: true })
+    @Column({ nullable: true, unique: true })
+    code: RoleCode;
 
     @FilterableField()
     @Column()
@@ -57,6 +58,16 @@ export class Role extends BaseEntity {
 
     @ManyToMany(() => User, user => user.roles)
     users: User[];
+
+    @Field()
+    get isSuperAdmin(): boolean {
+        return this.code === RoleCode.SUPER_ADMIN;
+    }
+
+    @Field()
+    get isNoRole(): boolean {
+        return this.code === RoleCode.NO_ROLE;
+    }
 
     @BeforeUpdate()
     beforeUpdate() {

@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Role } from './role.model';
-import { GuardType } from './guard-type.enum';
+import { GuardType } from '../enums/guard-type.enum';
 import { FilterableField, Relation } from '@nestjs-query/query-graphql';
 import { User } from 'src/modules/user/models/user.model';
 

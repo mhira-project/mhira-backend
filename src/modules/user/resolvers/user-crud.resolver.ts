@@ -1,22 +1,16 @@
 import { UpdateManyResponse, Filter, SortDirection } from '@nestjs-query/core';
-import { CreateOneInputType, UpdateOneInputType, CRUDResolver, FilterType, UpdateManyResponseType } from '@nestjs-query/query-graphql';
+import { CRUDResolver, FilterType, UpdateManyResponseType } from '@nestjs-query/query-graphql';
 import { BadRequestException } from '@nestjs/common';
-import { Resolver, Args, Mutation, ID, ResolveField, Parent, InputType } from '@nestjs/graphql';
+import { Resolver, Args, Mutation, ID, ResolveField, Parent } from '@nestjs/graphql';
+import { RoleCode } from 'src/modules/permission/enums/role-code.enum';
+import { Role } from 'src/modules/permission/models/role.model';
+import { CreateOneUserInput } from '../dto/create-one-user.input';
 import { CreateUserInput } from '../dto/create-user.input';
+import { UpdateOneUserInput } from '../dto/update-one-user.input';
 import { UpdateUserInput } from '../dto/update-user.input';
 import { User } from '../models/user.model';
 import { UserCrudService } from '../providers/user-crud.service';
 
-@InputType()
-export class CreateOneUserInput extends
-    CreateOneInputType('user', CreateUserInput) {
-
-}
-
-@InputType()
-export class UpdateOneUserInput extends
-    UpdateOneInputType(UpdateUserInput) {
-}
 @Resolver(() => User)
 export class UserCrudResolver extends CRUDResolver(User, {
     CreateDTOClass: CreateUserInput,
@@ -37,7 +31,14 @@ export class UserCrudResolver extends CRUDResolver(User, {
             throw new BadRequestException('Username already exists');
         }
 
-        return this.service.createOne(input['user']);
+        const user = await this.service.createOne(input['user']);
+
+        // attach no-role Role
+        const noRole = await Role.findOne({ code: RoleCode.NO_ROLE });
+        user.roles = [noRole];
+        await user.save();
+
+        return user;
     }
 
     @Mutation(() => User)

@@ -1,6 +1,6 @@
 import { InputType, Field } from "@nestjs/graphql";
 import { MaxLength } from "class-validator";
-import { GuardType } from "../models/guard-type.enum";
+import { GuardType } from "../enums/guard-type.enum";
 
 @InputType()
 export class RoleInput {
