@@ -5,7 +5,7 @@ import { Document, Types } from 'mongoose';
 import { Field, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-@Schema({ collection: 'questionnaire_versions' })
+@Schema({ collection: 'questionnaire_versions', timestamps: true })
 export class QuestionnaireVersion extends Document {
     @Field(() => String)
     _id: Types.ObjectId;
@@ -15,12 +15,28 @@ export class QuestionnaireVersion extends Document {
     name: string;
 
     @Field(() => String)
-    @Prop({ type: String, enum: ['DRAFT', 'PUBLISHED', 'ARCHIVED'] })
+    @Prop({
+        type: String,
+        enum: ['DRAFT', 'PUBLISHED', 'ARCHIVED', 'PRIVATE'],
+        default: 'DRAFT',
+    })
     status: string;
+
+    @Field(() => [String])
+    @Prop({
+        type: [String],
+        min: 1,
+        max: 20,
+    })
+    keywords: string[];
 
     @Field(() => String)
     @Prop()
     copyright: string;
+
+    @Field(() => String)
+    @Prop()
+    website: string;
 
     @Field(() => String)
     @Prop()
@@ -33,12 +49,8 @@ export class QuestionnaireVersion extends Document {
     @Field(() => [QuestionGroup])
     @Prop({ type: [QuestionGroupSchema] })
     questionGroups: QuestionGroup[];
-
-    @Field(() => Date)
-    @Prop()
-    createdAt: Date;
 }
 
 export const QuestionnaireVersionSchema = SchemaFactory.createForClass(
     QuestionnaireVersion,
-); // index to ensure that translations for the same questionnaire can be uploaded
+);

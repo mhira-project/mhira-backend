@@ -11,17 +11,8 @@ export enum AssessmentStatus {
     ARCHIVED = 'ARCHIVED',
 }
 
-export const AssessmentStatusList = [
-    // TODO: automatically generate list but keep this at the moment
-    AssessmentStatus.COMPLETED,
-    AssessmentStatus.PENDING,
-    AssessmentStatus.PARTIALLY_COMPLETED,
-    AssessmentStatus.EXPIRED,
-    AssessmentStatus.ARCHIVED,
-];
-
 @ObjectType()
-@Schema({ collection: 'assessments' })
+@Schema({ collection: 'assessments', timestamps: true })
 export class Assessment extends Document {
     @Field(() => String)
     @Prop()
@@ -33,24 +24,22 @@ export class Assessment extends Document {
 
     @Prop({
         type: 'enum',
-        enum: AssessmentStatusList,
+        enum: [
+            AssessmentStatus.COMPLETED,
+            AssessmentStatus.PENDING,
+            AssessmentStatus.PARTIALLY_COMPLETED,
+            AssessmentStatus.EXPIRED,
+            AssessmentStatus.ARCHIVED,
+        ],
         default: AssessmentStatus.PENDING,
     })
     status: string;
 
     @Field(() => [String])
-    @Prop({ type: [Types.ObjectId], ref: 'questionnaires' })
+    @Prop({ type: [Types.ObjectId], ref: 'questionnaire_versions' })
     questionnaires: Types.ObjectId[];
 
     @Field(() => [Answer])
     @Prop({ type: [AnswerSchema] })
     answers: Answer[];
-
-    @Field(() => Date)
-    @Prop({ default: new Date() })
-    createdAt: Date;
-
-    @Field(() => Date)
-    @Prop()
-    updatedAt: Date;
 }

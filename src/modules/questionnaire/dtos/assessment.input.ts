@@ -14,11 +14,26 @@ export class CreateAssessmentInput {
 @InputType()
 export class AnswerAssessmentInput {
     @Field()
-    assessmentId: Types.ObjectId;
+    assessmentId: string;
 
     @Field({ nullable: true, defaultValue: false })
     finishedAssessment: boolean;
 
     @Field()
-    answers: Answer[];
+    question: string;
+
+    @Field()
+    textValue: string;
+
+    @Field()
+    dateValue: Date;
+
+    @Field()
+    multipleChoiceValue: string[];
+
+    @Field()
+    numberValue: number;
+
+    @Field()
+    booleanValue: boolean;
 }

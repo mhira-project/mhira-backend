@@ -14,7 +14,8 @@ import xlsx from 'node-xlsx';
 import { Choice, Question, questionType } from '../models/question.schema';
 import { QuestionGroup } from '../models/question-group.schema';
 import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
-import { FileData } from '../helpers/xlsform-reader.helper';
+import { FileData, XLSForm } from '../helpers/xlsform-reader.helper';
+import { XlsFormQuestionFactory } from '../helpers/xlsform-questions.factory';
 
 @Injectable()
 export class QuestionnaireService {
@@ -33,13 +34,14 @@ export class QuestionnaireService {
 
     public async createRaw(questionnaireInput: CreateRawQuestionnaireInput) {
         const createdQuestionnaire = new this.questionnaireModel();
-        createdQuestionnaire.language = questionnaireInput.language;
+        //createdQuestionnaire.language = questionnaireInput.language;
 
-        const createdQuestionnaireVersion = new this.questionnaireVersionModel();
-        createdQuestionnaireVersion.license = questionnaireInput.license;
-        createdQuestionnaireVersion.copyright = questionnaireInput.copyright;
-        createdQuestionnaireVersion.timeToComplete =
-            questionnaireInput.timeToComplete;
+        // TODO: if same as existing one (formId and language) create a new version? this.checkIfExists? or something
+
+        // createdQuestionnaireVersion.license = questionnaireInput.license;
+        //createdQuestionnaireVersion.copyright = questionnaireInput.copyright;
+        //createdQuestionnaireVersion.timeToComplete =
+        //    questionnaireInput.timeToComplete;
 
         //const fileData = await xlsForm;
 
@@ -47,111 +49,32 @@ export class QuestionnaireService {
             `${__dirname}/test-xls/PHQ-9.xlsx`,
         ) as any; // FIXME: remove after testing
 
-        // link column names to attributes.
-        let settings = fileData.filter(sheet => sheet.name === 'settings')[0]
-            ?.data;
+        const xlsForm: XLSForm = new XLSForm(fileData);
+        const settings = xlsForm.getSettings();
 
-        const settingsRowDefinitions = settings[0];
+        const createdQuestionnaireVersion = new this.questionnaireVersionModel();
 
-        createdQuestionnaire.abbreviation =
-            settings[1][settingsRowDefinitions.indexOf('form_id')];
+        createdQuestionnaire.abbreviation = settings.form_id;
+        createdQuestionnaire.language = settings.language;
+        createdQuestionnaireVersion.name = settings.form_title;
 
-        createdQuestionnaireVersion.name =
-            settings[1][settingsRowDefinitions.indexOf('form_title')];
+        let currentGroup: QuestionGroup = null;
 
-        let survey = fileData
-            .filter(sheet => sheet.name === 'survey')[0]
-            ?.data.filter(item => !!item);
-
-        let surveyRowDefinitions = survey[0] as string[]; // get row definitions
-
-        let choices = fileData.filter(sheet => sheet.name === 'choices')[0]
-            ?.data;
-        const choiceColumnDefinitions = choices[0];
-
-        var currentGroup: QuestionGroup = null;
-        for (
-            let surveyItemIndex = 1;
-            surveyItemIndex < survey.length;
-            surveyItemIndex++
-        ) {
-            let surveyItem = survey[surveyItemIndex];
-            if (!surveyItem) break;
-
-            let type: string = surveyItem[
-                surveyRowDefinitions.indexOf('type')
-            ] as string;
-
-            if (!type) break;
-
-            let label: string = surveyItem[
-                surveyRowDefinitions.indexOf('label')
-            ] as string;
-            let name: string = surveyItem[
-                surveyRowDefinitions.indexOf('name')
-            ] as string;
-
-            if (type === questionType.BEGIN_GROUP) {
-                currentGroup = new this.questionGroupModel();
-                currentGroup.isNew = true;
-                currentGroup.label = label;
-                currentGroup.questions = [];
-            } else if (type === questionType.END_GROUP) {
-                createdQuestionnaireVersion?.questionGroups?.push(currentGroup);
-
+        for (const questionData of xlsForm.getQuestionData()) {
+            if (questionData.type === questionType.END_GROUP) {
+                createdQuestionnaireVersion.questionGroups.push(currentGroup);
                 currentGroup = null;
             } else {
-                const question = new this.questionModel();
-                question.name = name;
-                question.label = label;
-                question.type = type;
+                const question = XlsFormQuestionFactory.createQuestion(
+                    questionData,
+                    xlsForm,
+                );
 
-                question.required =
-                    surveyItem[surveyRowDefinitions.indexOf('required')] ===
-                    'yes';
-
-                question.requiredMessage = surveyItem[
-                    surveyRowDefinitions.indexOf('requiredMessage')
-                ] as string;
-
-                if (
-                    question.type &&
-                    (question.type.startsWith(
-                        questionType.SELECT_MULTIPLE.toString(),
-                    ) ||
-                        question.type.startsWith(
-                            questionType.SELECT_ONE.toString(),
-                        ))
-                ) {
-                    let choiceList = question.type.split(' ');
-                    let choiceListName = choiceList[1];
-                    question.type = choiceList[0];
-
-                    question.choices = [];
-                    choices
-                        .filter(
-                            (data, index) =>
-                                index > 1 &&
-                                (data[
-                                    choiceColumnDefinitions.indexOf('list_name')
-                                ] as string) === choiceListName,
-                        )
-                        .forEach(choice => {
-                            let choiceEntity = new this.choiceModel();
-                            choiceEntity.name = choice[
-                                choiceColumnDefinitions.indexOf('name')
-                            ] as string;
-                            choiceEntity.label = choice[
-                                choiceColumnDefinitions.indexOf('label')
-                            ] as string;
-                            choiceEntity.image = choice[
-                                choiceColumnDefinitions.indexOf('image')
-                            ] as string;
-
-                            question?.choices?.push(choiceEntity);
-                        });
+                if (question instanceof QuestionGroup) {
+                    currentGroup = question;
+                } else {
+                    currentGroup.questions.push(question);
                 }
-                currentGroup?.questions?.push(question);
             }
         }
 
@@ -166,6 +89,11 @@ export class QuestionnaireService {
         @Args('CreateQuestionnaireInput') { xlsForm }: CreateQuestionnaireInput,
     ) {
         const fileData = await xlsForm;
+
+        // TODO: figure out proper way to get uploaded file
+
+        //const { filename, mimetype, createReadStream } = fileData;
+
         //const fileData = xlsx.parse(`${__dirname}/../test-xlsx/PHQ-9.xlsx`); // FIXME: remove after testing
 
         //console.log(fileData);
@@ -181,7 +109,10 @@ export class QuestionnaireService {
     }
 
     getById(_id: Types.ObjectId) {
-        return this.questionnaireModel.findById(_id).exec();
+        return this.questionnaireModel
+            .findById(_id)
+            .populate('versions')
+            .exec();
     }
 
     update(payload: UpdateQuestionnaireInput) {

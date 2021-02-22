@@ -15,6 +15,7 @@ import { SettingModule } from './modules/setting/setting.module';
 import { DepartmentModule } from './modules/department/department.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Upload } from './modules/questionnaire/types/upload.type';
+import { GraphQLUpload } from 'graphql-tools';
 
 @Module({
     imports: [

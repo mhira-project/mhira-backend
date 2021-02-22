@@ -4,7 +4,7 @@ import { Types, Document } from 'mongoose';
 import { QuestionnaireVersion } from './questionnaire-version.schema';
 
 @ObjectType()
-@Schema()
+@Schema({ collection: 'questionnaires', timestamps: true })
 export class Questionnaire extends Document {
     @Field(() => String)
     _id: Types.ObjectId;
@@ -23,12 +23,6 @@ export class Questionnaire extends Document {
     @Field(() => String)
     @Prop()
     abbreviation: string;
-
-    @Field(() => Date)
-    @Prop()
-    createdAt: Date;
-
-    // TODO: filter newest questionnaire version to copy and use ...
 }
 
 export const QuestionnaireSchema = SchemaFactory.createForClass(

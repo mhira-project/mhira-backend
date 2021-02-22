@@ -7,6 +7,7 @@ export const enum questionType {
     END_GROUP = 'end_group',
     INTEGER = 'integer',
     DECIMAL = 'decimal',
+    CHECKBOX = 'checkbox',
     TEXT = 'text',
     SELECT_ONE = 'select_one',
     SELECT_MULTIPLE = 'select_multiple',
@@ -83,6 +84,10 @@ export class Question extends Document {
     @Field(() => Number)
     @Prop()
     max: number;
+
+    @Field(() => Number)
+    @Prop()
+    precision: number;
 
     @Field(() => Boolean)
     @Prop()

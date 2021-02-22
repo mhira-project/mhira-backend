@@ -8,7 +8,6 @@ export class CreateQuestionnaireInput {
     @IsOptional()
     xlsForm: Upload;
 }
-
 @InputType()
 export class CreateRawQuestionnaireInput {
     @Field(() => String)

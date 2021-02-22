@@ -8,10 +8,20 @@ export interface FileData {
     data: string[][];
 }
 
+export interface formSettings {
+    form_title: string;
+    form_id: string;
+    version: string;
+    submission_url: string;
+    questionnaire_type: QuestionnaireType;
+    language: string;
+}
+
 export interface questionData {
     type: string;
     name: string;
     label: string;
+    precision: number;
     min_length: number;
     max_length: number;
     relevant: string;
@@ -22,6 +32,7 @@ export interface questionData {
     constraint_message: string;
     default: any;
     required: boolean;
+    required_message: string;
     calculation: string;
     image: string;
 }
@@ -39,25 +50,37 @@ enum XLSFormSheets {
     SETTINGS = 'settings',
 }
 
+enum QuestionnaireType {
+    OTHER = 'Other',
+    SCREENING = 'Screening',
+    DIAGNOSING = 'Diagnosing',
+    TREATMENT_MONITORING = 'Treatment Monitoring',
+}
+
+const isEnumKey = <T>(obj: T, key: any): key is T => {
+    return Object.values(obj).includes(key);
+};
+
 export class XLSForm {
-    //  private questionnaire: Questionnaire;
+    private choiceData: Partial<choiceData>[];
 
-    private sheets: FileData[];
+    constructor(private sheets: FileData[]) {} // TODO: MAYBE use xslx parsing method here
 
-    constructor() {
-        // TODO: set fileData[] here
-    } // TODO: use xslx parsing method here
-
-    createQuestionnaire(): Model<Questionnaire> {
-        return null;
+    public getSettings(): Partial<formSettings> {
+        return this.formatData<formSettings>(XLSFormSheets.SETTINGS)[0];
     }
 
-    createQuestionData(): Partial<questionData>[] {
+    public getQuestionData(): Partial<questionData>[] {
         return this.formatData<questionData>(XLSFormSheets.SURVEY);
     }
 
     getChoiceData(): Partial<choiceData>[] {
-        return this.formatData<choiceData>(XLSFormSheets.CHOICES);
+        if (!this.choiceData) {
+            this.choiceData = this.formatData<choiceData>(
+                XLSFormSheets.CHOICES,
+            );
+        }
+        return this.choiceData;
     }
 
     private formatData<T>(
@@ -75,7 +98,19 @@ export class XLSForm {
                     column,
                 );
                 if (!!columnValue && column in dataObject) {
-                    dataObject[column] = columnValue;
+                    if (column === 'questionnaire_type') {
+                        dataObject[column] = !isEnumKey(
+                            QuestionnaireType,
+                            columnValue,
+                        )
+                            ? QuestionnaireType.OTHER
+                            : columnValue;
+                    } else {
+                        dataObject[column] =
+                            columnValue === 'yes' || columnValue === 'no'
+                                ? columnValue === 'yes'
+                                : columnValue;
+                    }
                 }
             }
             formattedData.push(dataObject);
