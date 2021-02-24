@@ -18,6 +18,8 @@ import {
 } from './models/questionnaire-version.schema';
 import { QuestionnaireService } from './services/questionnaire.service';
 import { QuestionnaireResolver } from './resolvers/questionnaire.resolver';
+import { AssessmentService } from './services/assessment.service';
+import { AssessmentResolver } from './resolvers/assessment.resolver';
 import {
     Questionnaire,
     QuestionnaireSchema,
@@ -38,6 +40,11 @@ const guards = [GqlAuthGuard];
             { name: Choice.name, schema: ChoiceSchema },
         ]),
     ],
-    providers: [QuestionnaireService, QuestionnaireResolver],
+    providers: [
+        QuestionnaireService,
+        QuestionnaireResolver,
+        AssessmentService,
+        AssessmentResolver,
+    ],
 })
 export class QuestionnaireModule {}

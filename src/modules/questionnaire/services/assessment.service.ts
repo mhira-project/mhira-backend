@@ -79,6 +79,10 @@ export class AssessmentService {
         return this.assessmentModel
             .findById(assessmentAnswerInput.assessmentId)
             .then(assessment => {
+                // TODO: if assessment archived or finished, don't add answers throw error
+
+                // TODO: check questionnaires and if they are versionned / archived, etc.
+
                 assessment.status = assessmentAnswerInput.finishedAssessment
                     ? AssessmentStatus.COMPLETED
                     : AssessmentStatus.PARTIALLY_COMPLETED;
