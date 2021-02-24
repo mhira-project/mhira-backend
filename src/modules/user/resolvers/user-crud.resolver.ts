@@ -22,7 +22,8 @@ export class UserCrudResolver extends CRUDResolver(User, {
     CreateDTOClass: CreateUserInput,
     UpdateDTOClass: UpdateUserInput,
     read: { defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
-    create: { disabled: true }
+    create: { disabled: true },
+    update: { disabled: true },
 }) {
     constructor(readonly service: UserCrudService) {
         super(service);
