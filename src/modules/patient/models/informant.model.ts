@@ -79,7 +79,7 @@ export class Informant extends BaseEntity {
     @DeleteDateColumn()
     deletedAt?: Date;
 
-    @ManyToOne(() => Patient, patient => patient.informants)
+    @ManyToOne(() => Patient, patient => patient.informants, { onDelete: 'CASCADE' })
     patient: Patient;
 
     @ManyToOne(() => RelationshipType)
