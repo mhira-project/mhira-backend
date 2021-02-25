@@ -67,14 +67,14 @@ export class UserCrudResolver extends CRUDResolver(User, {
         });
 
         const currentUserMaxRole = currentUser.roles.reduce((prev, current) => {
-            return (prev.heirarchy > current.heirarchy) ? prev : current
+            return (prev.hierarchy > current.hierarchy) ? prev : current
         });
 
         const targetUserMaxRole = targetUser.roles.reduce((prev, current) => {
-            return (prev.heirarchy > current.heirarchy) ? prev : current
+            return (prev.hierarchy > current.hierarchy) ? prev : current
         });
 
-        if (currentUserMaxRole.heirarchy <= targetUserMaxRole.heirarchy) {
+        if (currentUserMaxRole.hierarchy <= targetUserMaxRole.hierarchy) {
             throw new BadRequestException('Permission denied to modify user! User has higher role than current user');
         }
 

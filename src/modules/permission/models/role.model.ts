@@ -38,7 +38,7 @@ export class Role extends BaseEntity {
 
     @FilterableField()
     @Column({ default: 10 })
-    heirarchy: number;
+    hierarchy: number;
 
     @FilterableField()
     @Column()
