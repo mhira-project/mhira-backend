@@ -1,5 +1,5 @@
 import { FilterableField, FilterableRelation } from "@nestjs-query/query-graphql";
-import { Field, Int, ObjectType } from "@nestjs/graphql";
+import { Field, GraphQLISODateTime, Int, ObjectType } from "@nestjs/graphql";
 import { Assessment } from "src/modules/assessment/models/assessment.model";
 import { Department } from "src/modules/department/models/department.model";
 import { Country } from "src/modules/lists/models/country.model";
@@ -113,8 +113,8 @@ export class Patient extends BaseEntity {
     @Column({ nullable: true })
     gender: GenderEnum;
 
-    @FilterableField({ nullable: true })
-    @Column({ nullable: true })
+    @FilterableField(() => String, { nullable: true })
+    @Column({ type: 'date', nullable: true })
     birthDate: Date;
 
     @FilterableField({ nullable: true })
