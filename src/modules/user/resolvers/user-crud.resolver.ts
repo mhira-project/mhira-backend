@@ -1,22 +1,17 @@
 import { UpdateManyResponse, Filter, SortDirection } from '@nestjs-query/core';
-import { CreateOneInputType, UpdateOneInputType, CRUDResolver, FilterType, UpdateManyResponseType } from '@nestjs-query/query-graphql';
+import { CRUDResolver, FilterType, UpdateManyResponseType } from '@nestjs-query/query-graphql';
 import { BadRequestException } from '@nestjs/common';
-import { Resolver, Args, Mutation, ID, ResolveField, Parent, InputType } from '@nestjs/graphql';
+import { Resolver, Args, Mutation, ID, ResolveField, Parent } from '@nestjs/graphql';
+import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
+import { RoleCode } from 'src/modules/permission/enums/role-code.enum';
+import { Role } from 'src/modules/permission/models/role.model';
+import { CreateOneUserInput } from '../dto/create-one-user.input';
 import { CreateUserInput } from '../dto/create-user.input';
+import { UpdateOneUserInput } from '../dto/update-one-user.input';
 import { UpdateUserInput } from '../dto/update-user.input';
 import { User } from '../models/user.model';
 import { UserCrudService } from '../providers/user-crud.service';
 
-@InputType()
-export class CreateOneUserInput extends
-    CreateOneInputType('user', CreateUserInput) {
-
-}
-
-@InputType()
-export class UpdateOneUserInput extends
-    UpdateOneInputType(UpdateUserInput) {
-}
 @Resolver(() => User)
 export class UserCrudResolver extends CRUDResolver(User, {
     CreateDTOClass: CreateUserInput,
@@ -38,13 +33,50 @@ export class UserCrudResolver extends CRUDResolver(User, {
             throw new BadRequestException('Username already exists');
         }
 
-        return this.service.createOne(input['user']);
+        const user = await this.service.createOne(input['user']);
+
+        // attach no-role Role
+        const noRole = await Role.findOne({ code: RoleCode.NO_ROLE });
+        if (noRole) {
+            user.roles = [noRole];
+            await user.save();
+        }
+
+
+        return user;
     }
 
     @Mutation(() => User)
-    async updateOneUser(@Args('input', { type: () => UpdateOneUserInput }) input: UpdateOneUserInput): Promise<User> {
+    async updateOneUser(
+        @Args('input', { type: () => UpdateOneUserInput }) input: UpdateOneUserInput,
+        @CurrentUser() currentUser: User,
+    ): Promise<User> {
 
         const { id, update } = input;
+
+        // Reload current user with roles
+        currentUser = await User.findOneOrFail({
+            where: { id: currentUser.id },
+            relations: ['roles'],
+        });
+
+        // Load targetUser with roles
+        const targetUser = await User.findOneOrFail({
+            where: { id },
+            relations: ['roles'],
+        });
+
+        const currentUserMaxRole = currentUser.roles.reduce((prev, current) => {
+            return (prev.hierarchy > current.hierarchy) ? prev : current
+        });
+
+        const targetUserMaxRole = targetUser.roles.reduce((prev, current) => {
+            return (prev.hierarchy > current.hierarchy) ? prev : current
+        });
+
+        if (currentUserMaxRole.hierarchy <= targetUserMaxRole.hierarchy) {
+            throw new BadRequestException('Permission denied to modify user! User has higher role than current user');
+        }
 
         if (!!update.username) {
             const exists = await User.createQueryBuilder()
