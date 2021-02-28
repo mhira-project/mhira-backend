@@ -1,19 +1,21 @@
+import { Model } from 'mongoose';
 import { QuestionGroup } from '../models/question-group.schema';
 import { Choice, Question, questionType } from '../models/question.schema';
-import { questionData, XLSForm } from './xlsform-reader.helper';
+import { QuestionData, XLSForm } from './xlsform-reader.helper';
 
 export class XlsFormQuestionFactory {
     public static createQuestion(
-        questionRow: Partial<questionData>,
+        questionRow: Partial<QuestionData>,
         xlsForm: XLSForm,
+        question: Question,
+        questionGroup: QuestionGroup,
     ): Question | QuestionGroup {
         if (questionRow.type === questionType.BEGIN_GROUP) {
-            const questionGroup = new QuestionGroup();
             questionGroup.label = questionRow.label;
             return questionGroup;
         } else {
-            const question: Question = <Question>{
-                ...new Question(),
+            question = <Question>{
+                ...question,
                 ...questionRow,
             };
 
@@ -42,6 +44,11 @@ export class XlsFormQuestionFactory {
                 question.choices = choices;
             }
 
+            if (question.type === questionType.TEXT && !!question.max) {
+                throw new Error(
+                    'Maxlength needs to be configured for textfields',
+                );
+            }
             // TODO: add validation for some fields like maxlength needs to be set for text fields, etc.
 
             return question;

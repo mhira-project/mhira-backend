@@ -24,6 +24,10 @@ import {
     Questionnaire,
     QuestionnaireSchema,
 } from './models/questionnaire.schema';
+import {
+    QuestionnaireAssessment,
+    AssessmentSchema,
+} from './models/questionnaire-assessment.schema';
 
 const guards = [GqlAuthGuard];
 @Module({
@@ -38,6 +42,7 @@ const guards = [GqlAuthGuard];
             { name: QuestionGroup.name, schema: QuestionGroupSchema },
             { name: Answer.name, schema: AnswerSchema },
             { name: Choice.name, schema: ChoiceSchema },
+            { name: QuestionnaireAssessment.name, schema: AssessmentSchema },
         ]),
     ],
     providers: [

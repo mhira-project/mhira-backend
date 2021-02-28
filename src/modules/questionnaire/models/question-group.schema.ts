@@ -16,7 +16,7 @@ export class QuestionGroup extends Document {
 
     @Field(() => [Question])
     @Prop({ type: [QuestionSchema] })
-    questions: Question[];
+    questions: Question[] = [];
 }
 
 export const QuestionGroupSchema = SchemaFactory.createForClass(QuestionGroup);

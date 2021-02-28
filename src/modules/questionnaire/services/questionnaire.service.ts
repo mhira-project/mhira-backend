@@ -6,7 +6,6 @@ import {
     CreateQuestionnaireInput,
     CreateRawQuestionnaireInput,
     ListQuestionnaireInput,
-    UpdateQuestionnaireInput,
 } from '../dtos/questionnaire.input';
 import { Questionnaire } from '../models/questionnaire.schema';
 
@@ -25,7 +24,7 @@ export class QuestionnaireService {
         @InjectModel(QuestionnaireVersion.name)
         private questionnaireVersionModel: Model<QuestionnaireVersion>,
         @InjectModel(QuestionGroup.name)
-        private questionGroupModel: Model<QuestionGroup>,
+        private questionGroupModel: Model<QuestionGroup>, // TODO: either remove or move to factory if injected model is needed
         @InjectModel(Question.name)
         private questionModel: Model<Question>,
         @InjectModel(Choice.name)
@@ -37,11 +36,6 @@ export class QuestionnaireService {
         //createdQuestionnaire.language = questionnaireInput.language;
 
         // TODO: if same as existing one (formId and language) create a new version? this.checkIfExists? or something
-
-        // createdQuestionnaireVersion.license = questionnaireInput.license;
-        //createdQuestionnaireVersion.copyright = questionnaireInput.copyright;
-        //createdQuestionnaireVersion.timeToComplete =
-        //    questionnaireInput.timeToComplete;
 
         //const fileData = await xlsForm;
 
@@ -55,8 +49,14 @@ export class QuestionnaireService {
         const createdQuestionnaireVersion = new this.questionnaireVersionModel();
 
         createdQuestionnaire.abbreviation = settings.form_id;
-        createdQuestionnaire.language = settings.language;
+        createdQuestionnaire.language = settings.language ?? 'en';
         createdQuestionnaireVersion.name = settings.form_title;
+
+        // TODO: add missing fields to settings
+        // createdQuestionnaireVersion.license = questionnaireInput.license;
+        //createdQuestionnaireVersion.copyright = questionnaireInput.copyright;
+        //createdQuestionnaireVersion.timeToComplete =
+        //    questionnaireInput.timeToComplete;
 
         let currentGroup: QuestionGroup = null;
 
@@ -68,9 +68,11 @@ export class QuestionnaireService {
                 const question = XlsFormQuestionFactory.createQuestion(
                     questionData,
                     xlsForm,
+                    new this.questionModel(),
+                    new this.questionGroupModel(),
                 );
 
-                if (question instanceof QuestionGroup) {
+                if ('questions' in question) {
                     currentGroup = question;
                 } else {
                     currentGroup.questions.push(question);
@@ -78,11 +80,13 @@ export class QuestionnaireService {
             }
         }
 
-        const version = await createdQuestionnaireVersion.save();
+        const createdQuestionnairePromise = createdQuestionnaire.save();
 
-        createdQuestionnaire.versions = [version.id];
+        createdQuestionnaireVersion.questionnaire = createdQuestionnaire.id;
 
-        return createdQuestionnaire.save();
+        await createdQuestionnaireVersion.save();
+
+        return createdQuestionnairePromise;
     }
 
     public async create(
@@ -109,20 +113,21 @@ export class QuestionnaireService {
     }
 
     getById(_id: Types.ObjectId) {
-        return this.questionnaireModel
-            .findById(_id)
-            .populate('versions')
+        return this.questionnaireModel.findById(_id).exec();
+    }
+
+    getNewestVersionById(questionnaireId: Types.ObjectId) {
+        return this.questionnaireVersionModel
+            .findOne({ questionnaire: questionnaireId })
+            .sort({ created_at: -1 })
             .exec();
     }
 
-    update(payload: UpdateQuestionnaireInput) {
-        // TODO: update questionnaire and create a new version out of it...
-        /*return this.questionnaireModel
-            .findByIdAndUpdate(payload._id, payload, { new: true })
-            .exec();*/
-    }
-
     list(filters: ListQuestionnaireInput) {
+        // TODO: filter versions too... Or maybe filter by versions and THEN find the questionnaire.
+
+        //this.questionnaireVersionModel.find({ ...filters }).exec();
+
         return this.questionnaireModel.find({ ...filters }).exec();
     }
 

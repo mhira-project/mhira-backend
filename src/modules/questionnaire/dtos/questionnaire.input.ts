@@ -1,6 +1,7 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsOptional } from 'class-validator';
 import { Upload } from '../types/upload.type';
+import { QuestionnaireStatus } from '../models/questionnaire-version.schema';
 
 @InputType()
 export class CreateQuestionnaireInput {
@@ -33,7 +34,7 @@ export class CreateRawQuestionnaireInput {
 export class ListQuestionnaireInput {
     @Field({ nullable: true })
     @IsOptional()
-    languages?: string;
+    language?: string;
 
     @Field({ nullable: true })
     @IsOptional()
@@ -46,8 +47,8 @@ export class ListQuestionnaireInput {
     @Field({ nullable: true })
     @IsOptional()
     timeToComplete?: number;
-}
 
-export class UpdateQuestionnaireInput extends ListQuestionnaireInput {
-    copyright?: string;
+    @Field({ nullable: true })
+    @IsOptional()
+    status?: string = QuestionnaireStatus.PUBLISHED;
 }

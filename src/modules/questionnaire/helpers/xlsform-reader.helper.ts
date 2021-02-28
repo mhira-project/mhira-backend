@@ -1,14 +1,11 @@
-import { Model } from 'mongoose';
 import xlsx from 'node-xlsx';
-import { Questionnaire } from '../models/questionnaire.schema';
-//import { Questionnaire } from '../models/questionnaire-version.schema';
 
 export interface FileData {
     name: string;
     data: string[][];
 }
 
-export interface formSettings {
+export interface FormSettings {
     form_title: string;
     form_id: string;
     version: string;
@@ -17,7 +14,7 @@ export interface formSettings {
     language: string;
 }
 
-export interface questionData {
+export interface QuestionData {
     type: string;
     name: string;
     label: string;
@@ -37,7 +34,7 @@ export interface questionData {
     image: string;
 }
 
-export interface choiceData {
+export interface ChoiceData {
     list_name: string;
     name: string;
     label: string;
@@ -62,21 +59,21 @@ const isEnumKey = <T>(obj: T, key: any): key is T => {
 };
 
 export class XLSForm {
-    private choiceData: Partial<choiceData>[];
+    private choiceData: Partial<ChoiceData>[];
 
     constructor(private sheets: FileData[]) {} // TODO: MAYBE use xslx parsing method here
 
-    public getSettings(): Partial<formSettings> {
-        return this.formatData<formSettings>(XLSFormSheets.SETTINGS)[0];
+    public getSettings(): Partial<FormSettings> {
+        return this.formatData<FormSettings>(XLSFormSheets.SETTINGS)[0];
     }
 
-    public getQuestionData(): Partial<questionData>[] {
-        return this.formatData<questionData>(XLSFormSheets.SURVEY);
+    public getQuestionData(): Partial<QuestionData>[] {
+        return this.formatData<QuestionData>(XLSFormSheets.SURVEY);
     }
 
-    getChoiceData(): Partial<choiceData>[] {
+    getChoiceData(): Partial<ChoiceData>[] {
         if (!this.choiceData) {
-            this.choiceData = this.formatData<choiceData>(
+            this.choiceData = this.formatData<ChoiceData>(
                 XLSFormSheets.CHOICES,
             );
         }
@@ -88,16 +85,22 @@ export class XLSForm {
     ): Partial<T>[] {
         const formattedData: Partial<T>[] = [];
         const columns = this.getColumnDefinitions(sheetName);
-        for (const choiceObject of this.getRowData(sheetName)) {
+        const rows = this.getRowData(sheetName);
+
+        for (const rowObject of rows) {
+            if (rowObject.length === 0) {
+                continue;
+            }
             const dataObject: Partial<T> = {};
 
             for (const column of columns) {
                 const columnValue = this.getColumnOfRow(
-                    choiceObject,
+                    rowObject,
                     columns,
                     column,
                 );
-                if (!!columnValue && column in dataObject) {
+
+                if (columnValue) {
                     if (column === 'questionnaire_type') {
                         dataObject[column] = !isEnumKey(
                             QuestionnaireType,
@@ -113,6 +116,7 @@ export class XLSForm {
                     }
                 }
             }
+
             formattedData.push(dataObject);
         }
 

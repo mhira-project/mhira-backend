@@ -1,4 +1,4 @@
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Answer, AnswerSchema } from './answer.schema';
 import { Document, Types } from 'mongoose';
 import { Field, ObjectType } from '@nestjs/graphql';
@@ -13,7 +13,7 @@ export enum AssessmentStatus {
 
 @ObjectType()
 @Schema({ collection: 'assessments', timestamps: true })
-export class Assessment extends Document {
+export class QuestionnaireAssessment extends Document {
     @Field(() => String)
     @Prop()
     _id: Types.ObjectId;
@@ -23,7 +23,7 @@ export class Assessment extends Document {
     assessmentDate: Date;
 
     @Prop({
-        type: 'enum',
+        type: 'string',
         enum: [
             AssessmentStatus.COMPLETED,
             AssessmentStatus.PENDING,
@@ -43,3 +43,7 @@ export class Assessment extends Document {
     @Prop({ type: [AnswerSchema] })
     answers: Answer[];
 }
+
+export const AssessmentSchema = SchemaFactory.createForClass(
+    QuestionnaireAssessment,
+);

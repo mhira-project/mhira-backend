@@ -9,13 +9,6 @@ export class Questionnaire extends Document {
     @Field(() => String)
     _id: Types.ObjectId;
 
-    @Field(() => [String])
-    @Prop({
-        type: [Types.ObjectId],
-        ref: QuestionnaireVersion.name,
-    })
-    versions: Types.ObjectId[] = [];
-
     @Field(() => String)
     @Prop()
     language: string;

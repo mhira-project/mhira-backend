@@ -4,11 +4,25 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Field, ObjectType } from '@nestjs/graphql';
 
+export enum QuestionnaireStatus {
+    DRAFT = 'DRAFT',
+    PUBLISHED = 'PUBLISHED',
+    ARCHIVED = 'ARCHIVED',
+    PRIVATE = 'PRIVATE',
+}
+
 @ObjectType()
 @Schema({ collection: 'questionnaire_versions', timestamps: true })
 export class QuestionnaireVersion extends Document {
     @Field(() => String)
     _id: Types.ObjectId;
+
+    @Field(() => String)
+    @Prop({
+        type: Types.ObjectId,
+        ref: 'questionnaires',
+    })
+    questionnaire: Types.ObjectId;
 
     @Field(() => [String])
     @Prop()
@@ -16,9 +30,14 @@ export class QuestionnaireVersion extends Document {
 
     @Field(() => String)
     @Prop({
-        type: String,
-        enum: ['DRAFT', 'PUBLISHED', 'ARCHIVED', 'PRIVATE'],
-        default: 'DRAFT',
+        type: 'string',
+        enum: [
+            QuestionnaireStatus.DRAFT,
+            QuestionnaireStatus.PRIVATE,
+            QuestionnaireStatus.PUBLISHED,
+            QuestionnaireStatus.ARCHIVED,
+        ],
+        default: QuestionnaireStatus.DRAFT,
     })
     status: string;
 

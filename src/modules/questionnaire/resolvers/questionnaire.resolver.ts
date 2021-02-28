@@ -1,5 +1,4 @@
-import { Args, Parent, Resolver, Query, Mutation } from '@nestjs/graphql';
-import { QuestionGroup } from '../models/question-group.schema';
+import { Args, Resolver, Query, Mutation } from '@nestjs/graphql';
 
 import {
     CreateQuestionnaireInput,
@@ -8,16 +7,24 @@ import {
 } from '../dtos/questionnaire.input';
 import { QuestionnaireService } from '../services/questionnaire.service';
 import { Questionnaire } from '../models/questionnaire.schema';
+import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
+import { Types } from 'mongoose';
 
 @Resolver(() => Questionnaire)
 export class QuestionnaireResolver {
     constructor(private questionnaireService: QuestionnaireService) {}
 
     @Query(() => Questionnaire)
-    questionnaire(@Args('id') questionnaireId: String): Promise<Questionnaire> {
-        let mongoose = require('mongoose');
-        let objectId = mongoose.Types.ObjectId(questionnaireId);
-        return this.questionnaireService.getById(objectId);
+    questionnaire(
+        @Args('_id', { type: () => String }) questionnaireId: Types.ObjectId,
+    ): Promise<Questionnaire> {
+        return this.questionnaireService.getById(questionnaireId);
+    }
+
+    NewestQuestionnaireVersion(
+        @Args('_id', { type: () => String }) questionnaireId: Types.ObjectId,
+    ): Promise<QuestionnaireVersion> {
+        return this.questionnaireService.getNewestVersionById(questionnaireId);
     }
 
     @Query(() => [Questionnaire])
@@ -41,6 +48,13 @@ export class QuestionnaireResolver {
         return this.questionnaireService.createRaw(questionnaireInput);
     }
 
+    @Mutation(() => Questionnaire)
+    async deleteQuestionnaire(
+        @Args('_id', { type: () => String }) _id: Types.ObjectId,
+    ) {
+        return this.questionnaireService.delete(_id);
+    }
+
     /*  @Mutation(() => Questionnaire)
     async updateQuestionnaire(
         @Args('payload') payload: UpdateQuestionnaireInput,
@@ -48,10 +62,5 @@ export class QuestionnaireResolver {
         this.questionnaireService.update(payload);
     }
 
-    @Mutation(() => Questionnaire)
-    async deleteQuestionnaire(
-        @Args('_id', { type: () => String }) _id: Types.ObjectId,
-    ) {
-        return this.questionnaireService.delete(_id);
-    }*/
+*/
 }
