@@ -1,5 +1,8 @@
 import { Field, InputType } from '@nestjs/graphql';
+import { Prop } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
+import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
+import { Questionnaire } from '../models/questionnaire.schema';
 
 @InputType()
 export class CreateQuestionnaireAssessmentInput {
@@ -12,8 +15,8 @@ export class CreateQuestionnaireAssessmentInput {
 
 @InputType()
 export class AnswerAssessmentInput {
-    @Field()
-    assessmentId: string;
+    @Field(() => String)
+    assessmentId: Types.ObjectId;
 
     @Field({ nullable: true, defaultValue: false })
     finishedAssessment: boolean;
@@ -24,15 +27,15 @@ export class AnswerAssessmentInput {
     @Field()
     textValue: string;
 
-    @Field()
+    @Field({ nullable: true })
     dateValue: Date;
 
-    @Field(() => [String])
+    @Field(() => [String], { nullable: true })
     multipleChoiceValue: string[];
 
-    @Field()
+    @Field({ nullable: true })
     numberValue: number;
 
-    @Field()
+    @Field({ nullable: true })
     booleanValue: boolean;
 }

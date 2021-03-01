@@ -16,23 +16,23 @@ export class Answer extends Document {
     })
     question: Types.ObjectId;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Prop()
     textValue: string;
 
-    @Field(() => [String])
+    @Field(() => [String], { nullable: true })
     @Prop()
     multipleChoiceValue: string[];
 
-    @Field(() => Number)
+    @Field(() => Number, { nullable: true })
     @Prop()
     numberValue: number;
 
-    @Field(() => Date)
+    @Field(() => Date, { nullable: true })
     @Prop()
     dateValue: Date;
 
-    @Field(() => Boolean)
+    @Field(() => Boolean, { nullable: true })
     @Prop()
     booleanValue: boolean;
 }

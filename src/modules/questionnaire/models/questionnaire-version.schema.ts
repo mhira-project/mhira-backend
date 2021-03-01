@@ -2,7 +2,8 @@ import { QuestionGroup, QuestionGroupSchema } from './question-group.schema';
 
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, InputType, ObjectType } from '@nestjs/graphql';
+import { Questionnaire } from './questionnaire.schema';
 
 export enum QuestionnaireStatus {
     DRAFT = 'DRAFT',
@@ -17,14 +18,11 @@ export class QuestionnaireVersion extends Document {
     @Field(() => String)
     _id: Types.ObjectId;
 
-    @Field(() => String)
-    @Prop({
-        type: Types.ObjectId,
-        ref: 'questionnaires',
-    })
-    questionnaire: Types.ObjectId;
+    @Field(() => Questionnaire)
+    @Prop({ type: [Types.ObjectId], ref: Questionnaire.name })
+    questionnaire: Types.ObjectId | Questionnaire;
 
-    @Field(() => [String])
+    @Field(() => String)
     @Prop()
     name: string;
 

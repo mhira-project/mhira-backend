@@ -19,6 +19,8 @@ export class XlsFormQuestionFactory {
                 ...questionRow,
             };
 
+            // TODO: maybe make invalid column check here...
+
             question.constraintMessage = questionRow.constraint_message;
             question.requiredMessage = questionRow.required_message;
             question.max = questionRow.max_length;
@@ -30,6 +32,7 @@ export class XlsFormQuestionFactory {
             ) {
                 const questionType = questionRow.type?.split(' ');
                 const listName = questionType[1];
+                question.type = questionType[0];
                 const choices: Choice[] = xlsForm
                     .getChoiceData()
                     .filter(item => item.list_name === listName)

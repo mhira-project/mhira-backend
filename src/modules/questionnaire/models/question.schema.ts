@@ -21,18 +21,18 @@ export const enum questionType {
 @ObjectType()
 @Schema()
 export class Choice extends Document {
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     _id: Types.ObjectId;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Prop()
     name: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Prop()
     label: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Prop()
     image: string;
 }

@@ -27,8 +27,6 @@ export class QuestionnaireService {
         private questionGroupModel: Model<QuestionGroup>, // TODO: either remove or move to factory if injected model is needed
         @InjectModel(Question.name)
         private questionModel: Model<Question>,
-        @InjectModel(Choice.name)
-        private choiceModel: Model<Choice>,
     ) {}
 
     public async createRaw(questionnaireInput: CreateRawQuestionnaireInput) {
@@ -120,6 +118,7 @@ export class QuestionnaireService {
         return this.questionnaireVersionModel
             .findOne({ questionnaire: questionnaireId })
             .sort({ created_at: -1 })
+            .populate({ path: 'questionnaire', model: Questionnaire.name })
             .exec();
     }
 

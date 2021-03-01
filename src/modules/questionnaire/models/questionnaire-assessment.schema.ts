@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Answer, AnswerSchema } from './answer.schema';
 import { Document, Types } from 'mongoose';
 import { Field, ObjectType } from '@nestjs/graphql';
+import { QuestionnaireVersion } from './questionnaire-version.schema';
 
 export enum AssessmentStatus {
     COMPLETED = 'COMPLETED',
@@ -15,13 +16,13 @@ export enum AssessmentStatus {
 @Schema({ collection: 'assessments', timestamps: true })
 export class QuestionnaireAssessment extends Document {
     @Field(() => String)
-    @Prop()
     _id: Types.ObjectId;
 
     @Field(() => Date)
     @Prop()
     assessmentDate: Date;
 
+    @Field(() => String)
     @Prop({
         type: 'string',
         enum: [
@@ -33,11 +34,11 @@ export class QuestionnaireAssessment extends Document {
         ],
         default: AssessmentStatus.PENDING,
     })
-    status: string;
+    status: AssessmentStatus;
 
-    @Field(() => [String])
-    @Prop({ type: [Types.ObjectId], ref: 'questionnaire_versions' })
-    questionnaires: Types.ObjectId[];
+    @Field(() => [QuestionnaireVersion])
+    @Prop({ type: [Types.ObjectId], ref: QuestionnaireVersion.name })
+    questionnaires: Types.ObjectId[] | QuestionnaireVersion[];
 
     @Field(() => [Answer])
     @Prop({ type: [AnswerSchema] })

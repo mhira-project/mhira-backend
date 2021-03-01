@@ -1,4 +1,11 @@
-import { Args, Resolver, Query, Mutation } from '@nestjs/graphql';
+import {
+    Args,
+    Resolver,
+    Query,
+    Mutation,
+    ResolveField,
+    Parent,
+} from '@nestjs/graphql';
 
 import {
     CreateQuestionnaireInput,
@@ -15,12 +22,13 @@ export class QuestionnaireResolver {
     constructor(private questionnaireService: QuestionnaireService) {}
 
     @Query(() => Questionnaire)
-    questionnaire(
+    getQuestionnaire(
         @Args('_id', { type: () => String }) questionnaireId: Types.ObjectId,
     ): Promise<Questionnaire> {
         return this.questionnaireService.getById(questionnaireId);
     }
 
+    @Query(() => QuestionnaireVersion)
     NewestQuestionnaireVersion(
         @Args('_id', { type: () => String }) questionnaireId: Types.ObjectId,
     ): Promise<QuestionnaireVersion> {

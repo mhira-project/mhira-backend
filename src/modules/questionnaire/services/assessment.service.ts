@@ -28,6 +28,25 @@ export class AssessmentService {
     ) {}
 
     createNewAssessment(assessmentInput: CreateQuestionnaireAssessmentInput) {
+        // TODO: check questionnaire versions if they are drafts or archived
+
+        assessmentInput.questionnaires.forEach(versionId =>
+            this.questionnaireVersionModel
+                .findById(versionId)
+                .then(questionnaireVersion => {
+                    if (
+                        questionnaireVersion.status ===
+                            QuestionnaireStatus.ARCHIVED ||
+                        questionnaireVersion.status ===
+                            QuestionnaireStatus.DRAFT
+                    ) {
+                        throw new Error(
+                            `${questionnaireVersion.name} has status ${questionnaireVersion.status} and cannot be added to assessment.`,
+                        );
+                    }
+                }),
+        );
+
         return this.assessmentModel.create(assessmentInput);
     }
 
@@ -36,25 +55,46 @@ export class AssessmentService {
             .findById(assessmentAnswerInput.assessmentId)
             .then(assessment => {
                 if (
-                    assessment.status === AssessmentStatus.ARCHIVED ||
-                    assessment.status === AssessmentStatus.COMPLETED
+                    [
+                        AssessmentStatus.ARCHIVED,
+                        AssessmentStatus.COMPLETED,
+                        AssessmentStatus.EXPIRED,
+                    ].includes(assessment.status)
                 ) {
                     throw new Error(
                         'You cannot add any more answers to this assessment.',
                     );
                 }
 
-                // TODO: check questionnaires and if they are versionned / archived, etc.
                 this.questionnaireVersionModel
                     .findOne({
                         questionGroups: {
                             $elemMatch: {
-                                'questionGroup.questions._id':
-                                    assessmentAnswerInput.question,
+                                questions: {
+                                    $elemMatch: {
+                                        _id: assessmentAnswerInput.question,
+                                    },
+                                },
                             },
                         },
                     })
                     .then(questionnaireVersion => {
+                        if (!questionnaireVersion) {
+                            throw new Error(
+                                'This questionnaire does not exist.',
+                            );
+                        }
+
+                        if (
+                            !(assessment.questionnaires as Types.ObjectId[]).includes(
+                                questionnaireVersion._id,
+                            )
+                        ) {
+                            throw new Error(
+                                'This questionnaire is not assigned to assessment.',
+                            );
+                        }
+
                         if (
                             questionnaireVersion.status ===
                             QuestionnaireStatus.ARCHIVED
@@ -63,13 +103,20 @@ export class AssessmentService {
                                 'This questionnaire is archived. You cannot answer these questions anymore.',
                             );
                         }
+                    })
+                    .catch((err: any) => {
+                        throw err;
                     });
-
                 assessment.status = assessmentAnswerInput.finishedAssessment
                     ? AssessmentStatus.COMPLETED
                     : AssessmentStatus.PARTIALLY_COMPLETED;
 
-                const answer = new this.answerModel();
+                const answerExisting = assessment.answers.filter(
+                    answer =>
+                        answer.question === assessmentAnswerInput.question,
+                );
+
+                const answer = answerExisting[0] ?? new this.answerModel();
 
                 answer.question = assessmentAnswerInput.question;
                 answer.multipleChoiceValue =
@@ -115,7 +162,8 @@ export class AssessmentService {
                             if (
                                 answer.multipleChoiceValue.some(
                                     c => !choices.includes(c),
-                                )
+                                ) ||
+                                !choices.includes(answer.textValue)
                             ) {
                                 throw new Error(
                                     `Please only choose available answers!`,
@@ -124,7 +172,13 @@ export class AssessmentService {
                         }
                     });
 
-                assessment.answers.push(answer);
+                if (!answerExisting[0]) {
+                    assessment.answers.push(answer);
+                } else {
+                    assessment.answers[
+                        assessment.answers.indexOf(answerExisting[0])
+                    ] = answer;
+                }
 
                 return assessment.save();
             });
