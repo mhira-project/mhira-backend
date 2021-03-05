@@ -39,6 +39,10 @@ export class QuestionnaireVersion extends Document {
     })
     status: string;
 
+    @Field(() => Date)
+    @Prop()
+    createdAt: Date;
+
     @Field(() => [String])
     @Prop({
         type: [String],

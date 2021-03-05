@@ -122,12 +122,72 @@ export class QuestionnaireService {
             .exec();
     }
 
-    list(filters: ListQuestionnaireInput) {
-        // TODO: filter versions too... Or maybe filter by versions and THEN find the questionnaire.
+    async list(filters: ListQuestionnaireInput) {
+        // filter by questionnaire versions => order by newest of questionnaire (distinct) so no errors can happen
 
-        //this.questionnaireVersionModel.find({ ...filters }).exec();
+        return await this.questionnaireVersionModel
+            .aggregate()
+            .group({
+                _id: '$questionnaire',
+                id: {
+                    $last: '$_id',
+                },
+                createdAt: {
+                    $last: '$createdAt',
+                },
+                status: {
+                    $last: '$status',
+                },
 
-        return this.questionnaireModel.find({ ...filters }).exec();
+                timeToComplete: {
+                    $last: '$timeToComplete',
+                },
+                license: {
+                    $last: '$license',
+                },
+            })
+            .then(questionnaireVersions => {
+                questionnaireVersions = questionnaireVersions.map(version => {
+                    version.questionnaire = version._id;
+                    version._id = version.id;
+                    delete version.id;
+                    return {
+                        _id: version._id,
+                        questionnaire: version.questionnaire,
+                        license: version.license,
+                        timeToComplete: version.timeToComplete,
+                        status: version.status,
+                        createdAt: version.createdAt,
+                    } as QuestionnaireVersion;
+                });
+
+                return this.questionnaireVersionModel
+                    .populate(questionnaireVersions, {
+                        path: 'questionnaire',
+                        model: Questionnaire.name,
+                    })
+                    .then(questionVersions => {
+                        return questionVersions.filter(
+                            version =>
+                                (!filters.language ||
+                                    (version.questionnaire as Questionnaire)
+                                        .language === filters.language) &&
+                                (!filters.abbreviation ||
+                                    (version.questionnaire as Questionnaire).abbreviation.includes(
+                                        filters.abbreviation,
+                                    )) &&
+                                (!filters.timeToComplete ||
+                                    version.timeToComplete ===
+                                        filters.timeToComplete) &&
+                                (!filters.license ||
+                                    version.license.includes(
+                                        filters.license,
+                                    )) &&
+                                (!filters.status ||
+                                    version.status === filters.status),
+                        );
+                    });
+            });
     }
 
     delete(_id: Types.ObjectId) {

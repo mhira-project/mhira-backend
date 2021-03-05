@@ -35,7 +35,7 @@ export class QuestionnaireResolver {
         return this.questionnaireService.getNewestVersionById(questionnaireId);
     }
 
-    @Query(() => [Questionnaire])
+    @Query(() => [QuestionnaireVersion])
     async questionnaires(
         @Args('filters') questionnaireFilter: ListQuestionnaireInput,
     ) {
