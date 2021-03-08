@@ -46,14 +46,30 @@ import { PermissionService } from './providers/permission.service';
                         PermissionGuard,
                         RoleTypeGuard,
                     ],
-                    decorators: [AllowRoleType(RoleCode.SUPER_ADMIN)], // restrict access to super-admin role
                     read: {
                         defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
-                        decorators: [UsePermission(PermissionEnum.VIEW_ROLES_PERMISSIONS)]
+                        decorators: [
+                            UsePermission(PermissionEnum.VIEW_ROLES_PERMISSIONS), // non-super admins can still view
+                        ]
                     },
-                    create: { decorators: [UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS)] },
-                    update: { decorators: [UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS)] },
-                    delete: { decorators: [UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS)] },
+                    create: {
+                        decorators: [
+                            UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS),
+                            AllowRoleType(RoleCode.SUPER_ADMIN), // restrict access to super-admin role
+                        ],
+                    },
+                    update: {
+                        decorators: [
+                            UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS),
+                            AllowRoleType(RoleCode.SUPER_ADMIN), // restrict access to super-admin role
+                        ],
+                    },
+                    delete: {
+                        decorators: [
+                            UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS),
+                            AllowRoleType(RoleCode.SUPER_ADMIN), // restrict access to super-admin role
+                        ],
+                    },
                 },
             ],
         }),
