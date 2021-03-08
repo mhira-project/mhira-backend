@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
@@ -38,26 +39,27 @@ export class RoleTypeGuard implements CanActivate {
         const request = ctx.getContext().req;
         const user = request.user;
 
-        if (user) {
-            // Refetch user model with roles relation
-            const userModel = await User.findOne({
-                relations: ['roles'],
-                where: { id: user.id },
-            });
-
-            const roles = userModel.roles;
-
-
-            // Check each permission is available on User
-            for (const roleType of userTypes) {
-                const isFound = !!roles?.find(p => p.code === roleType);
-
-                // Return failure on first missing permission
-                if (!isFound) throw new ForbiddenError(`Forbidden! Role type '${roleType.toUpperCase()}' required to access this resource`);
-            }
-
-        } else {
+        if (!user) {
+            Logger.verbose('Unauthenticated request', 'RoleTypeGuard');
             return false;
         }
+
+        // Refetch user model with roles relation
+        const userModel = await User.findOne({
+            relations: ['roles'],
+            where: { id: user.id },
+        });
+
+        const roles = userModel.roles;
+
+        // Check each permission is available on User
+        for (const roleType of userTypes) {
+            const isFound = !!roles?.find(p => p.code === roleType);
+
+            // Return failure on first missing permission
+            if (!isFound) throw new ForbiddenError(`Forbidden! Role type '${roleType.toUpperCase()}' required to access this resource`);
+        }
+
+        return true;
     }
 }
