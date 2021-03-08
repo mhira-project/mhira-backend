@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
 
-export const AllowUserType = (...types: string[]) => {
+export const AllowRoleType = (...types: string[]) => {
     return SetMetadata('userTypes', types);
 };

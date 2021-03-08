@@ -3,11 +3,16 @@ import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
 import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { Module } from '@nestjs/common';
 import { GqlAuthGuard } from '../auth/auth.guard';
-import { RoleInput } from './dtos/role.input';
+import { UsePermission } from './decorators/permission.decorator';
+import { AllowRoleType } from './decorators/role-type.decorator';
+import { PermissionEnum } from './enums/permission.enum';
+import { RoleCode } from './enums/role-code.enum';
+import { PermissionGuard } from './guards/permission.guard';
+import { RoleTypeGuard } from './guards/role-type.guard';
 import { Permission } from './models/permission.model';
 import { Role } from './models/role.model';
+import { PermissionService } from './providers/permission.service';
 
-const guards = [GqlAuthGuard];
 @Module({
     imports: [
         NestjsQueryGraphQLModule.forFeature({
@@ -24,7 +29,11 @@ const guards = [GqlAuthGuard];
                 {
                     DTOClass: Permission,
                     EntityClass: Permission,
-                    read: { guards, defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
+                    guards: [GqlAuthGuard, PermissionGuard],
+                    read: {
+                        defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
+                        decorators: [UsePermission(PermissionEnum.VIEW_ROLES_PERMISSIONS)]
+                    },
                     create: { disabled: true },
                     update: { disabled: true },
                     delete: { disabled: true },
@@ -32,15 +41,29 @@ const guards = [GqlAuthGuard];
                 {
                     DTOClass: Role,
                     EntityClass: Role,
-                    CreateDTOClass: RoleInput,
-                    UpdateDTOClass: RoleInput,
-                    read: { guards, defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
-                    create: { guards },
-                    update: { guards },
-                    delete: { guards },
-                }
+                    guards: [
+                        GqlAuthGuard,
+                        PermissionGuard,
+                        RoleTypeGuard,
+                    ],
+                    decorators: [AllowRoleType(RoleCode.SUPER_ADMIN)], // restrict access to super-admin role
+                    read: {
+                        defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
+                        decorators: [UsePermission(PermissionEnum.VIEW_ROLES_PERMISSIONS)]
+                    },
+                    create: { decorators: [UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS)] },
+                    update: { decorators: [UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS)] },
+                    delete: { decorators: [UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS)] },
+                },
             ],
         }),
+    ],
+    providers: [
+        PermissionGuard,
+        PermissionService,
+    ],
+    exports: [
+        PermissionGuard,
     ]
 })
 export class PermissionModule { }
