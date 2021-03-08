@@ -4,9 +4,12 @@ import { Module } from '@nestjs/common';
 import { GqlAuthGuard } from '../auth/auth.guard';
 import { Country } from './models/country.model';
 import { SortDirection } from '@nestjs-query/core';
+import { UsePermission } from '../permission/decorators/permission.decorator';
+import { PermissionEnum } from '../permission/enums/permission.enum';
+import { PermissionGuard } from '../permission/guards/permission.guard';
 
 
-const guards = [GqlAuthGuard];
+const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
     imports: [
         NestjsQueryGraphQLModule.forFeature({
@@ -21,10 +24,11 @@ const guards = [GqlAuthGuard];
             resolvers: [{
                 DTOClass: Country,
                 EntityClass: Country,
-                // read: { defaultFilter: { deleted: { is: false } } },
-                delete: { disabled: true },
                 guards: guards,
                 read: { defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
+                create: { decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)] },
+                update: { decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)] },
+                delete: { decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)] },
             }],
         }),
     ]
