@@ -8,8 +8,9 @@ import { Assessment } from './models/assessment.model';
 import { SortDirection } from '@nestjs-query/core';
 import { UsePermission } from '../permission/decorators/permission.decorator';
 import { PermissionEnum } from '../permission/enums/permission.enum';
+import { PermissionGuard } from '../permission/guards/permission.guard';
 
-const guards = [GqlAuthGuard];
+const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
     imports: [
         NestjsQueryGraphQLModule.forFeature({
