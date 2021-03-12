@@ -18,7 +18,6 @@ export interface QuestionData {
     type: string;
     name: string;
     label: string;
-    precision: number;
     min_length: number;
     max_length: number;
     relevant: string;

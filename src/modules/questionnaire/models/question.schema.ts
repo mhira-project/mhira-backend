@@ -85,10 +85,6 @@ export class Question extends Document {
     @Prop()
     max: number;
 
-    @Field(() => Number)
-    @Prop()
-    precision: number;
-
     @Field(() => Boolean)
     @Prop()
     required: boolean;

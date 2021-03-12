@@ -4,6 +4,7 @@ import {
     Parent,
     ResolveField,
     Resolver,
+    Query,
 } from '@nestjs/graphql';
 import { Types } from 'mongoose';
 import {
@@ -17,6 +18,13 @@ import { AssessmentService } from '../services/assessment.service';
 @Resolver(() => QuestionnaireAssessment)
 export class AssessmentResolver {
     constructor(private assessmentService: AssessmentService) {}
+
+    @Query(() => QuestionnaireAssessment)
+    getAssessment(
+        @Args('_id', { type: () => String }) assessmentId: Types.ObjectId,
+    ): Promise<QuestionnaireAssessment> {
+        return this.assessmentService.getById(assessmentId);
+    }
 
     @Mutation(() => QuestionnaireAssessment)
     addAnswer(

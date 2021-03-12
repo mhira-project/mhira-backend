@@ -1,14 +1,7 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsOptional } from 'class-validator';
-import { Upload } from '../types/upload.type';
 import { QuestionnaireStatus } from '../models/questionnaire-version.schema';
 
-@InputType()
-export class CreateQuestionnaireInput {
-    @Field(() => Upload)
-    @IsOptional()
-    xlsForm: Upload;
-}
 @InputType()
 export class CreateRawQuestionnaireInput {
     @Field(() => String)

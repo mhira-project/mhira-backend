@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { join } from 'path';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -9,13 +9,12 @@ import { SharedModule } from './shared/shared.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { PatientModule } from './modules/patient/patient.module';
 import { GraphQLError } from 'graphql';
+import { graphqlUploadExpress } from 'graphql-upload';
 import { QuestionnaireModule } from './modules/questionnaire/questionnaire.module';
 import { AssessmentModule } from './modules/assessment/assessment.module';
 import { SettingModule } from './modules/setting/setting.module';
 import { DepartmentModule } from './modules/department/department.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Upload } from './modules/questionnaire/types/upload.type';
-import { GraphQLUpload } from 'graphql-tools';
 
 @Module({
     imports: [
@@ -25,10 +24,7 @@ import { GraphQLUpload } from 'graphql-tools';
             autoSchemaFile: join(process.cwd(), 'src/schema/schema.gql'),
             context: ({ req }) => ({ req }),
             debug: false, // disables stack trace
-            uploads: {
-                maxFileSize: 20000000, // 20 MB
-                maxFiles: 1,
-            },
+            uploads: false,
             formatError: (error: GraphQLError) => {
                 if (typeof error.message === 'string') {
                     return new GraphQLError(
@@ -63,6 +59,10 @@ import { GraphQLUpload } from 'graphql-tools';
         QuestionnaireModule,
     ],
     controllers: [],
-    providers: [Upload],
+    providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+    configure(consumer: MiddlewareConsumer) {
+        consumer.apply(graphqlUploadExpress()).forRoutes('graphql');
+    }
+}

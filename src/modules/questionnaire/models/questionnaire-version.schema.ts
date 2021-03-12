@@ -19,7 +19,7 @@ export class QuestionnaireVersion extends Document {
     _id: Types.ObjectId;
 
     @Field(() => Questionnaire)
-    @Prop({ type: [Types.ObjectId], ref: Questionnaire.name })
+    @Prop({ type: Types.ObjectId, ref: Questionnaire.name })
     questionnaire: Types.ObjectId | Questionnaire;
 
     @Field(() => String)

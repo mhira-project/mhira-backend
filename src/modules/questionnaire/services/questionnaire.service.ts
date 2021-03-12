@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { Args } from '@nestjs/graphql';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+
 import {
-    CreateQuestionnaireInput,
     CreateRawQuestionnaireInput,
     ListQuestionnaireInput,
 } from '../dtos/questionnaire.input';
 import { Questionnaire } from '../models/questionnaire.schema';
 
 import xlsx from 'node-xlsx';
-import { Choice, Question, questionType } from '../models/question.schema';
+import { Question, questionType } from '../models/question.schema';
 import { QuestionGroup } from '../models/question-group.schema';
 import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
 import { FileData, XLSForm } from '../helpers/xlsform-reader.helper';
 import { XlsFormQuestionFactory } from '../helpers/xlsform-questions.factory';
+import { FileUpload } from 'graphql-upload';
 
 @Injectable()
 export class QuestionnaireService {
@@ -29,20 +29,22 @@ export class QuestionnaireService {
         private questionModel: Model<Question>,
     ) {}
 
-    public async createRaw(questionnaireInput: CreateRawQuestionnaireInput) {
+    public async create(xlsForm: FileUpload) {
         const createdQuestionnaire = new this.questionnaireModel();
-        //createdQuestionnaire.language = questionnaireInput.language;
+        const fileData: FileData[] = await new Promise(resolve => {
+            const stream = xlsForm.createReadStream();
+            const chunks = [];
 
-        // TODO: if same as existing one (formId and language) create a new version? this.checkIfExists? or something
-
-        //const fileData = await xlsForm;
-
-        const fileData: FileData[] = xlsx.parse(
-            `${__dirname}/test-xls/PHQ-9.xlsx`,
-        ) as any; // FIXME: remove after testing
-
-        const xlsForm: XLSForm = new XLSForm(fileData);
-        const settings = xlsForm.getSettings();
+            stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+            stream.on('end', () => {
+                const fileData = xlsx.parse(Buffer.concat(chunks), {
+                    type: 'buffer',
+                }) as FileData[];
+                resolve(fileData);
+            });
+        });
+        const xlsFormParsed: XLSForm = new XLSForm(fileData);
+        const settings = xlsFormParsed.getSettings();
 
         const createdQuestionnaireVersion = new this.questionnaireVersionModel();
 
@@ -58,14 +60,14 @@ export class QuestionnaireService {
 
         let currentGroup: QuestionGroup = null;
 
-        for (const questionData of xlsForm.getQuestionData()) {
+        for (const questionData of xlsFormParsed.getQuestionData()) {
             if (questionData.type === questionType.END_GROUP) {
                 createdQuestionnaireVersion.questionGroups.push(currentGroup);
                 currentGroup = null;
             } else {
                 const question = XlsFormQuestionFactory.createQuestion(
                     questionData,
-                    xlsForm,
+                    xlsFormParsed,
                     new this.questionModel(),
                     new this.questionGroupModel(),
                 );
@@ -85,29 +87,6 @@ export class QuestionnaireService {
         await createdQuestionnaireVersion.save();
 
         return createdQuestionnairePromise;
-    }
-
-    public async create(
-        @Args('CreateQuestionnaireInput') { xlsForm }: CreateQuestionnaireInput,
-    ) {
-        const fileData = await xlsForm;
-
-        // TODO: figure out proper way to get uploaded file
-
-        //const { filename, mimetype, createReadStream } = fileData;
-
-        //const fileData = xlsx.parse(`${__dirname}/../test-xlsx/PHQ-9.xlsx`); // FIXME: remove after testing
-
-        //console.log(fileData);
-
-        // TODO: check if file was uploaded successfully and is an excel
-        // TODO: go through each sheet and create groups from begin_group and create questions after
-        // TODO: set settings for questionnaire, check if infos from sheet are enough.
-        // TODO: save file after
-
-        //const createdQuestionnaire = new this.questionnaireModel();
-        // return createdQuestionnaire.save();
-        return new this.questionnaireModel();
     }
 
     getById(_id: Types.ObjectId) {

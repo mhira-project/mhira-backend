@@ -79,108 +79,116 @@ export class AssessmentService {
                         },
                     })
                     .then(questionnaireVersion => {
-                        if (!questionnaireVersion) {
-                            throw new Error(
-                                'This questionnaire does not exist.',
-                            );
-                        }
-
                         if (
+                            !questionnaireVersion ||
                             !(assessment.questionnaires as Types.ObjectId[]).includes(
                                 questionnaireVersion._id,
-                            )
+                            ) ||
+                            questionnaireVersion.status ===
+                                QuestionnaireStatus.ARCHIVED
                         ) {
                             throw new Error(
-                                'This questionnaire is not assigned to assessment.',
+                                'Invalid questionnaire linked to this question.',
                             );
                         }
 
-                        if (
-                            questionnaireVersion.status ===
-                            QuestionnaireStatus.ARCHIVED
-                        ) {
-                            throw new Error(
-                                'This questionnaire is archived. You cannot answer these questions anymore.',
+                        const question = questionnaireVersion.questionGroups
+                            .filter(questionGroups =>
+                                questionGroups.questions.filter(
+                                    question =>
+                                        question._id ===
+                                        assessmentAnswerInput.question,
+                                ),
+                            )[0]
+                            ?.questions.filter(
+                                question =>
+                                    question._id ===
+                                    assessmentAnswerInput.question,
+                            )[0];
+
+                        if (question) {
+                            const answerExisting = assessment.answers.filter(
+                                answer =>
+                                    answer.question ===
+                                    assessmentAnswerInput.question,
                             );
+
+                            const answer =
+                                answerExisting[0] ?? new this.answerModel();
+
+                            answer.question = assessmentAnswerInput.question;
+                            answer.multipleChoiceValue =
+                                assessmentAnswerInput.multipleChoiceValue;
+                            answer.booleanValue =
+                                assessmentAnswerInput.booleanValue;
+                            answer.textValue = assessmentAnswerInput.textValue;
+                            answer.numberValue =
+                                assessmentAnswerInput.numberValue;
+                            answer.dateValue = assessmentAnswerInput.dateValue;
+
+                            const valueSet =
+                                !!answer.multipleChoiceValue ||
+                                !!answer.booleanValue ||
+                                !!answer.textValue ||
+                                !!answer.numberValue ||
+                                !!answer.dateValue;
+
+                            if (question.required && !valueSet) {
+                                throw new Error('Question is required.');
+                            }
+
+                            if (
+                                question.type ===
+                                    questionType.SELECT_MULTIPLE ||
+                                question.type === questionType.SELECT_ONE
+                            ) {
+                                const choices = question.choices.map(
+                                    choice => choice.label,
+                                );
+
+                                if (
+                                    answer.multipleChoiceValue.length <
+                                        question.min ||
+                                    answer.multipleChoiceValue.length >
+                                        question.max
+                                ) {
+                                    throw new Error(
+                                        `Number of answers must be between ${question.min} and ${question.max}`,
+                                    );
+                                }
+
+                                if (
+                                    answer.multipleChoiceValue.some(
+                                        c => !choices.includes(c),
+                                    ) ||
+                                    !choices.includes(answer.textValue)
+                                ) {
+                                    throw new Error(
+                                        `Please only choose available answers!`,
+                                    );
+                                }
+                            }
+
+                            if (!answerExisting[0]) {
+                                assessment.answers.push(answer);
+                            } else {
+                                assessment.answers[
+                                    assessment.answers.indexOf(
+                                        answerExisting[0],
+                                    )
+                                ] = answer;
+                            }
                         }
-                    })
-                    .catch((err: any) => {
-                        throw err;
                     });
+
                 assessment.status = assessmentAnswerInput.finishedAssessment
                     ? AssessmentStatus.COMPLETED
                     : AssessmentStatus.PARTIALLY_COMPLETED;
 
-                const answerExisting = assessment.answers.filter(
-                    answer =>
-                        answer.question === assessmentAnswerInput.question,
-                );
-
-                const answer = answerExisting[0] ?? new this.answerModel();
-
-                answer.question = assessmentAnswerInput.question;
-                answer.multipleChoiceValue =
-                    assessmentAnswerInput.multipleChoiceValue;
-                answer.booleanValue = assessmentAnswerInput.booleanValue;
-                answer.textValue = assessmentAnswerInput.textValue;
-                answer.numberValue = assessmentAnswerInput.numberValue;
-                answer.dateValue = assessmentAnswerInput.dateValue;
-
-                this.questionModel
-                    .findById(assessmentAnswerInput.question)
-                    .then(question => {
-                        // TODO: validate, put into a validator
-                        const valueSet =
-                            !!answer.multipleChoiceValue ||
-                            !!answer.booleanValue ||
-                            !!answer.textValue ||
-                            !!answer.numberValue ||
-                            !!answer.dateValue;
-
-                        if (question.required && !valueSet) {
-                            throw new Error('Question is required.');
-                        }
-
-                        if (
-                            question.type === questionType.SELECT_MULTIPLE ||
-                            question.type === questionType.SELECT_ONE
-                        ) {
-                            const choices = question.choices.map(
-                                choice => choice.label,
-                            );
-
-                            if (
-                                answer.multipleChoiceValue.length <
-                                    question.min ||
-                                answer.multipleChoiceValue.length > question.max
-                            ) {
-                                throw new Error(
-                                    `Number of answers must be between ${question.min} and ${question.max}`,
-                                );
-                            }
-
-                            if (
-                                answer.multipleChoiceValue.some(
-                                    c => !choices.includes(c),
-                                ) ||
-                                !choices.includes(answer.textValue)
-                            ) {
-                                throw new Error(
-                                    `Please only choose available answers!`,
-                                );
-                            }
-                        }
-                    });
-
-                if (!answerExisting[0]) {
-                    assessment.answers.push(answer);
-                } else {
-                    assessment.answers[
-                        assessment.answers.indexOf(answerExisting[0])
-                    ] = answer;
-                }
-
                 return assessment.save();
+            })
+            .catch(err => {
+                throw err;
             });
     }
 
@@ -192,5 +200,9 @@ export class AssessmentService {
             : this.assessmentModel.findByIdAndDelete(_id);
 
         return assessmentQuery.exec();
+    }
+
+    getById(_id: Types.ObjectId) {
+        return this.assessmentModel.findById(_id).exec();
     }
 }

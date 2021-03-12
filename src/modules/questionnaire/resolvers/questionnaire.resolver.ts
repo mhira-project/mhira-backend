@@ -1,14 +1,6 @@
-import {
-    Args,
-    Resolver,
-    Query,
-    Mutation,
-    ResolveField,
-    Parent,
-} from '@nestjs/graphql';
+import { Args, Resolver, Query, Mutation } from '@nestjs/graphql';
 
 import {
-    CreateQuestionnaireInput,
     CreateRawQuestionnaireInput,
     ListQuestionnaireInput,
 } from '../dtos/questionnaire.input';
@@ -16,6 +8,7 @@ import { QuestionnaireService } from '../services/questionnaire.service';
 import { Questionnaire } from '../models/questionnaire.schema';
 import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
 import { Types } from 'mongoose';
+import { FileUpload, GraphQLUpload } from 'graphql-upload';
 
 @Resolver(() => Questionnaire)
 export class QuestionnaireResolver {
@@ -43,17 +36,11 @@ export class QuestionnaireResolver {
     }
 
     @Mutation(() => Questionnaire)
-    createQuestionnaireWithFile(
-        @Args('input') questionnaireInput: CreateQuestionnaireInput,
+    async createQuestionnaireWithFile(
+        @Args('xlsForm', { type: () => GraphQLUpload })
+        xlsForm: FileUpload,
     ): Promise<Questionnaire> {
-        return this.questionnaireService.create(questionnaireInput);
-    }
-
-    @Mutation(() => Questionnaire)
-    async createRawQuestionnaire(
-        @Args('payload') questionnaireInput: CreateRawQuestionnaireInput,
-    ) {
-        return this.questionnaireService.createRaw(questionnaireInput);
+        return this.questionnaireService.create(xlsForm);
     }
 
     @Mutation(() => Questionnaire)
@@ -62,13 +49,4 @@ export class QuestionnaireResolver {
     ) {
         return this.questionnaireService.delete(_id);
     }
-
-    /*  @Mutation(() => Questionnaire)
-    async updateQuestionnaire(
-        @Args('payload') payload: UpdateQuestionnaireInput,
-    ) {
-        this.questionnaireService.update(payload);
-    }
-
-*/
 }
