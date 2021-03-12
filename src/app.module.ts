@@ -18,7 +18,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
     imports: [
-        MongooseModule.forRoot('mongodb://localhost:27017/questionnaireDB'),
+        MongooseModule.forRoot(configService.getMongoConnectionString()),
         TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
         GraphQLModule.forRoot({
             autoSchemaFile: join(process.cwd(), 'src/schema/schema.gql'),
