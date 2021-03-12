@@ -60,7 +60,7 @@ const isEnumKey = <T>(obj: T, key: any): key is T => {
 export class XLSForm {
     private choiceData: Partial<ChoiceData>[];
 
-    constructor(private sheets: FileData[]) {} // TODO: MAYBE use xslx parsing method here
+    constructor(private sheets: FileData[]) {}
 
     public getSettings(): Partial<FormSettings> {
         return this.formatData<FormSettings>(XLSFormSheets.SETTINGS)[0];

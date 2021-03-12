@@ -30,63 +30,9 @@ export class QuestionnaireService {
     ) {}
 
     public async create(xlsForm: FileUpload) {
-        const createdQuestionnaire = new this.questionnaireModel();
-        const fileData: FileData[] = await new Promise(resolve => {
-            const stream = xlsForm.createReadStream();
-            const chunks = [];
+        const fileData: FileData[] = await this.readFileUpload(xlsForm);
 
-            stream.on('data', (chunk: Buffer) => chunks.push(chunk));
-            stream.on('end', () => {
-                const fileData = xlsx.parse(Buffer.concat(chunks), {
-                    type: 'buffer',
-                }) as FileData[];
-                resolve(fileData);
-            });
-        });
-        const xlsFormParsed: XLSForm = new XLSForm(fileData);
-        const settings = xlsFormParsed.getSettings();
-
-        const createdQuestionnaireVersion = new this.questionnaireVersionModel();
-
-        createdQuestionnaire.abbreviation = settings.form_id;
-        createdQuestionnaire.language = settings.language ?? 'en';
-        createdQuestionnaireVersion.name = settings.form_title;
-
-        // TODO: add missing fields to settings
-        // createdQuestionnaireVersion.license = questionnaireInput.license;
-        //createdQuestionnaireVersion.copyright = questionnaireInput.copyright;
-        //createdQuestionnaireVersion.timeToComplete =
-        //    questionnaireInput.timeToComplete;
-
-        let currentGroup: QuestionGroup = null;
-
-        for (const questionData of xlsFormParsed.getQuestionData()) {
-            if (questionData.type === questionType.END_GROUP) {
-                createdQuestionnaireVersion.questionGroups.push(currentGroup);
-                currentGroup = null;
-            } else {
-                const question = XlsFormQuestionFactory.createQuestion(
-                    questionData,
-                    xlsFormParsed,
-                    new this.questionModel(),
-                    new this.questionGroupModel(),
-                );
-
-                if ('questions' in question) {
-                    currentGroup = question;
-                } else {
-                    currentGroup.questions.push(question);
-                }
-            }
-        }
-
-        const createdQuestionnairePromise = createdQuestionnaire.save();
-
-        createdQuestionnaireVersion.questionnaire = createdQuestionnaire.id;
-
-        await createdQuestionnaireVersion.save();
-
-        return createdQuestionnairePromise;
+        return await this.createQuestionnaireFromFileData(fileData);
     }
 
     getById(_id: Types.ObjectId) {
@@ -171,5 +117,66 @@ export class QuestionnaireService {
 
     delete(_id: Types.ObjectId) {
         return this.questionnaireModel.findByIdAndDelete(_id).exec();
+    }
+
+    private createQuestionnaireFromFileData(fileData: FileData[]) {
+        const createdQuestionnaire = new this.questionnaireModel();
+        const xlsFormParsed: XLSForm = new XLSForm(fileData);
+        const settings = xlsFormParsed.getSettings();
+
+        const createdQuestionnaireVersion = new this.questionnaireVersionModel();
+
+        createdQuestionnaire.abbreviation = settings.form_id;
+        createdQuestionnaire.language = settings.language ?? 'en';
+        createdQuestionnaireVersion.name = settings.form_title;
+
+        // TODO: add missing fields to settings
+        // createdQuestionnaireVersion.license = questionnaireInput.license;
+        //createdQuestionnaireVersion.copyright = questionnaireInput.copyright;
+        //createdQuestionnaireVersion.timeToComplete =
+        //    questionnaireInput.timeToComplete;
+
+        let currentGroup: QuestionGroup = null;
+
+        for (const questionData of xlsFormParsed.getQuestionData()) {
+            if (questionData.type === questionType.END_GROUP) {
+                createdQuestionnaireVersion.questionGroups.push(currentGroup);
+                currentGroup = null;
+            } else {
+                const question = XlsFormQuestionFactory.createQuestion(
+                    questionData,
+                    xlsFormParsed,
+                    new this.questionModel(),
+                    new this.questionGroupModel(),
+                );
+
+                if ('questions' in question) {
+                    currentGroup = question;
+                } else {
+                    currentGroup.questions.push(question);
+                }
+            }
+        }
+
+        const createdQuestionnairePromise = createdQuestionnaire.save();
+
+        createdQuestionnaireVersion.questionnaire = createdQuestionnaire.id;
+
+        return createdQuestionnaireVersion.save();
+    }
+
+    private readFileUpload(xlsForm: FileUpload): Promise<FileData[]> {
+        return new Promise(resolve => {
+            const stream = xlsForm.createReadStream();
+            const chunks = [];
+
+            stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+            stream.on('end', () => {
+                const fileData = xlsx.parse(Buffer.concat(chunks), {
+                    type: 'buffer',
+                }) as FileData[];
+                resolve(fileData);
+            });
+        });
     }
 }

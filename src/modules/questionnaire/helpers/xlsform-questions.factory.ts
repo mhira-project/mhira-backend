@@ -1,4 +1,3 @@
-import { Model } from 'mongoose';
 import { QuestionGroup } from '../models/question-group.schema';
 import { Choice, Question, questionType } from '../models/question.schema';
 import { QuestionData, XLSForm } from './xlsform-reader.helper';

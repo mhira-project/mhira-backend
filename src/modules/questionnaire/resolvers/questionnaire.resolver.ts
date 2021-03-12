@@ -35,11 +35,11 @@ export class QuestionnaireResolver {
         return this.questionnaireService.list(questionnaireFilter);
     }
 
-    @Mutation(() => Questionnaire)
-    async createQuestionnaireWithFile(
+    @Mutation(() => QuestionnaireVersion)
+    async createQuestionnaire(
         @Args('xlsForm', { type: () => GraphQLUpload })
         xlsForm: FileUpload,
-    ): Promise<Questionnaire> {
+    ): Promise<QuestionnaireVersion> {
         return this.questionnaireService.create(xlsForm);
     }
 
