@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import {
-    CreateRawQuestionnaireInput,
+    CreateQuestionnaireInput,
     ListQuestionnaireInput,
 } from '../dtos/questionnaire.input';
 import { Questionnaire } from '../models/questionnaire.schema';
@@ -11,7 +11,10 @@ import { Questionnaire } from '../models/questionnaire.schema';
 import xlsx from 'node-xlsx';
 import { Question, questionType } from '../models/question.schema';
 import { QuestionGroup } from '../models/question-group.schema';
-import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
+import {
+    QuestionnaireStatus,
+    QuestionnaireVersion,
+} from '../models/questionnaire-version.schema';
 import { FileData, XLSForm } from '../helpers/xlsform-reader.helper';
 import { XlsFormQuestionFactory } from '../helpers/xlsform-questions.factory';
 import { FileUpload } from 'graphql-upload';
@@ -29,10 +32,12 @@ export class QuestionnaireService {
         private questionModel: Model<Question>,
     ) {}
 
-    public async create(xlsForm: FileUpload) {
-        const fileData: FileData[] = await this.readFileUpload(xlsForm);
+    public async create(xlsForm: CreateQuestionnaireInput) {
+        const fileData: FileData[] = await this.readFileUpload(
+            xlsForm.excelFile,
+        );
 
-        return await this.createQuestionnaireFromFileData(fileData);
+        return await this.createQuestionnaireFromFileData(fileData, xlsForm);
     }
 
     getById(_id: Types.ObjectId) {
@@ -119,7 +124,10 @@ export class QuestionnaireService {
         return this.questionnaireModel.findByIdAndDelete(_id).exec();
     }
 
-    private createQuestionnaireFromFileData(fileData: FileData[]) {
+    private createQuestionnaireFromFileData(
+        fileData: FileData[],
+        questionnaireInput: CreateQuestionnaireInput,
+    ) {
         const createdQuestionnaire = new this.questionnaireModel();
         const xlsFormParsed: XLSForm = new XLSForm(fileData);
         const settings = xlsFormParsed.getSettings();
@@ -127,14 +135,16 @@ export class QuestionnaireService {
         const createdQuestionnaireVersion = new this.questionnaireVersionModel();
 
         createdQuestionnaire.abbreviation = settings.form_id;
-        createdQuestionnaire.language = settings.language ?? 'en';
+        createdQuestionnaire.language = questionnaireInput.language;
         createdQuestionnaireVersion.name = settings.form_title;
 
-        // TODO: add missing fields to settings
-        // createdQuestionnaireVersion.license = questionnaireInput.license;
-        //createdQuestionnaireVersion.copyright = questionnaireInput.copyright;
-        //createdQuestionnaireVersion.timeToComplete =
-        //    questionnaireInput.timeToComplete;
+        createdQuestionnaireVersion.license = questionnaireInput.license;
+        createdQuestionnaireVersion.copyright = questionnaireInput.copyright;
+        createdQuestionnaireVersion.timeToComplete =
+            questionnaireInput.timeToComplete;
+        createdQuestionnaireVersion.website = questionnaireInput.website;
+        createdQuestionnaireVersion.status =
+            questionnaireInput.status ?? QuestionnaireStatus.DRAFT;
 
         let currentGroup: QuestionGroup = null;
 
@@ -158,7 +168,7 @@ export class QuestionnaireService {
             }
         }
 
-        const createdQuestionnairePromise = createdQuestionnaire.save();
+        createdQuestionnaire.save();
 
         createdQuestionnaireVersion.questionnaire = createdQuestionnaire.id;
 
