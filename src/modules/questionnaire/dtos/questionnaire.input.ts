@@ -1,4 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
+import { Exclude } from 'class-transformer';
 import { IsOptional } from 'class-validator';
 import { GraphQLUpload } from 'graphql-tools';
 import { FileUpload } from 'graphql-upload';
@@ -25,7 +26,8 @@ export class CreateQuestionnaireInput {
     status: QuestionnaireStatus.DRAFT;
 
     @Field(() => GraphQLUpload)
-    excelFile: FileUpload;
+    @Exclude()
+    excelFile: Promise<FileUpload>;
 }
 
 @InputType()

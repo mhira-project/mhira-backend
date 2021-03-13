@@ -30,11 +30,11 @@ export class QuestionnaireService {
         private questionGroupModel: Model<QuestionGroup>,
         @InjectModel(Question.name)
         private questionModel: Model<Question>,
-    ) {}
+    ) { }
 
     public async create(xlsForm: CreateQuestionnaireInput) {
         const fileData: FileData[] = await this.readFileUpload(
-            xlsForm.excelFile,
+            await xlsForm.excelFile,
         );
 
         return await this.createQuestionnaireFromFileData(fileData, xlsForm);
@@ -110,7 +110,7 @@ export class QuestionnaireService {
                                     )) &&
                                 (!filters.timeToComplete ||
                                     version.timeToComplete ===
-                                        filters.timeToComplete) &&
+                                    filters.timeToComplete) &&
                                 (!filters.license ||
                                     version.license.includes(
                                         filters.license,

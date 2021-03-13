@@ -12,7 +12,7 @@ import { FileUpload, GraphQLUpload } from 'graphql-upload';
 
 @Resolver(() => Questionnaire)
 export class QuestionnaireResolver {
-    constructor(private questionnaireService: QuestionnaireService) {}
+    constructor(private questionnaireService: QuestionnaireService) { }
 
     @Query(() => Questionnaire)
     getQuestionnaire(
@@ -37,7 +37,7 @@ export class QuestionnaireResolver {
 
     @Mutation(() => QuestionnaireVersion)
     async createQuestionnaire(
-        @Args('xlsForm', { type: () => GraphQLUpload })
+        @Args('xlsForm', { type: () => CreateQuestionnaireInput })
         xlsForm: CreateQuestionnaireInput,
     ): Promise<QuestionnaireVersion> {
         return this.questionnaireService.create(xlsForm);
