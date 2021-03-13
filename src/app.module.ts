@@ -18,7 +18,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
     imports: [
-        MongooseModule.forRoot(configService.getMongoConnectionString()),
+        MongooseModule.forRoot(configService.getMongoConnectionString(), {
+            useFindAndModify: false,
+        }),
         TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
         GraphQLModule.forRoot({
             autoSchemaFile: join(process.cwd(), 'src/schema/schema.gql'),

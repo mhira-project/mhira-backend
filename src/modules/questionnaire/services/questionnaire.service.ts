@@ -27,7 +27,7 @@ export class QuestionnaireService {
         @InjectModel(QuestionnaireVersion.name)
         private questionnaireVersionModel: Model<QuestionnaireVersion>,
         @InjectModel(QuestionGroup.name)
-        private questionGroupModel: Model<QuestionGroup>, // TODO: either remove or move to factory if injected model is needed
+        private questionGroupModel: Model<QuestionGroup>,
         @InjectModel(Question.name)
         private questionModel: Model<Question>,
     ) {}
@@ -141,6 +141,11 @@ export class QuestionnaireService {
         createdQuestionnaireVersion.name = settings.form_title;
 
         createdQuestionnaireVersion.license = questionnaireInput.license;
+
+        if (!questionnaireInput.copyright) {
+            throw new Error('Copyright is required.');
+        }
+
         createdQuestionnaireVersion.copyright = questionnaireInput.copyright;
         createdQuestionnaireVersion.timeToComplete =
             questionnaireInput.timeToComplete;
