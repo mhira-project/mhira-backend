@@ -43,7 +43,7 @@ export class QuestionnaireVersion extends Document {
     @Prop()
     createdAt: Date;
 
-    @Field(() => [String])
+    @Field(() => [String], { nullable: true })
     @Prop({
         type: [String],
         min: 1,
@@ -55,11 +55,11 @@ export class QuestionnaireVersion extends Document {
     @Prop()
     copyright: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Prop()
     website: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Prop()
     license: string;
 

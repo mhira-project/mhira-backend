@@ -48,5 +48,5 @@ export class ListQuestionnaireInput {
 
     @Field({ nullable: true })
     @IsOptional()
-    status?: string = QuestionnaireStatus.PUBLISHED;
+    status?: string;
 }

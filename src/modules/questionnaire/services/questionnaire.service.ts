@@ -68,12 +68,20 @@ export class QuestionnaireService {
                 status: {
                     $last: '$status',
                 },
-
-                timeToComplete: {
-                    $last: '$timeToComplete',
+                name: {
+                    $last: '$name',
+                },
+                website: {
+                    $last: '$website',
+                },
+                copyright: {
+                    $last: '$copyright',
                 },
                 license: {
                     $last: '$license',
+                },
+                timeToComplete: {
+                    $last: '$timeToComplete',
                 },
             })
             .then(questionnaireVersions => {
@@ -81,14 +89,8 @@ export class QuestionnaireService {
                     version.questionnaire = version._id;
                     version._id = version.id;
                     delete version.id;
-                    return {
-                        _id: version._id,
-                        questionnaire: version.questionnaire,
-                        license: version.license,
-                        timeToComplete: version.timeToComplete,
-                        status: version.status,
-                        createdAt: version.createdAt,
-                    } as QuestionnaireVersion;
+
+                    return version as QuestionnaireVersion;
                 });
 
                 return this.questionnaireVersionModel
@@ -170,7 +172,7 @@ export class QuestionnaireService {
 
         createdQuestionnaire.save();
 
-        createdQuestionnaireVersion.questionnaire = createdQuestionnaire.id;
+        createdQuestionnaireVersion.questionnaire = createdQuestionnaire._id;
 
         return createdQuestionnaireVersion.save();
     }

@@ -1,7 +1,7 @@
 import { Args, Resolver, Query, Mutation } from '@nestjs/graphql';
 
 import {
-    CreateRawQuestionnaireInput,
+    CreateQuestionnaireInput,
     ListQuestionnaireInput,
 } from '../dtos/questionnaire.input';
 import { QuestionnaireService } from '../services/questionnaire.service';
@@ -38,7 +38,7 @@ export class QuestionnaireResolver {
     @Mutation(() => QuestionnaireVersion)
     async createQuestionnaire(
         @Args('xlsForm', { type: () => GraphQLUpload })
-        xlsForm: FileUpload,
+        xlsForm: CreateQuestionnaireInput,
     ): Promise<QuestionnaireVersion> {
         return this.questionnaireService.create(xlsForm);
     }
