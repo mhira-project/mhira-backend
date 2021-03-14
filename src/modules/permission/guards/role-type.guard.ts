@@ -7,28 +7,36 @@ import { User } from 'src/modules/user/models/user.model';
 
 @Injectable()
 export class RoleTypeGuard implements CanActivate {
-    constructor(private readonly reflector: Reflector) { }
+    constructor(private readonly reflector: Reflector) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const ctx = GqlExecutionContext.create(context);
 
         // Gets Anotations defined on method level
-        const userTypesFromHandler = this.reflector.get<string[] | string>("userTypes", context.getHandler()) || [];
+        const userTypesFromHandler =
+            this.reflector.get<string[] | string>(
+                'userTypes',
+                context.getHandler(),
+            ) || [];
 
         // Gets Anotations defined on Controller/Resolver class level
-        const userTypeFromClass = this.reflector.get<string[] | string>("userTypes", context.getClass()) || [];
+        const userTypeFromClass =
+            this.reflector.get<string[] | string>(
+                'userTypes',
+                context.getClass(),
+            ) || [];
 
         // merge all types defined
         const userTypes = [] as string[];
 
         if (typeof userTypesFromHandler === 'string') {
-            userTypes.push(userTypesFromHandler)
+            userTypes.push(userTypesFromHandler);
         } else {
             userTypes.push(...userTypesFromHandler);
         }
 
         if (userTypeFromClass === 'string') {
-            userTypes.push(userTypeFromClass)
+            userTypes.push(userTypeFromClass);
         } else {
             userTypes.push(...userTypeFromClass);
         }
@@ -40,8 +48,7 @@ export class RoleTypeGuard implements CanActivate {
         const user = request.user;
 
         if (!user) {
-            Logger.verbose('Unauthenticated request', 'RoleTypeGuard');
-            return false;
+            throw new ForbiddenError('Unauthenticated request!');
         }
 
         // Refetch user model with roles relation
@@ -50,14 +57,13 @@ export class RoleTypeGuard implements CanActivate {
             where: { id: user.id },
         });
 
-        const roles = userModel.roles;
-
         // Check each permission is available on User
         for (const roleType of userTypes) {
-            const isFound = !!roles?.find(p => p.code === roleType);
-
             // Return failure on first missing permission
-            if (!isFound) throw new ForbiddenError(`Forbidden! Role type '${roleType.toUpperCase()}' required to access this resource`);
+            if (!userModel.roles?.find(p => p.code === roleType))
+                throw new ForbiddenError(
+                    `Forbidden! Role type '${roleType.toUpperCase()}' required to access this resource`,
+                );
         }
 
         return true;
