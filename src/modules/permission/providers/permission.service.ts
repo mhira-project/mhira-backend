@@ -3,6 +3,7 @@ import { User } from "src/modules/user/models/user.model";
 import { Any } from "typeorm";
 import { GuardType } from "../enums/guard-type.enum";
 import { PermissionEnum } from "../enums/permission.enum";
+import { RoleCode } from "../enums/role-code.enum";
 import { Permission } from "../models/permission.model";
 import { Role } from "../models/role.model";
 
@@ -37,6 +38,31 @@ export class PermissionService implements OnModuleInit {
                 .values(permissionsToCreate.map(p => { return { name: p, guard: GuardType.ADMIN } }))
                 .execute();
         }
+
+        // Auto Create Super-admin role if not exists
+        let superAdminRole = await Role.findOne({ code: RoleCode.SUPER_ADMIN });
+        if (!superAdminRole) {
+            superAdminRole = new Role();
+            superAdminRole.name = 'Super Admin';
+            superAdminRole.code = RoleCode.SUPER_ADMIN;
+            superAdminRole.guard = GuardType.ADMIN;
+            await superAdminRole.save();
+        }
+
+        // Auto Create No-Role role if not exists
+        let noRole = await Role.findOne({ code: RoleCode.NO_ROLE });
+        if (!noRole) {
+            noRole = new Role();
+            noRole.name = 'No Role';
+            noRole.code = RoleCode.NO_ROLE;
+            noRole.guard = GuardType.ADMIN;
+            await noRole.save();
+        }
+
+        // Assign all permissions to Super Admin
+        const allPermissions = await Permission.find();
+        superAdminRole.permissions = allPermissions;
+        await superAdminRole.save();
 
     }
 
