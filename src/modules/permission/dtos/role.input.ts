@@ -10,6 +10,9 @@ export class RoleInput {
     name: string;
 
     @Field()
+    hierarchy: number;
+
+    @Field()
     guard: GuardType;
 
 }
