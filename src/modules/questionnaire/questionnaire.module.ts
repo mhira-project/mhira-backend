@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { GqlAuthGuard } from '../auth/auth.guard';
 import { Answer, AnswerSchema } from './models/answer.schema';
 import {
     QuestionGroup,
@@ -29,7 +28,6 @@ import {
     AssessmentSchema,
 } from './models/questionnaire-assessment.schema';
 
-const guards = [GqlAuthGuard];
 @Module({
     imports: [
         MongooseModule.forFeature([

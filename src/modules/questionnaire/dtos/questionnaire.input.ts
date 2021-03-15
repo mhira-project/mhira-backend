@@ -6,7 +6,7 @@ import { FileUpload } from 'graphql-upload';
 import { QuestionnaireStatus } from '../models/questionnaire-version.schema';
 
 @InputType()
-export class CreateQuestionnaireInput {
+export class UpdateQuestionnaireInput {
     @Field(() => String)
     language: string;
 
@@ -24,7 +24,10 @@ export class CreateQuestionnaireInput {
 
     @Field(() => String, { nullable: true })
     status: QuestionnaireStatus.DRAFT;
+}
 
+@InputType()
+export class CreateQuestionnaireInput extends UpdateQuestionnaireInput {
     @Field(() => GraphQLUpload)
     @Exclude()
     excelFile: Promise<FileUpload>;

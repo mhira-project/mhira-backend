@@ -2,7 +2,7 @@ import { QuestionGroup, QuestionGroupSchema } from './question-group.schema';
 
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Field, InputType, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 import { Questionnaire } from './questionnaire.schema';
 
 export enum QuestionnaireStatus {

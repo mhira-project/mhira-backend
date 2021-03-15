@@ -1,8 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { Prop } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
-import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
-import { Questionnaire } from '../models/questionnaire.schema';
 
 @InputType()
 export class CreateQuestionnaireAssessmentInput {

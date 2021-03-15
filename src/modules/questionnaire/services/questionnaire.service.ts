@@ -30,7 +30,7 @@ export class QuestionnaireService {
         private questionGroupModel: Model<QuestionGroup>,
         @InjectModel(Question.name)
         private questionModel: Model<Question>,
-    ) { }
+    ) {}
 
     public async create(xlsForm: CreateQuestionnaireInput) {
         const fileData: FileData[] = await this.readFileUpload(
@@ -47,7 +47,7 @@ export class QuestionnaireService {
     getNewestVersionById(questionnaireId: Types.ObjectId) {
         return this.questionnaireVersionModel
             .findOne({ questionnaire: questionnaireId })
-            .sort({ created_at: -1 })
+            .sort({ createdAt: -1 })
             .populate({ path: 'questionnaire', model: Questionnaire.name })
             .exec();
     }
@@ -110,7 +110,7 @@ export class QuestionnaireService {
                                     )) &&
                                 (!filters.timeToComplete ||
                                     version.timeToComplete ===
-                                    filters.timeToComplete) &&
+                                        filters.timeToComplete) &&
                                 (!filters.license ||
                                     version.license.includes(
                                         filters.license,

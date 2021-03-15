@@ -14,7 +14,6 @@ import {
     QuestionnaireStatus,
     QuestionnaireVersion,
 } from '../models/questionnaire-version.schema';
-import { resolve } from 'path';
 
 export class AssessmentService {
     constructor(
@@ -189,8 +188,8 @@ export class AssessmentService {
             .exec();
     }
 
-    deleteAssessment(_id: Types.ObjectId, archive: boolean = true) {
-        var assessmentQuery = archive
+    deleteAssessment(_id: Types.ObjectId, archive = true) {
+        const assessmentQuery = archive
             ? this.assessmentModel.findByIdAndUpdate(_id, {
                   status: AssessmentStatus.ARCHIVED,
               })

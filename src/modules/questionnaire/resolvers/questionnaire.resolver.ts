@@ -8,11 +8,10 @@ import { QuestionnaireService } from '../services/questionnaire.service';
 import { Questionnaire } from '../models/questionnaire.schema';
 import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
 import { Types } from 'mongoose';
-import { FileUpload, GraphQLUpload } from 'graphql-upload';
 
 @Resolver(() => Questionnaire)
 export class QuestionnaireResolver {
-    constructor(private questionnaireService: QuestionnaireService) { }
+    constructor(private questionnaireService: QuestionnaireService) {}
 
     @Query(() => Questionnaire)
     getQuestionnaire(

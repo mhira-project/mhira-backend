@@ -1,5 +1,3 @@
-import xlsx from 'node-xlsx';
-
 export interface FileData {
     name: string;
     data: string[][];

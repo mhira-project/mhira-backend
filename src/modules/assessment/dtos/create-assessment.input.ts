@@ -19,5 +19,5 @@ export class CreateAssessmentInput {
     informantId?: number;
 
     @Field({ nullable: true })
-    questionnaireAssessmentId?: String;
+    questionnaireAssessmentId?: string;
 }

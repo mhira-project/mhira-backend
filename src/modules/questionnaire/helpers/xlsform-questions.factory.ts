@@ -13,10 +13,10 @@ export class XlsFormQuestionFactory {
             questionGroup.label = questionRow.label;
             return questionGroup;
         } else {
-            question = <Question>{
+            question = {
                 ...question,
                 ...questionRow,
-            };
+            } as Question;
 
             // TODO: maybe make invalid column check here...
 
@@ -36,11 +36,11 @@ export class XlsFormQuestionFactory {
                     .getChoiceData()
                     .filter(item => item.list_name === listName)
                     .map(choice => {
-                        return <Choice>{
+                        return {
                             label: choice.label,
                             name: choice.name,
                             image: choice['media::image'],
-                        };
+                        } as Choice;
                     });
 
                 question.choices = choices;
