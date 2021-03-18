@@ -60,7 +60,6 @@ export class AuthService {
 
         // invalid password
         if (!(await Hash.compare(password, user.password))) {
-            // FIXME: remove after testing!
             this.logger.debug(`Invalid Password for user: ${user.username}`);
             if (!(await this.executeInvalidLoginAttempt(user)).active) {
                 throw new AuthenticationError(
