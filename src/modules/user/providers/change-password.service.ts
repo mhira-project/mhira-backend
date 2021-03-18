@@ -10,35 +10,44 @@ import { UserPreviousPassword } from '../models/user-previous-password.model';
 import { SettingService } from 'src/modules/setting/providers/setting.service';
 import { ChangeOwnPasswordInput } from '../dto/change-own-password.input';
 import { ChangePasswordInput } from '../dto/change-password.input';
+import { SettingKey } from 'src/modules/setting/enums/setting-name.enum';
 
 @Injectable()
 export class ChangePasswordService {
+    constructor(private readonly setting: SettingService) {}
 
-    constructor(
-        private readonly setting: SettingService,
-    ) { }
-
-    async changeOwnPassword(input: ChangeOwnPasswordInput, user: User): Promise<boolean> {
-
-        const validateCurrentPassword = await Hash.compare(input.currentPassword, user.password);
+    async changeOwnPassword(
+        input: ChangeOwnPasswordInput,
+        user: User,
+    ): Promise<boolean> {
+        const validateCurrentPassword = await Hash.compare(
+            input.currentPassword,
+            user.password,
+        );
 
         // validate current password
         if (!validateCurrentPassword) {
-            throw new UnauthorizedException('Invalid current password provided!');
+            throw new UnauthorizedException(
+                'Invalid current password provided!',
+            );
         }
 
         // Validate new password differ from old password
         if (input.newPassword === input.currentPassword) {
-            throw new BadRequestException('New password cannot be same as previous password!');
+            throw new BadRequestException(
+                'New password cannot be same as previous password!',
+            );
         }
 
         // Delegate to other operations changePasswordCore
         return this.changePasswordCore(input, user);
-
     }
 
-    async changeOtherUserPassword(input: ChangePasswordInput, targetUserId: number, currentUserId: number): Promise<boolean> {
-
+    async changeOtherUserPassword(
+        input: ChangePasswordInput,
+        targetUserId: number,
+        currentUserId: number,
+    ): Promise<boolean> {
         // Reload current user with roles
         const currentUser = await User.findOneOrFail({
             where: { id: currentUserId },
@@ -52,23 +61,27 @@ export class ChangePasswordService {
         });
 
         const currentUserMaxRole = currentUser.roles.reduce((prev, current) => {
-            return (prev.hierarchy > current.hierarchy) ? prev : current
+            return prev.hierarchy > current.hierarchy ? prev : current;
         });
 
         const targetUserMaxRole = targetUser.roles.reduce((prev, current) => {
-            return (prev.hierarchy > current.hierarchy) ? prev : current
+            return prev.hierarchy > current.hierarchy ? prev : current;
         });
 
         if (currentUserMaxRole.hierarchy <= targetUserMaxRole.hierarchy) {
-            throw new BadRequestException('Permission denied to modify user! User has higher role than current user');
+            throw new BadRequestException(
+                'Permission denied to modify user! User has higher role than current user',
+            );
         }
 
         // Delegate to other operations changePasswordCore
         return this.changePasswordCore(input, targetUser);
     }
 
-    protected async changePasswordCore(input: ChangePasswordInput, targetUser: User): Promise<boolean> {
-
+    protected async changePasswordCore(
+        input: ChangePasswordInput,
+        targetUser: User,
+    ): Promise<boolean> {
         /**
          * Validate password complexity:
          * 1 lowercase
@@ -76,15 +89,19 @@ export class ChangePasswordService {
          * 1 character
          * atleast 8 characters long
          */
-        const complexity = new RegExp(/^(?=.{8,})(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+*!=]).*$/);
+        const complexity = new RegExp(
+            /^(?=.{8,})(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+*!=]).*$/,
+        );
 
-        const isStrongPassword = typeof input.newPassword === 'string' && input.newPassword.match(complexity);
+        const isStrongPassword =
+            typeof input.newPassword === 'string' &&
+            input.newPassword.match(complexity);
 
         if (!isStrongPassword) {
             throw new BadRequestException(
-                'Password must be atleast 8 characters long and'
-                + ' contain 1 lowercase, 1 uppercase, 1 numeric,'
-                + ' and one special character'
+                'Password must be atleast 8 characters long and' +
+                    ' contain 1 lowercase, 1 uppercase, 1 numeric,' +
+                    ' and one special character',
             );
         }
 
@@ -93,31 +110,41 @@ export class ChangePasswordService {
          */
         if (input.newPassword !== input.newPasswordConfirmation) {
             throw new BadRequestException(
-                'Password confirmation mismatch!'
-                + ' Provided password and password confirmation did not match.'
+                'Password confirmation mismatch!' +
+                    ' Provided password and password confirmation did not match.',
             );
         }
 
         /**
          * Validate Password not used within last X days
          */
-        const cutOffDays = await this.setting.getKey('passwordReUseCutoffInDays');
-        const cutOffDate = moment().subtract(cutOffDays, 'days').format('YYYY-MM-DD');
+        const cutOffDays = await this.setting.getKey(
+            SettingKey.PASSWORD_REUSE_CUTOFF_IN_DAYS,
+        );
+        const cutOffDate = moment()
+            .subtract(cutOffDays, 'days')
+            .format('YYYY-MM-DD');
 
-        const prevPasswords = await UserPreviousPassword
-            .createQueryBuilder('passwords')
+        const prevPasswords = await UserPreviousPassword.createQueryBuilder(
+            'passwords',
+        )
             .where(
                 'passwords.userId = :userId and passwords.createdAt >= :cutOffDate',
-                { userId: targetUser.id, cutOffDate }
+                { userId: targetUser.id, cutOffDate },
             )
             .getMany();
 
         for (const prevPassword of prevPasswords) {
-            const isSamePassword = await Hash.compare(input.newPassword, prevPassword.password);
+            const isSamePassword = await Hash.compare(
+                input.newPassword,
+                prevPassword.password,
+            );
 
             // throw exception if password recently used
             if (isSamePassword) {
-                throw new BadRequestException(`Password was once used in the last ${cutOffDays} days! Please enter another password!`);
+                throw new BadRequestException(
+                    `Password was once used in the last ${cutOffDays} days! Please enter another password!`,
+                );
             }
         }
 
@@ -129,17 +156,20 @@ export class ChangePasswordService {
             userId: targetUser.id,
         });
 
-        // Update new password 
+        // Update new password
         const hashedPassword = await Hash.make(input.newPassword);
         targetUser.password = hashedPassword;
 
         // Set expiry date for new password
-        const passwordLifeTime = await this.setting.getKey('passwordLifeTimeInDays');
+        const passwordLifeTime = await this.setting.getKey(
+            SettingKey.PASSWORD_LIFETIME_IN_DAYS,
+        );
 
         const passwordExpiresAt = input.requirePasswordChangeOnLogin
             ? moment().toDate()
-            : moment().add(passwordLifeTime, 'days').toDate();
-
+            : moment()
+                  .add(passwordLifeTime, 'days')
+                  .toDate();
 
         // save password
         targetUser.passwordExpiresAt = passwordExpiresAt;
@@ -147,5 +177,4 @@ export class ChangePasswordService {
 
         return true;
     }
-
 }
