@@ -25,13 +25,7 @@ export class QuestionnaireAssessment extends Document {
     @Field(() => String)
     @Prop({
         type: 'string',
-        enum: [
-            AssessmentStatus.COMPLETED,
-            AssessmentStatus.PENDING,
-            AssessmentStatus.PARTIALLY_COMPLETED,
-            AssessmentStatus.EXPIRED,
-            AssessmentStatus.ARCHIVED,
-        ],
+        enum: Object.values(AssessmentStatus),
         default: AssessmentStatus.PENDING,
     })
     status: AssessmentStatus;
