@@ -16,14 +16,12 @@ export class XlsFormQuestionFactory {
             question = {
                 ...question,
                 ...questionRow,
+                constraintMessage: questionRow.constraint_message,
+                requiredMessage: questionRow.required_message,
+                max: questionRow.max_length,
+                min: questionRow.min_length,
             } as Question;
-
             // TODO: maybe make invalid column check here...
-
-            question.constraintMessage = questionRow.constraint_message;
-            question.requiredMessage = questionRow.required_message;
-            question.max = questionRow.max_length;
-            question.min = questionRow.min_length;
 
             if (
                 questionRow.type?.startsWith(questionType.SELECT_ONE) ||
@@ -35,13 +33,14 @@ export class XlsFormQuestionFactory {
                 const choices: Choice[] = xlsForm
                     .getChoiceData()
                     .filter(item => item.list_name === listName)
-                    .map(choice => {
-                        return {
-                            label: choice.label,
-                            name: choice.name,
-                            image: choice['media::image'],
-                        } as Choice;
-                    });
+                    .map(
+                        choice =>
+                            ({
+                                label: choice.label,
+                                name: choice.name,
+                                image: choice['media::image'],
+                            } as Choice),
+                    );
 
                 question.choices = choices;
             }
