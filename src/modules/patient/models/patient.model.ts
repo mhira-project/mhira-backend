@@ -113,8 +113,8 @@ export class Patient extends BaseEntity {
     @Column({ nullable: true })
     gender: GenderEnum;
 
-    @FilterableField({ nullable: true })
-    @Column({ nullable: true })
+    @FilterableField(() => String, { nullable: true })
+    @Column({ type: 'date', nullable: true })
     birthDate: Date;
 
     @FilterableField({ nullable: true })

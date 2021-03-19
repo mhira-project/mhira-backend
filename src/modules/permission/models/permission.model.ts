@@ -10,16 +10,15 @@ import {
 } from 'typeorm';
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Role } from './role.model';
-import { GuardType } from './guard-type.enum';
 import { FilterableField, Relation } from '@nestjs-query/query-graphql';
 import { User } from 'src/modules/user/models/user.model';
+import { GuardType } from '../enums/guard-type.enum';
 
 @ObjectType()
-@Relation('roles', () => [Role])
-@Relation('users', () => [User])
+@Relation('roles', () => [Role], { disableRemove: true, disableUpdate: true })
+@Relation('users', () => [User], { disableRemove: true, disableUpdate: true })
 @Entity()
 export class Permission extends BaseEntity {
-
     @FilterableField(() => Int)
     @PrimaryGeneratedColumn()
     id: number;
@@ -44,10 +43,15 @@ export class Permission extends BaseEntity {
     @DeleteDateColumn()
     deletedAt?: Date;
 
-    @ManyToMany(() => Role, role => role.permissions)
+    @ManyToMany(
+        () => Role,
+        role => role.permissions,
+    )
     roles: Role[];
 
-    @ManyToMany(() => User, user => user.permissions)
+    @ManyToMany(
+        () => User,
+        user => user.permissions,
+    )
     users: User[];
-
 }

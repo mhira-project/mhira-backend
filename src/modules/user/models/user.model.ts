@@ -13,7 +13,7 @@ import {
 import { Permission } from 'src/modules/permission/models/permission.model';
 import { AccessToken } from 'src/modules/auth/models/access-token.model';
 import { GenderEnum } from 'src/modules/patient/models/gender.enum';
-import { FilterableField, KeySet, Relation } from '@nestjs-query/query-graphql';
+import { FilterableField, KeySet, Relation, FilterableRelation } from '@nestjs-query/query-graphql';
 import { Role } from 'src/modules/permission/models/role.model';
 import { UserPreviousPassword } from './user-previous-password.model';
 import { Department } from 'src/modules/department/models/department.model';
@@ -23,9 +23,9 @@ import { Hash } from 'src/shared/helpers/hash.helper';
 
 @ObjectType()
 @KeySet(['id'])
-@Relation('roles', () => [Role])
+@FilterableRelation('roles', () => [Role])
 @Relation('permissions', () => [Permission])
-@Relation('departments', () => [Department])
+@FilterableRelation('departments', () => [Department])
 @Entity()
 export class User extends BaseEntity {
 
@@ -79,7 +79,7 @@ export class User extends BaseEntity {
     phone?: string;
 
     @FilterableField({ nullable: true })
-    @Column({ nullable: true, unique: true })
+    @Column({ nullable: true })
     workID?: string;
 
     @FilterableField({ nullable: true })

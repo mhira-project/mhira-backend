@@ -6,8 +6,11 @@ import { CreateAssessmentInput } from './dtos/create-assessment.input';
 import { UpdateAssessmentInput } from './dtos/update-assessment.input';
 import { Assessment } from './models/assessment.model';
 import { SortDirection } from '@nestjs-query/core';
+import { UsePermission } from '../permission/decorators/permission.decorator';
+import { PermissionEnum } from '../permission/enums/permission.enum';
+import { PermissionGuard } from '../permission/guards/permission.guard';
 
-const guards = [GqlAuthGuard];
+const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
     imports: [
         NestjsQueryGraphQLModule.forFeature({
@@ -24,10 +27,14 @@ const guards = [GqlAuthGuard];
                 EntityClass: Assessment,
                 CreateDTOClass: CreateAssessmentInput,
                 UpdateDTOClass: UpdateAssessmentInput,
-                read: { guards, defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
-                create: { guards },
-                update: { guards },
-                delete: { guards },
+                guards,
+                read: {
+                    guards, defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
+                    decorators: [UsePermission(PermissionEnum.VIEW_ASSESSMENTS)]
+                },
+                create: { decorators: [UsePermission(PermissionEnum.MANAGE_ASSESSMENTS)] },
+                update: { decorators: [UsePermission(PermissionEnum.MANAGE_ASSESSMENTS)] },
+                delete: { decorators: [UsePermission(PermissionEnum.MANAGE_ASSESSMENTS)] },
 
             }],
         }),
