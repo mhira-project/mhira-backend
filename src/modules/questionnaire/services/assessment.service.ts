@@ -25,22 +25,25 @@ export class AssessmentService {
         private questionnaireVersionModel: Model<QuestionnaireVersion>,
     ) {}
 
-    createNewAssessment(assessmentInput: CreateQuestionnaireAssessmentInput) {
-        assessmentInput.questionnaires.forEach(versionId =>
-            this.questionnaireVersionModel
-                .findById(versionId)
-                .then(questionnaireVersion => {
-                    if (
-                        questionnaireVersion.status ===
-                            QuestionnaireStatus.ARCHIVED ||
-                        questionnaireVersion.status ===
-                            QuestionnaireStatus.DRAFT
-                    ) {
-                        throw new Error(
-                            `${questionnaireVersion.name} has status ${questionnaireVersion.status} and cannot be added to assessment.`,
-                        );
-                    }
-                }),
+    async createNewAssessment(
+        assessmentInput: CreateQuestionnaireAssessmentInput,
+    ) {
+        await Promise.all(
+            assessmentInput.questionnaires.map(async versionId => {
+                const questionnaireVersion = await this.questionnaireVersionModel.findById(
+                    versionId,
+                );
+
+                if (
+                    questionnaireVersion.status ===
+                        QuestionnaireStatus.ARCHIVED ||
+                    questionnaireVersion.status === QuestionnaireStatus.DRAFT
+                ) {
+                    throw new Error(
+                        `${questionnaireVersion.name} has status ${questionnaireVersion.status} and cannot be added to assessment.`,
+                    );
+                }
+            }),
         );
 
         return this.assessmentModel.create(assessmentInput);
