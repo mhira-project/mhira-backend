@@ -22,8 +22,11 @@ export class UpdateQuestionnaireInput {
     @Field(() => String, { nullable: true })
     website: string;
 
-    @Field(() => String, { nullable: true })
-    status: QuestionnaireStatus.DRAFT;
+    @Field(() => String, {
+        nullable: true,
+        defaultValue: QuestionnaireStatus.DRAFT,
+    })
+    status: string;
 }
 
 @InputType()
