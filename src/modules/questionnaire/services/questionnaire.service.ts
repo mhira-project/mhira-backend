@@ -5,6 +5,7 @@ import { Model, Types } from 'mongoose';
 import {
     CreateQuestionnaireInput,
     ListQuestionnaireInput,
+    UpdateQuestionnaireInput,
 } from '../dtos/questionnaire.input';
 import { Questionnaire } from '../models/questionnaire.schema';
 
@@ -30,7 +31,7 @@ export class QuestionnaireService {
         private questionGroupModel: Model<QuestionGroup>,
         @InjectModel(Question.name)
         private questionModel: Model<Question>,
-    ) {}
+    ) { }
 
     public async create(xlsForm: CreateQuestionnaireInput) {
         const fileData: FileData[] = await this.readFileUpload(
@@ -38,6 +39,12 @@ export class QuestionnaireService {
         );
 
         return await this.createQuestionnaireFromFileData(fileData, xlsForm);
+    }
+
+    public async updateOne(_id: Types.ObjectId, xlsForm: UpdateQuestionnaireInput) {
+        const q = await this.questionnaireVersionModel.findOne({ _id });
+        Object.entries(xlsForm).forEach(([key, value]) => q[key] = value);
+        return q.save();
     }
 
     getById(_id: Types.ObjectId) {
@@ -110,7 +117,7 @@ export class QuestionnaireService {
                                     )) &&
                                 (!filters.timeToComplete ||
                                     version.timeToComplete ===
-                                        filters.timeToComplete) &&
+                                    filters.timeToComplete) &&
                                 (!filters.license ||
                                     version.license.includes(
                                         filters.license,

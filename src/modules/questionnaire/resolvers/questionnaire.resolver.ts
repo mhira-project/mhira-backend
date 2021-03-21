@@ -3,6 +3,7 @@ import { Args, Resolver, Query, Mutation } from '@nestjs/graphql';
 import {
     CreateQuestionnaireInput,
     ListQuestionnaireInput,
+    UpdateQuestionnaireInput,
 } from '../dtos/questionnaire.input';
 import { QuestionnaireService } from '../services/questionnaire.service';
 import { Questionnaire } from '../models/questionnaire.schema';
@@ -11,7 +12,7 @@ import { Types } from 'mongoose';
 
 @Resolver(() => Questionnaire)
 export class QuestionnaireResolver {
-    constructor(private questionnaireService: QuestionnaireService) {}
+    constructor(private questionnaireService: QuestionnaireService) { }
 
     @Query(() => Questionnaire)
     getQuestionnaire(
@@ -40,6 +41,17 @@ export class QuestionnaireResolver {
         xlsForm: CreateQuestionnaireInput,
     ): Promise<QuestionnaireVersion> {
         return this.questionnaireService.create(xlsForm);
+    }
+
+    @Mutation(() => QuestionnaireVersion)
+    async updateQuestionnaire(
+        @Args('_id', { type: () => String })
+        id: Types.ObjectId,
+
+        @Args('xlsForm', { type: () => UpdateQuestionnaireInput })
+        xlsForm: UpdateQuestionnaireInput,
+    ): Promise<QuestionnaireVersion> {
+        return this.questionnaireService.updateOne(id, xlsForm);
     }
 
     @Mutation(() => Questionnaire)
