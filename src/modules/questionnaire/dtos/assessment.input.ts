@@ -21,18 +21,18 @@ export class AnswerAssessmentInput {
     @Field(() => String)
     question: Types.ObjectId;
 
-    @Field()
-    textValue: string;
+    @Field(() => String, { nullable: true })
+    textValue?: string;
 
     @Field({ nullable: true })
-    dateValue: Date;
+    dateValue?: Date;
 
     @Field(() => [String], { nullable: true })
-    multipleChoiceValue: string[];
+    multipleChoiceValue?: string[];
 
     @Field({ nullable: true })
-    numberValue: number;
+    numberValue?: number;
 
     @Field({ nullable: true })
-    booleanValue: boolean;
+    booleanValue?: boolean;
 }

@@ -7,20 +7,20 @@ import { QuestionnaireStatus } from '../models/questionnaire-version.schema';
 
 @InputType()
 export class UpdateQuestionnaireInput {
-    @Field(() => String)
+    @Field(() => String, { nullable: false })
     language: string;
 
-    @Field(() => Number)
+    @Field(() => Number, { nullable: false })
     timeToComplete: number;
 
     @Field(() => String, { nullable: true })
-    license: string;
+    license?: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: false })
     copyright: string;
 
     @Field(() => String, { nullable: true })
-    website: string;
+    website?: string;
 
     @Field(() => String, {
         nullable: true,

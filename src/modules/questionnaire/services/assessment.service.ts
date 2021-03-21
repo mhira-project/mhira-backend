@@ -9,7 +9,7 @@ import {
     QuestionnaireAssessment,
     AssessmentStatus,
 } from '../models/questionnaire-assessment.schema';
-import { questionType } from '../models/question.schema';
+import { QuestionType } from '../models/question.schema';
 import {
     QuestionnaireStatus,
     QuestionnaireVersion,
@@ -129,8 +129,8 @@ export class AssessmentService {
         }
 
         if (
-            question.type === questionType.SELECT_MULTIPLE ||
-            question.type === questionType.SELECT_ONE
+            question.type === QuestionType.SELECT_MULTIPLE ||
+            question.type === QuestionType.SELECT_ONE
         ) {
             const choices = question.choices.map(choice => choice.name);
 

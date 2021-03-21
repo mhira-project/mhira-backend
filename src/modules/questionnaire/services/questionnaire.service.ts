@@ -126,6 +126,7 @@ export class QuestionnaireService {
     }
 
     delete(_id: Types.ObjectId) {
+        // TODO: implement a soft delete with an ARCHIVE status
         return this.questionnaireModel.findByIdAndDelete(_id).exec();
     }
 

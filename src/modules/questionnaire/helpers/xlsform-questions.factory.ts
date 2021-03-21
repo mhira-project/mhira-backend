@@ -1,5 +1,5 @@
 import { QuestionGroup } from '../models/question-group.schema';
-import { Choice, Question, questionType } from '../models/question.schema';
+import { Choice, Question, QuestionType } from '../models/question.schema';
 import { QuestionData, XLSForm } from './xlsform-reader.helper';
 
 export class XlsFormQuestionFactory {
@@ -9,7 +9,7 @@ export class XlsFormQuestionFactory {
         question: Question,
         questionGroup: QuestionGroup,
     ): Question | QuestionGroup {
-        if (questionRow.type === questionType.BEGIN_GROUP) {
+        if (questionRow.type === QuestionType.BEGIN_GROUP) {
             questionGroup.label = questionRow.label;
             return questionGroup;
         } else {
@@ -24,8 +24,8 @@ export class XlsFormQuestionFactory {
             // TODO: maybe make invalid column check here...
 
             if (
-                questionRow.type?.startsWith(questionType.SELECT_ONE) ||
-                questionRow.type?.startsWith(questionType.SELECT_MULTIPLE)
+                questionRow.type?.startsWith(QuestionType.SELECT_ONE) ||
+                questionRow.type?.startsWith(QuestionType.SELECT_MULTIPLE)
             ) {
                 const questionType = questionRow.type?.split(' ');
                 const listName = questionType[1];
@@ -45,7 +45,7 @@ export class XlsFormQuestionFactory {
                 question.choices = choices;
             }
 
-            if (question.type === questionType.TEXT && !!question.max) {
+            if (question.type === QuestionType.TEXT && !!question.max) {
                 throw new Error(
                     'Maxlength needs to be configured for textfields',
                 );
