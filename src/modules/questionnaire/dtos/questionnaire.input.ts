@@ -29,7 +29,7 @@ export class UpdateQuestionnaireInput {
         nullable: true,
         defaultValue: QuestionnaireStatus.DRAFT,
     })
-    status: string;
+    status: QuestionnaireStatus;
 }
 
 @InputType()

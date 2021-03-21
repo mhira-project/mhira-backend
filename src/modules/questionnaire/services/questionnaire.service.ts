@@ -163,7 +163,8 @@ export class QuestionnaireService {
     }
 
     delete(_id: Types.ObjectId) {
-        // TODO: implement a soft delete with an ARCHIVE status
+        // TODO: implement a soft delete with an ARCHIVE status => new Version with Archive
+        // TODO: delete all versions by questionnaire
         return this.questionnaireModel.findByIdAndDelete(_id).exec();
     }
 

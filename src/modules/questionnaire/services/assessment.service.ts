@@ -9,11 +9,11 @@ import {
     QuestionnaireAssessment,
     AssessmentStatus,
 } from '../models/questionnaire-assessment.schema';
-import { QuestionType } from '../models/question.schema';
 import {
     QuestionnaireStatus,
     QuestionnaireVersion,
 } from '../models/questionnaire-version.schema';
+import { QuestionValidatorFactory } from '../helpers/question-validator.factory';
 
 export class AssessmentService {
     constructor(
@@ -35,9 +35,10 @@ export class AssessmentService {
                 );
 
                 if (
-                    questionnaireVersion.status ===
-                        QuestionnaireStatus.ARCHIVED ||
-                    questionnaireVersion.status === QuestionnaireStatus.DRAFT
+                    ![
+                        QuestionnaireStatus.PRIVATE,
+                        QuestionnaireStatus.PUBLISHED,
+                    ].includes(questionnaireVersion.status)
                 ) {
                     throw new Error(
                         `${questionnaireVersion.name} has status ${questionnaireVersion.status} and cannot be added to assessment.`,
@@ -54,6 +55,8 @@ export class AssessmentService {
             assessmentAnswerInput.assessmentId,
         );
 
+        // TODO: check if this version is newest version. if not throw error
+
         if (!foundAssessment) {
             throw new Error('No assessment found.');
         }
@@ -69,18 +72,8 @@ export class AssessmentService {
             );
         }
 
-        const questionnaireVersion: QuestionnaireVersion = await this.questionnaireVersionModel.findOne(
-            {
-                questionGroups: {
-                    $elemMatch: {
-                        questions: {
-                            $elemMatch: {
-                                _id: assessmentAnswerInput.question,
-                            },
-                        },
-                    },
-                },
-            },
+        const questionnaireVersion: QuestionnaireVersion = await this.questionnaireVersionModel.findById(
+            assessmentAnswerInput.questionnaireVersionId,
         );
 
         if (
@@ -88,7 +81,10 @@ export class AssessmentService {
             !(foundAssessment.questionnaires as Types.ObjectId[]).includes(
                 questionnaireVersion._id,
             ) ||
-            questionnaireVersion.status === QuestionnaireStatus.ARCHIVED
+            ![
+                QuestionnaireStatus.PUBLISHED,
+                QuestionnaireStatus.PRIVATE,
+            ].includes(questionnaireVersion.status)
         ) {
             throw new Error('Invalid questionnaire linked to this question.');
         }
@@ -104,6 +100,10 @@ export class AssessmentService {
                 question => question._id == assessmentAnswerInput.question,
             )[0];
 
+        if (!question) {
+            throw new Error('Invalid question answered');
+        }
+
         const answerExisting = foundAssessment.answers.filter(
             answer => answer.question === assessmentAnswerInput.question,
         );
@@ -117,59 +117,32 @@ export class AssessmentService {
         answer.numberValue = assessmentAnswerInput.numberValue;
         answer.dateValue = assessmentAnswerInput.dateValue;
 
-        const valueSet =
-            !!answer.multipleChoiceValue ||
-            !!answer.booleanValue ||
-            !!answer.textValue ||
-            !!answer.numberValue ||
-            !!answer.dateValue;
+        const validator = QuestionValidatorFactory.getValidatorForQuestion(
+            question,
+        );
 
-        if (question.required && !valueSet) {
-            throw new Error('Question is required.');
-        }
-
-        if (
-            question.type === QuestionType.SELECT_MULTIPLE ||
-            question.type === QuestionType.SELECT_ONE
-        ) {
-            const choices = question.choices.map(choice => choice.name);
-
-            if (
-                answer.multipleChoiceValue &&
-                (answer.multipleChoiceValue?.length < question.min ||
-                    answer.multipleChoiceValue?.length > question.max)
-            ) {
-                throw new Error(
-                    `Number of answers must be between ${question.min} and ${question.max}`,
-                );
+        if (validator.isValid(answer)) {
+            if (!answerExisting[0]) {
+                foundAssessment.answers.push(answer);
+            } else {
+                foundAssessment.answers[
+                    foundAssessment.answers.indexOf(answerExisting[0])
+                ] = answer;
             }
 
-            if (
-                answer.multipleChoiceValue?.some(c => !choices.includes(c)) ||
-                !choices.includes(answer.textValue)
-            ) {
-                throw new Error(`Please only choose available answers!`);
-            }
+            foundAssessment.status = assessmentAnswerInput.finishedAssessment
+                ? AssessmentStatus.COMPLETED
+                : AssessmentStatus.PARTIALLY_COMPLETED;
+
+            return this.assessmentModel
+                .findByIdAndUpdate(
+                    assessmentAnswerInput.assessmentId,
+                    foundAssessment,
+                )
+                .exec();
         }
 
-        if (!answerExisting[0]) {
-            foundAssessment.answers.push(answer);
-        } else {
-            foundAssessment.answers[
-                foundAssessment.answers.indexOf(answerExisting[0])
-            ] = answer;
-        }
-
-        foundAssessment.status = assessmentAnswerInput.finishedAssessment
-            ? AssessmentStatus.COMPLETED
-            : AssessmentStatus.PARTIALLY_COMPLETED;
-
-        return this.assessmentModel
-            .findByIdAndUpdate(
-                assessmentAnswerInput.assessmentId,
-                foundAssessment,
-            )
-            .exec();
+        return null;
     }
 
     deleteAssessment(_id: Types.ObjectId, archive = true) {

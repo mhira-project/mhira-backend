@@ -32,7 +32,7 @@ export class QuestionnaireVersion extends Document {
         enum: Object.values(QuestionnaireStatus),
         default: QuestionnaireStatus.DRAFT,
     })
-    status: string;
+    status: QuestionnaireStatus;
 
     @Field(() => [String], { nullable: true })
     @Prop({
