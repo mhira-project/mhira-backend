@@ -10,6 +10,9 @@ export class UpdateQuestionnaireInput {
     @Field(() => String, { nullable: false })
     language: string;
 
+    @Field(() => String, { nullable: true })
+    name: string;
+
     @Field(() => Number, { nullable: false })
     timeToComplete: number;
 
