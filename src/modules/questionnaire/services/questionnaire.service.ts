@@ -76,7 +76,12 @@ export class QuestionnaireService {
             },
         );
 
-        return version.save();
+        return (await version.save())
+            .populate({
+                path: 'questionnaire',
+                model: Questionnaire.name,
+            })
+            .execPopulate();
     }
 
     getById(_id: Types.ObjectId) {
@@ -174,7 +179,8 @@ export class QuestionnaireService {
 
         createdQuestionnaire.abbreviation = settings.form_id;
         createdQuestionnaire.language = questionnaireInput.language;
-        createdQuestionnaireVersion.name = settings.form_title;
+        createdQuestionnaireVersion.name =
+            questionnaireInput.name ?? settings.form_title;
 
         createdQuestionnaireVersion.license = questionnaireInput.license;
 
