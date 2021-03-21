@@ -29,12 +29,7 @@ export class QuestionnaireVersion extends Document {
     @Field(() => String)
     @Prop({
         type: 'string',
-        enum: [
-            QuestionnaireStatus.DRAFT,
-            QuestionnaireStatus.PRIVATE,
-            QuestionnaireStatus.PUBLISHED,
-            QuestionnaireStatus.ARCHIVED,
-        ],
+        enum: Object.values(QuestionnaireStatus),
         default: QuestionnaireStatus.DRAFT,
     })
     status: string;

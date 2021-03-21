@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Field, ObjectType } from '@nestjs/graphql';
 
-export const enum questionType {
+export const enum QuestionType {
     BEGIN_GROUP = 'begin_group',
     END_GROUP = 'end_group',
     INTEGER = 'integer',

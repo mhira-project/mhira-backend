@@ -133,11 +133,11 @@ export class XLSForm {
     }
 
     private getColumnDefinitions(sheetName: string = XLSFormSheets.SURVEY) {
-        return this.getSheet(sheetName)?.data[0];
+        return this.getSheet(sheetName)?.data?.[0];
     }
 
     private getRowData(sheetName: string = XLSFormSheets.SURVEY) {
-        return this.getSheet(sheetName)?.data.filter(
+        return this.getSheet(sheetName)?.data?.filter(
             (item, index) => !!item && index > 0,
         );
     }

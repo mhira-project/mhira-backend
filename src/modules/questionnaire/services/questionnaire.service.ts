@@ -10,7 +10,7 @@ import {
 import { Questionnaire } from '../models/questionnaire.schema';
 
 import xlsx from 'node-xlsx';
-import { Question, questionType } from '../models/question.schema';
+import { Question, QuestionType } from '../models/question.schema';
 import { QuestionGroup } from '../models/question-group.schema';
 import {
     QuestionnaireStatus,
@@ -60,11 +60,11 @@ export class QuestionnaireService {
     }
 
     async list(filters: ListQuestionnaireInput) {
-        // filter by questionnaire versions => order by newest of questionnaire (distinct) so no errors can happen
-
-        return await this.questionnaireVersionModel
-            .aggregate()
-            .group({
+        // filter questionnaires by version. order by newest and only filter after results have been found.
+        // TODO: add sorting and paging
+        // TODO: add keywords
+        let questionnaireVersions: QuestionnaireVersion[] = (
+            await this.questionnaireVersionModel.aggregate().group({
                 _id: '$questionnaire',
                 id: {
                     $last: '$_id',
@@ -91,42 +91,38 @@ export class QuestionnaireService {
                     $last: '$timeToComplete',
                 },
             })
-            .then(questionnaireVersions => {
-                questionnaireVersions = questionnaireVersions.map(version => {
-                    version.questionnaire = version._id;
-                    version._id = version.id;
-                    delete version.id;
+        ).map(version => {
+            version.questionnaire = version._id;
+            version._id = version.id;
+            delete version.id;
 
-                    return version as QuestionnaireVersion;
-                });
+            return version as QuestionnaireVersion;
+        });
 
-                return this.questionnaireVersionModel
-                    .populate(questionnaireVersions, {
-                        path: 'questionnaire',
-                        model: Questionnaire.name,
-                    })
-                    .then(questionVersions => {
-                        return questionVersions.filter(
-                            version =>
-                                (!filters.language ||
-                                    (version.questionnaire as Questionnaire)
-                                        .language === filters.language) &&
-                                (!filters.abbreviation ||
-                                    (version.questionnaire as Questionnaire).abbreviation.includes(
-                                        filters.abbreviation,
-                                    )) &&
-                                (!filters.timeToComplete ||
-                                    version.timeToComplete ===
-                                    filters.timeToComplete) &&
-                                (!filters.license ||
-                                    version.license.includes(
-                                        filters.license,
-                                    )) &&
-                                (!filters.status ||
-                                    version.status === filters.status),
-                        );
-                    });
-            });
+        const populatedQuestionnaires = await this.questionnaireVersionModel.populate(
+            questionnaireVersions,
+            {
+                path: 'questionnaire',
+                model: Questionnaire.name,
+            },
+        );
+
+        return populatedQuestionnaires.filter(version => {
+            const questionnaire = version.questionnaire as Questionnaire;
+            return (
+                (!filters.language ||
+                    questionnaire.language === filters.language) &&
+                (!filters.abbreviation ||
+                    questionnaire.abbreviation.includes(
+                        filters.abbreviation,
+                    )) &&
+                (!filters.timeToComplete ||
+                    version.timeToComplete === filters.timeToComplete) &&
+                (!filters.license ||
+                    version.license.includes(filters.license)) &&
+                (!filters.status || version.status === filters.status)
+            );
+        });
     }
 
     delete(_id: Types.ObjectId) {
@@ -163,7 +159,7 @@ export class QuestionnaireService {
         let currentGroup: QuestionGroup = null;
 
         for (const questionData of xlsFormParsed.getQuestionData()) {
-            if (questionData.type === questionType.END_GROUP) {
+            if (questionData.type === QuestionType.END_GROUP) {
                 createdQuestionnaireVersion.questionGroups.push(currentGroup);
                 currentGroup = null;
             } else {

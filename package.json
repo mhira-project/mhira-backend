@@ -6,7 +6,6 @@
     "private": true,
     "license": "UNLICENSED",
     "scripts": {
-        "preinstall": "npx npm-force-resolutions",
         "commit": "cz",
         "prebuild": "rimraf dist",
         "build": "npm run prebuild && nest build",
@@ -62,7 +61,6 @@
         "passport-local": "^1.0.0",
         "pg": "^8.0.3",
         "randomstring": "^1.1.5",
-        "read-excel-file": "^5.0.0",
         "reflect-metadata": "^0.1.13",
         "remove": "^0.1.5",
         "rimraf": "^3.0.2",
