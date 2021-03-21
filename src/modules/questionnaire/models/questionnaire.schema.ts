@@ -3,7 +3,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types, Document } from 'mongoose';
 
 @ObjectType()
-@Schema({ collection: 'questionnaires', timestamps: true })
+@Schema({ collection: 'questionnaires', timestamps: {} })
 export class Questionnaire extends Document {
     @Field(() => String)
     _id: Types.ObjectId;

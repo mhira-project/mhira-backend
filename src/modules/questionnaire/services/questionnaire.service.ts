@@ -31,7 +31,7 @@ export class QuestionnaireService {
         private questionGroupModel: Model<QuestionGroup>,
         @InjectModel(Question.name)
         private questionModel: Model<Question>,
-    ) { }
+    ) {}
 
     public async create(xlsForm: CreateQuestionnaireInput) {
         const fileData: FileData[] = await this.readFileUpload(
@@ -41,10 +41,42 @@ export class QuestionnaireService {
         return await this.createQuestionnaireFromFileData(fileData, xlsForm);
     }
 
-    public async updateOne(_id: Types.ObjectId, xlsForm: UpdateQuestionnaireInput) {
-        const q = await this.questionnaireVersionModel.findOne({ _id });
-        Object.entries(xlsForm).forEach(([key, value]) => q[key] = value);
-        return q.save();
+    public async updateOne(
+        _id: Types.ObjectId,
+        xlsForm: UpdateQuestionnaireInput,
+    ) {
+        const version = await this.questionnaireVersionModel.findById(_id);
+
+        const newestVersionByQuestionnaire = !!version
+            ? await this.getNewestVersionById(
+                  version.questionnaire as Types.ObjectId,
+              )
+            : null;
+
+        if (!version || newestVersionByQuestionnaire._id != _id) {
+            throw new Error(
+                'This version is invalid. Maybe this is not the newest version of questionnaire?',
+            );
+        }
+
+        version._id = Types.ObjectId();
+        version.isNew = true;
+
+        version.createdAt = null;
+        version.updatedAt = null;
+
+        Object.entries(xlsForm).forEach(
+            ([key, value]) => (version[key] = value),
+        );
+
+        await this.questionnaireModel.updateOne(
+            { _id: version.questionnaire },
+            {
+                language: xlsForm.language,
+            },
+        );
+
+        return version.save();
     }
 
     getById(_id: Types.ObjectId) {

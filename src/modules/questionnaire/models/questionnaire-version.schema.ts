@@ -13,7 +13,7 @@ export enum QuestionnaireStatus {
 }
 
 @ObjectType()
-@Schema({ collection: 'questionnaire_versions', timestamps: true })
+@Schema({ collection: 'questionnaire_versions', timestamps: {} })
 export class QuestionnaireVersion extends Document {
     @Field(() => String)
     _id: Types.ObjectId;
@@ -33,10 +33,6 @@ export class QuestionnaireVersion extends Document {
         default: QuestionnaireStatus.DRAFT,
     })
     status: string;
-
-    @Field(() => Date)
-    @Prop()
-    createdAt: Date;
 
     @Field(() => [String], { nullable: true })
     @Prop({
@@ -65,6 +61,14 @@ export class QuestionnaireVersion extends Document {
     @Field(() => [QuestionGroup])
     @Prop({ type: [QuestionGroupSchema] })
     questionGroups: QuestionGroup[];
+
+    @Field(() => Date)
+    @Prop()
+    createdAt: Date;
+
+    @Field(() => Date)
+    @Prop()
+    updatedAt: Date;
 }
 
 export const QuestionnaireVersionSchema = SchemaFactory.createForClass(
