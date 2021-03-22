@@ -88,10 +88,14 @@ export class QuestionnaireService {
         return this.questionnaireModel.findById(_id).exec();
     }
 
-    getNewestVersionById(questionnaireId: Types.ObjectId) {
+    async getNewestVersionById(questionnaireId: Types.ObjectId) {
         return this.questionnaireVersionModel
-            .findOne({ questionnaire: questionnaireId })
-            .sort({ createdAt: -1 })
+            .findOne({
+                questionnaire: questionnaireId,
+            })
+            .sort({
+                createdAt: -1,
+            })
             .populate({ path: 'questionnaire', model: Questionnaire.name })
             .exec();
     }

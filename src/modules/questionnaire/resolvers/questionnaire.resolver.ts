@@ -12,7 +12,7 @@ import { Types } from 'mongoose';
 
 @Resolver(() => Questionnaire)
 export class QuestionnaireResolver {
-    constructor(private questionnaireService: QuestionnaireService) { }
+    constructor(private questionnaireService: QuestionnaireService) {}
 
     @Query(() => Questionnaire)
     getQuestionnaire(
@@ -23,9 +23,13 @@ export class QuestionnaireResolver {
 
     @Query(() => QuestionnaireVersion)
     NewestQuestionnaireVersion(
-        @Args('_id', { type: () => String }) questionnaireId: Types.ObjectId,
+        @Args('_id', { type: () => String }) questionnaireId: string,
     ): Promise<QuestionnaireVersion> {
-        return this.questionnaireService.getNewestVersionById(questionnaireId);
+        const _id = Types.ObjectId(questionnaireId);
+
+        // FIXME: it shouldn't need to be transformed but without doing so it wont work...
+
+        return this.questionnaireService.getNewestVersionById(_id);
     }
 
     @Query(() => [QuestionnaireVersion])

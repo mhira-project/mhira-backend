@@ -25,6 +25,9 @@ export class UpdateQuestionnaireInput {
     @Field(() => String, { nullable: true })
     website?: string;
 
+    @Field(() => [String], { nullable: true })
+    keywords?: string[];
+
     @Field(() => String, {
         nullable: true,
         defaultValue: QuestionnaireStatus.DRAFT,
