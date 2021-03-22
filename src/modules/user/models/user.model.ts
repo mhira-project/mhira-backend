@@ -8,12 +8,21 @@ import {
     UpdateDateColumn,
     DeleteDateColumn,
     ManyToMany,
-    JoinTable, OneToMany, BeforeInsert, BeforeUpdate, BeforeRemove
+    JoinTable,
+    OneToMany,
+    BeforeInsert,
+    BeforeUpdate,
+    BeforeRemove,
 } from 'typeorm';
 import { Permission } from 'src/modules/permission/models/permission.model';
 import { AccessToken } from 'src/modules/auth/models/access-token.model';
 import { GenderEnum } from 'src/modules/patient/models/gender.enum';
-import { FilterableField, KeySet, Relation, FilterableRelation } from '@nestjs-query/query-graphql';
+import {
+    FilterableField,
+    KeySet,
+    Relation,
+    FilterableRelation,
+} from '@nestjs-query/query-graphql';
 import { Role } from 'src/modules/permission/models/role.model';
 import { UserPreviousPassword } from './user-previous-password.model';
 import { Department } from 'src/modules/department/models/department.model';
@@ -28,7 +37,6 @@ import { Hash } from 'src/shared/helpers/hash.helper';
 @FilterableRelation('departments', () => [Department])
 @Entity()
 export class User extends BaseEntity {
-
     static searchable = [
         'firstName',
         'middleName',
@@ -102,8 +110,14 @@ export class User extends BaseEntity {
     @Column({ nullable: true })
     passwordExpiresAt: Date;
 
-    @OneToMany(() => UserPreviousPassword, password => password.user)
+    @OneToMany(
+        () => UserPreviousPassword,
+        password => password.user,
+    )
     previousPasswords: UserPreviousPassword[];
+
+    @Column({ default: 0, nullable: true })
+    failedLoginAttempts: number;
 
     @FilterableField(() => GraphQLISODateTime)
     @CreateDateColumn()
@@ -117,27 +131,41 @@ export class User extends BaseEntity {
     @DeleteDateColumn()
     deletedAt: Date;
 
-    @ManyToMany(() => Permission, permission => permission.users)
+    @ManyToMany(
+        () => Permission,
+        permission => permission.users,
+    )
     @JoinTable({ name: 'user_permission' })
     permissions: Permission[];
 
-    @ManyToMany(() => Role, role => role.users)
+    @ManyToMany(
+        () => Role,
+        role => role.users,
+    )
     @JoinTable({ name: 'user_role' })
     roles: Role[];
 
-    @ManyToMany(() => Department, department => department.users)
+    @ManyToMany(
+        () => Department,
+        department => department.users,
+    )
     @JoinTable({ name: 'user_department' })
     departments: Department[];
 
-    @ManyToMany(() => Patient, patient => patient.caseManagers)
+    @ManyToMany(
+        () => Patient,
+        patient => patient.caseManagers,
+    )
     patients: Patient[];
 
-    @OneToMany(() => AccessToken, token => token.user)
+    @OneToMany(
+        () => AccessToken,
+        token => token.user,
+    )
     accessTokens: AccessToken[];
 
     @BeforeInsert()
     async beforeInsert() {
-
         // Expire the default password immediately
         this.passwordExpiresAt = moment().toDate();
 
@@ -154,5 +182,4 @@ export class User extends BaseEntity {
     beforeDelete() {
         if (this.isSuperUser) throw new Error('Cannot delete super user');
     }
-
 }

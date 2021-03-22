@@ -5,16 +5,18 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { JwtStrategy } from './jwt.strategy';
 import { AuthResolver } from './auth.resolver';
+import { SettingModule } from '../setting/setting.module';
 
 @Module({
-  imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({
-      secret: jwtConstants.secret,
-      signOptions: { expiresIn: jwtConstants.tokenLife },
-    }),
-  ],
-  providers: [AuthService, AuthResolver, JwtStrategy],
-  exports: [JwtStrategy, PassportModule],
+    imports: [
+        SettingModule,
+        PassportModule.register({ defaultStrategy: 'jwt' }),
+        JwtModule.register({
+            secret: jwtConstants.secret,
+            signOptions: { expiresIn: jwtConstants.tokenLife },
+        }),
+    ],
+    providers: [AuthService, AuthResolver, JwtStrategy],
+    exports: [JwtStrategy, PassportModule],
 })
-export class AuthModule { }
+export class AuthModule {}
