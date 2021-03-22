@@ -118,6 +118,9 @@ export class QuestionnaireService {
                 website: {
                     $last: '$website',
                 },
+                keywords: {
+                    $last: '$keywords',
+                },
                 copyright: {
                     $last: '$copyright',
                 },
