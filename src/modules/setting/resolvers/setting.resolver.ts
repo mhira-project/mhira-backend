@@ -23,7 +23,7 @@ export class SettingResolver {
     }
 
     @Mutation(() => Boolean)
-    @UsePermission(PermissionEnum.MANAGE_SETTINGS)
+    @UsePermission(PermissionEnum.MANAGE_SYSCONFIG)
     async updateSettings(@Args('input') input: UpdateSettingInput): Promise<boolean> {
         return this.settingService.update(input);
     }

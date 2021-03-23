@@ -34,7 +34,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
                 },
                 create: { decorators: [UsePermission(PermissionEnum.MANAGE_ASSESSMENTS)] },
                 update: { decorators: [UsePermission(PermissionEnum.MANAGE_ASSESSMENTS)] },
-                delete: { decorators: [UsePermission(PermissionEnum.MANAGE_ASSESSMENTS)] },
+                delete: { decorators: [UsePermission(PermissionEnum.DELETE_ASSESSMENTS)] },
 
             }],
         }),
