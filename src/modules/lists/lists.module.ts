@@ -26,9 +26,9 @@ const guards = [GqlAuthGuard, PermissionGuard];
                 EntityClass: Country,
                 guards: guards,
                 read: { defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
-                create: { decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)] },
-                update: { decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)] },
-                delete: { decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)] },
+                create: { decorators: [UsePermission(PermissionEnum.MANAGE_SYSCONFIG)] },
+                update: { decorators: [UsePermission(PermissionEnum.MANAGE_SYSCONFIG)] },
+                delete: { decorators: [UsePermission(PermissionEnum.MANAGE_SYSCONFIG)] },
             }],
         }),
     ]
