@@ -1,28 +1,53 @@
-import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
-import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { Module } from '@nestjs/common';
-import { GqlAuthGuard } from '../auth/auth.guard';
-import { Questionnaire } from './models/questionnaire.model';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Answer, AnswerSchema } from './models/answer.schema';
+import {
+    QuestionGroup,
+    QuestionGroupSchema,
+} from './models/question-group.schema';
+import {
+    Choice,
+    ChoiceSchema,
+    Question,
+    QuestionSchema,
+} from './models/question.schema';
+import {
+    QuestionnaireVersion,
+    QuestionnaireVersionSchema,
+} from './models/questionnaire-version.schema';
+import { QuestionnaireService } from './services/questionnaire.service';
+import { QuestionnaireResolver } from './resolvers/questionnaire.resolver';
+import { AssessmentService } from './services/assessment.service';
+import { AssessmentResolver } from './resolvers/assessment.resolver';
+import {
+    Questionnaire,
+    QuestionnaireSchema,
+} from './models/questionnaire.schema';
+import {
+    QuestionnaireAssessment,
+    AssessmentSchema,
+} from './models/questionnaire-assessment.schema';
 
-const guards = [GqlAuthGuard];
 @Module({
     imports: [
-        NestjsQueryGraphQLModule.forFeature({
-            // import the NestjsQueryTypeOrmModule to register the entity with typeorm
-            // and provide a QueryService
-            imports: [NestjsQueryTypeOrmModule.forFeature([Questionnaire])],
-            // describe the resolvers you want to expose
-            resolvers: [{
-                DTOClass: Questionnaire,
-                EntityClass: Questionnaire,
-                // CreateDTOClass:
-                // UpdateDTOClass:
-                read: { disabled: false, guards },
-                create: { disabled: true },
-                update: { disabled: true },
-                delete: { disabled: true },
-            }],
-        }),
+        MongooseModule.forFeature([
+            { name: Questionnaire.name, schema: QuestionnaireSchema },
+            {
+                name: QuestionnaireVersion.name,
+                schema: QuestionnaireVersionSchema,
+            },
+            { name: Question.name, schema: QuestionSchema },
+            { name: QuestionGroup.name, schema: QuestionGroupSchema },
+            { name: Answer.name, schema: AnswerSchema },
+            { name: Choice.name, schema: ChoiceSchema },
+            { name: QuestionnaireAssessment.name, schema: AssessmentSchema },
+        ]),
+    ],
+    providers: [
+        QuestionnaireService,
+        QuestionnaireResolver,
+        AssessmentService,
+        AssessmentResolver,
     ],
 })
-export class QuestionnaireModule { }
+export class QuestionnaireModule {}
