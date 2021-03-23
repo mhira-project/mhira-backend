@@ -76,16 +76,11 @@ export class UserCrudResolver extends CRUDResolver(User, {
             relations: ['roles'],
         });
 
-        const currentUserMaxRole = currentUser.roles.reduce((prev, current) => {
-            return (prev.hierarchy > current.hierarchy) ? prev : current
-        });
+        const currentUserHierarchy = Math.min(...currentUser.roles.map(r => r.hierarchy));
+        const targetUserHierarchy = Math.min(...targetUser.roles.map(r => r.hierarchy));
 
-        const targetUserMaxRole = targetUser.roles.reduce((prev, current) => {
-            return (prev.hierarchy > current.hierarchy) ? prev : current
-        });
-
-        if (currentUserMaxRole.hierarchy <= targetUserMaxRole.hierarchy) {
-            throw new BadRequestException('Permission denied to modify user! User has higher role than current user');
+        if (currentUserHierarchy >= targetUserHierarchy) {
+            throw new BadRequestException('Permission denied to modify user! User has higher or equal role than current user');
         }
 
         if (!!update.username) {
