@@ -31,7 +31,7 @@ export class QuestionnaireService {
         private questionGroupModel: Model<QuestionGroup>,
         @InjectModel(Question.name)
         private questionModel: Model<Question>,
-    ) {}
+    ) { }
 
     public async create(xlsForm: CreateQuestionnaireInput) {
         const fileData: FileData[] = await this.readFileUpload(
@@ -49,8 +49,8 @@ export class QuestionnaireService {
 
         const newestVersionByQuestionnaire = !!version
             ? await this.getNewestVersionById(
-                  version.questionnaire as Types.ObjectId,
-              )
+                version.questionnaire as Types.ObjectId,
+            )
             : null;
 
         if (!version || newestVersionByQuestionnaire._id != _id) {
@@ -202,6 +202,8 @@ export class QuestionnaireService {
         createdQuestionnaireVersion.website = questionnaireInput.website;
         createdQuestionnaireVersion.status =
             questionnaireInput.status ?? QuestionnaireStatus.DRAFT;
+
+        createdQuestionnaireVersion.keywords = questionnaireInput.keywords;
 
         let currentGroup: QuestionGroup = null;
 
