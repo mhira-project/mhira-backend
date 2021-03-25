@@ -201,7 +201,7 @@ export class QuestionnaireService {
             )
         ) {
             throw new Error(
-                `A questionnaire for ${settings.form_id} already exists in language ${questionnaireInput.language}.`,
+                `A questionnaire for '${settings.form_id}' already exists in language '${questionnaireInput.language}'.`,
             );
         }
 
@@ -214,10 +214,6 @@ export class QuestionnaireService {
             questionnaireInput.name ?? settings.form_title;
 
         createdQuestionnaireVersion.license = questionnaireInput.license;
-
-        if (!questionnaireInput.copyright) {
-            throw new Error('Copyright is required.');
-        }
 
         createdQuestionnaireVersion.copyright = questionnaireInput.copyright;
         createdQuestionnaireVersion.timeToComplete =
