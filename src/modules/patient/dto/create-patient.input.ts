@@ -1,9 +1,9 @@
-import { Field, InputType } from "@nestjs/graphql";
-import { GenderEnum } from "../models/gender.enum";
+import { Field, InputType } from '@nestjs/graphql';
+import { MaxLength } from 'class-validator';
+import { GenderEnum } from '../models/gender.enum';
 
 @InputType()
 export class CreatePatientInput {
-
     @Field({ defaultValue: true })
     active: boolean;
 
@@ -41,6 +41,7 @@ export class CreatePatientInput {
     birthDate: Date;
 
     @Field({ nullable: true })
+    @MaxLength(2)
     birthCountryCode: string;
 
     @Field({ nullable: true })
@@ -62,6 +63,6 @@ export class CreatePatientInput {
     addressPostalCode: string;
 
     @Field({ nullable: true })
-    addressCountryId: number;
-
+    @MaxLength(2)
+    addressCountryCode: string;
 }
