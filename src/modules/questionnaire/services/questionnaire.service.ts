@@ -175,26 +175,45 @@ export class QuestionnaireService {
         return this.questionnaireModel.findByIdAndDelete(_id).exec();
     }
 
-    private createQuestionnaireFromFileData(
+    private findUniqueQuestionnaire(
+        language: string,
+        abbreviation: string,
+    ): Promise<Questionnaire> {
+        return this.questionnaireModel
+            .findOne({
+                language: language,
+                abbreviation: abbreviation,
+            })
+            .exec();
+    }
+
+    private async createQuestionnaireFromFileData(
         fileData: FileData[],
         questionnaireInput: CreateQuestionnaireInput,
     ) {
-        const createdQuestionnaire = new this.questionnaireModel();
         const xlsFormParsed: XLSForm = new XLSForm(fileData);
         const settings = xlsFormParsed.getSettings();
 
-        const createdQuestionnaireVersion = new this.questionnaireVersionModel();
+        if (
+            await this.findUniqueQuestionnaire(
+                questionnaireInput.language,
+                settings.form_id,
+            )
+        ) {
+            throw new Error(
+                `A questionnaire for '${settings.form_id}' already exists in language '${questionnaireInput.language}'.`,
+            );
+        }
 
+        const createdQuestionnaireVersion = new this.questionnaireVersionModel();
+        const createdQuestionnaire = new this.questionnaireModel();
         createdQuestionnaire.abbreviation = settings.form_id;
         createdQuestionnaire.language = questionnaireInput.language;
+
         createdQuestionnaireVersion.name =
             questionnaireInput.name ?? settings.form_title;
 
         createdQuestionnaireVersion.license = questionnaireInput.license;
-
-        if (!questionnaireInput.copyright) {
-            throw new Error('Copyright is required.');
-        }
 
         createdQuestionnaireVersion.copyright = questionnaireInput.copyright;
         createdQuestionnaireVersion.timeToComplete =
