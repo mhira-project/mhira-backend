@@ -31,7 +31,7 @@ export class QuestionnaireService {
         private questionGroupModel: Model<QuestionGroup>,
         @InjectModel(Question.name)
         private questionModel: Model<Question>,
-    ) { }
+    ) {}
 
     public async create(xlsForm: CreateQuestionnaireInput) {
         const fileData: FileData[] = await this.readFileUpload(
@@ -49,8 +49,8 @@ export class QuestionnaireService {
 
         const newestVersionByQuestionnaire = !!version
             ? await this.getNewestVersionById(
-                version.questionnaire as Types.ObjectId,
-            )
+                  version.questionnaire as Types.ObjectId,
+              )
             : null;
 
         if (!version || newestVersionByQuestionnaire._id != _id) {
@@ -246,11 +246,16 @@ export class QuestionnaireService {
             }
         }
 
-        createdQuestionnaire.save();
+        await createdQuestionnaire.save();
 
         createdQuestionnaireVersion.questionnaire = createdQuestionnaire._id;
 
-        return createdQuestionnaireVersion.save();
+        // first save the reference to the questionnaire, so no subdocument is created
+        await createdQuestionnaireVersion.save();
+
+        // reassign the questionnaire, so questionnaire fields can be accessed, without populating first. We already have the questionnaire ready.
+        createdQuestionnaireVersion.questionnaire = createdQuestionnaire;
+        return createdQuestionnaireVersion;
     }
 
     private readFileUpload(xlsForm: FileUpload): Promise<FileData[]> {
