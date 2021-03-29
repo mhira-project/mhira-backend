@@ -12,7 +12,6 @@ import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Role } from './role.model';
 import { FilterableField, Relation } from '@nestjs-query/query-graphql';
 import { User } from 'src/modules/user/models/user.model';
-import { GuardType } from '../enums/guard-type.enum';
 
 @ObjectType()
 @Relation('roles', () => [Role], { disableRemove: true, disableUpdate: true })
@@ -26,10 +25,6 @@ export class Permission extends BaseEntity {
     @FilterableField()
     @Column()
     name: string;
-
-    @FilterableField()
-    @Column()
-    guard: GuardType;
 
     @FilterableField()
     @CreateDateColumn()
