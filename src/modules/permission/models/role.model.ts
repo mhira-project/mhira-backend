@@ -13,17 +13,21 @@ import {
 } from 'typeorm';
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Permission } from './permission.model';
-import { GuardType } from '../enums/guard-type.enum';
-import { FilterableField, PagingStrategies, Relation } from '@nestjs-query/query-graphql';
+import {
+    FilterableField,
+    PagingStrategies,
+    Relation,
+} from '@nestjs-query/query-graphql';
 import { User } from 'src/modules/user/models/user.model';
 import { RoleCode } from '../enums/role-code.enum';
 
 @ObjectType()
-@Relation('permissions', () => [Permission], { pagingStrategy: PagingStrategies.NONE })
+@Relation('permissions', () => [Permission], {
+    pagingStrategy: PagingStrategies.NONE,
+})
 @Relation('users', () => [User])
 @Entity()
 export class Role extends BaseEntity {
-
     @FilterableField(() => Int)
     @PrimaryGeneratedColumn()
     id: number;
@@ -41,10 +45,6 @@ export class Role extends BaseEntity {
     hierarchy: number;
 
     @FilterableField()
-    @Column()
-    guard: GuardType;
-
-    @FilterableField()
     @CreateDateColumn()
     createdAt?: Date;
 
@@ -56,11 +56,17 @@ export class Role extends BaseEntity {
     @DeleteDateColumn()
     deletedAt?: Date;
 
-    @ManyToMany(() => Permission, permission => permission.roles)
+    @ManyToMany(
+        () => Permission,
+        permission => permission.roles,
+    )
     @JoinTable({ name: 'role_permission' })
     permissions: Permission[];
 
-    @ManyToMany(() => User, user => user.roles)
+    @ManyToMany(
+        () => User,
+        user => user.roles,
+    )
     users: User[];
 
     @Field()
@@ -75,12 +81,13 @@ export class Role extends BaseEntity {
 
     @BeforeUpdate()
     beforeUpdate() {
-        if (this.isSuperAdmin) throw new Error('Cannot update super admin role');
+        if (this.isSuperAdmin)
+            throw new Error('Cannot update super admin role');
     }
 
     @BeforeRemove()
     beforeDelete() {
-        if (this.isSuperAdmin) throw new Error('Cannot delete super admin role');
+        if (this.isSuperAdmin)
+            throw new Error('Cannot delete super admin role');
     }
-
 }
