@@ -127,7 +127,7 @@ export class QuestionnaireService {
             return version as QuestionnaireVersion;
         });
 
-        // only return questionnaireVersions with existing questionnaire...
+        // only return questionnaireVersions with existing questionnaire... <= cannot delete questionnaireVersions if you want to recreate the questions for statistic purposes
         questionnaireVersions = questionnaireVersions.filter(
             version => version.questionnaire !== null,
         );
@@ -165,12 +165,14 @@ export class QuestionnaireService {
                 await this.getNewestVersionById(_id),
             );
 
+            if (version.status === QuestionnaireStatus.ARCHIVED) {
+                throw new Error('QUestionnaire is already archived.');
+            }
+
             version.status = QuestionnaireStatus.ARCHIVED;
 
             return version.save();
         }
-
-        // TODO: do not list questionnaireVersions without questionnaire? Because we cannot delete questionnaireversions without destroying assessments...
 
         await this.questionnaireVersionModel
             .updateMany(
@@ -185,13 +187,12 @@ export class QuestionnaireService {
     }
 
     private async createNewVersion(version: QuestionnaireVersion) {
-        const newestVersionByQuestionnaire = !!version
-            ? await this.getNewestVersionById(
-                  version.questionnaire as Types.ObjectId,
-              )
-            : null;
+        const newestVersionByQuestionnaire = await this.getNewestVersionById(
+            (version.questionnaire as Questionnaire)._id ??
+                (version.questionnaire as Types.ObjectId),
+        );
 
-        if (!version || newestVersionByQuestionnaire._id != version._id) {
+        if (!version || !newestVersionByQuestionnaire._id.equals(version._id)) {
             throw new Error(
                 'This version is invalid. Maybe this is not the newest version of questionnaire?',
             );
