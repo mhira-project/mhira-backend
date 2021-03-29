@@ -6,4 +6,7 @@ export class RoleInput {
     @MaxLength(15)
     @Field()
     name: string;
+
+    @Field()
+    hierarchy: number;
 }
