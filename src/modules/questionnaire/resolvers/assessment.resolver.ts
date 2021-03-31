@@ -14,10 +14,11 @@ import {
 import { QuestionnaireAssessment } from '../models/questionnaire-assessment.schema';
 import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
 import { AssessmentService } from '../services/assessment.service';
+import { Assessment } from '../../assessment/models/assessment.model';
 
 @Resolver(() => QuestionnaireAssessment)
 export class AssessmentResolver {
-    constructor(private assessmentService: AssessmentService) {}
+    constructor(private assessmentService: AssessmentService) { }
 
     @Query(() => QuestionnaireAssessment)
     getAssessment(
@@ -33,11 +34,21 @@ export class AssessmentResolver {
         return this.assessmentService.addAnswerToAssessment(assessmentInput);
     }
 
-    @Mutation(() => QuestionnaireAssessment)
-    createNewAssessment(
+    @Mutation(() => Assessment)
+    async createNewAssessment(
         @Args('assessment') assessmentInput: CreateQuestionnaireAssessmentInput,
     ) {
-        return this.assessmentService.createNewAssessment(assessmentInput);
+        const questionnaireAssessment = await this.assessmentService.createNewAssessment(assessmentInput.questionnaires);
+        const assessment = new Assessment();
+        assessment.name = assessmentInput.name;
+        assessment.patientId = assessmentInput.patientId;
+        assessment.clinicianId = assessmentInput.clinicianId;
+        assessment.informant = assessmentInput.informant;
+        assessment.questionnaireAssessmentId = questionnaireAssessment.id;
+        return assessment.save().catch(err => {
+            questionnaireAssessment.remove();
+            throw err;
+        });
     }
 
     @Mutation(() => QuestionnaireAssessment)

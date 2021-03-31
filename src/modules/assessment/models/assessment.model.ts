@@ -16,7 +16,6 @@ import {
 @ObjectType()
 @Relation('patient', () => Patient)
 @Relation('clinician', () => User)
-@Relation('informant', () => User)
 @Entity()
 export class Assessment extends BaseEntity {
     @FilterableField(() => Int)
@@ -42,9 +41,9 @@ export class Assessment extends BaseEntity {
     @Column({ nullable: true })
     clinicianId?: number;
 
-    @FilterableField(() => Int, { nullable: true })
+    @FilterableField(() => String, { nullable: true })
     @Column({ nullable: true })
-    informantId?: number;
+    informant?: string;
 
     @FilterableField({ nullable: true })
     @Column({ default: 'PENDING' })
@@ -70,7 +69,4 @@ export class Assessment extends BaseEntity {
 
     @ManyToOne(() => User)
     clinician: User;
-
-    @ManyToOne(() => User)
-    informant: User;
 }

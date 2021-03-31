@@ -23,13 +23,13 @@ export class AssessmentService {
         private answerModel: Model<Answer>,
         @InjectModel(QuestionnaireVersion.name)
         private questionnaireVersionModel: Model<QuestionnaireVersion>,
-    ) {}
+    ) { }
 
     async createNewAssessment(
-        assessmentInput: CreateQuestionnaireAssessmentInput,
+        questionnaires: Types.ObjectId[],
     ) {
         await Promise.all(
-            assessmentInput.questionnaires.map(async versionId => {
+            questionnaires.map(async versionId => {
                 const questionnaireVersion = await this.questionnaireVersionModel.findById(
                     versionId,
                 );
@@ -47,7 +47,7 @@ export class AssessmentService {
             }),
         );
 
-        return this.assessmentModel.create(assessmentInput);
+        return this.assessmentModel.create({ questionnaires });
     }
 
     async addAnswerToAssessment(assessmentAnswerInput: AnswerAssessmentInput) {
@@ -148,8 +148,8 @@ export class AssessmentService {
     deleteAssessment(_id: Types.ObjectId, archive = true) {
         return (archive
             ? this.assessmentModel.findByIdAndUpdate(_id, {
-                  status: AssessmentStatus.ARCHIVED,
-              })
+                status: AssessmentStatus.ARCHIVED,
+            })
             : this.assessmentModel.findByIdAndDelete(_id)
         ).exec();
     }

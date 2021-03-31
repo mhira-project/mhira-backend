@@ -1,10 +1,19 @@
-import { Field, InputType } from '@nestjs/graphql';
+import { Field, InputType, Int } from '@nestjs/graphql';
 import { Types } from 'mongoose';
 
 @InputType()
 export class CreateQuestionnaireAssessmentInput {
-    @Field()
-    assessmentDate: Date;
+    @Field(() => String)
+    name: string;
+
+    @Field(() => Int)
+    patientId: number;
+
+    @Field(() => Int)
+    clinicianId: number;
+
+    @Field(() => String)
+    informant: string;
 
     @Field(() => [String])
     questionnaires: Types.ObjectId[];
