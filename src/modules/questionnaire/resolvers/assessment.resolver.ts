@@ -16,6 +16,7 @@ import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
 import { AssessmentService } from '../services/assessment.service';
 import { Assessment, FullAssessment } from '../../assessment/models/assessment.model';
 import { Int } from '@nestjs/graphql';
+import { UpdateQuestionnaireAssessmentInput } from '../dtos/assessment.input';
 
 @Resolver(() => QuestionnaireAssessment)
 export class AssessmentResolver {
@@ -57,6 +58,13 @@ export class AssessmentResolver {
             questionnaireAssessment.remove();
             throw err;
         });
+    }
+
+    @Mutation(() => Assessment)
+    async updateAssessment(
+        @Args('assessment') assessmentInput: UpdateQuestionnaireAssessmentInput,
+    ) {
+        return this.assessmentService.updateAssessment(assessmentInput);
     }
 
     @Mutation(() => QuestionnaireAssessment)

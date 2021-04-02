@@ -22,6 +22,12 @@ export class CreateQuestionnaireAssessmentInput {
 }
 
 @InputType()
+export class UpdateQuestionnaireAssessmentInput extends CreateQuestionnaireAssessmentInput {
+    @Field(() => Int)
+    assessmentId: number;
+}
+
+@InputType()
 export class AnswerAssessmentInput {
     @Field(() => String)
     assessmentId: Types.ObjectId;

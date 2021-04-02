@@ -1,8 +1,6 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import {
-    AnswerAssessmentInput,
-} from '../dtos/assessment.input';
+import { AnswerAssessmentInput, UpdateQuestionnaireAssessmentInput } from '../dtos/assessment.input';
 import { Answer } from '../models/answer.schema';
 import {
     QuestionnaireAssessment,
@@ -172,5 +170,27 @@ export class AssessmentService {
             })
             .exec();
         return assessment;
+    }
+
+    async updateAssessment(assessmentInput: UpdateQuestionnaireAssessmentInput) {
+        const assessment = await this.assessmentRepository.findOne(assessmentInput.assessmentId);
+        const questionnaireAssessment = await this.assessmentModel.findById(assessment.questionnaireAssessmentId);
+
+        // update questionnaires
+        const originalQuestionnaires = [...questionnaireAssessment.questionnaires] as QuestionnaireVersion[];
+        questionnaireAssessment.questionnaires = assessmentInput.questionnaires;
+        questionnaireAssessment.save();
+
+        // update assessment
+        delete assessmentInput.assessmentId;
+        for (const key in assessmentInput) {
+            if (key in assessment) assessment[key] = assessmentInput[key];
+        }
+        return assessment.save().catch(err => {
+            // revert questionnaires
+            questionnaireAssessment.questionnaires = originalQuestionnaires;
+            questionnaireAssessment.save();
+            throw err;
+        });
     }
 }
