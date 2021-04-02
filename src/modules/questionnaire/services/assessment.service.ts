@@ -2,7 +2,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
     AnswerAssessmentInput,
-    CreateQuestionnaireAssessmentInput,
 } from '../dtos/assessment.input';
 import { Answer } from '../models/answer.schema';
 import {
@@ -14,6 +13,9 @@ import {
     QuestionnaireVersion,
 } from '../models/questionnaire-version.schema';
 import { QuestionValidatorFactory } from '../helpers/question-validator.factory';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Assessment, FullAssessment } from '../../assessment/models/assessment.model';
+import { Repository } from 'typeorm';
 
 export class AssessmentService {
     constructor(
@@ -23,6 +25,8 @@ export class AssessmentService {
         private answerModel: Model<Answer>,
         @InjectModel(QuestionnaireVersion.name)
         private questionnaireVersionModel: Model<QuestionnaireVersion>,
+        @InjectRepository(Assessment)
+        private assessmentRepository: Repository<Assessment>
     ) { }
 
     async createNewAssessment(
@@ -156,5 +160,17 @@ export class AssessmentService {
 
     getById(_id: Types.ObjectId) {
         return this.assessmentModel.findById(_id).exec();
+    }
+
+    async getFullAssessment(assessmentId: number): Promise<FullAssessment> {
+        const assessment: FullAssessment = await this.assessmentRepository.findOne(assessmentId, { relations: ['clinician', 'patient'] }) as FullAssessment;
+        assessment.questionnaireAssessment = await this.assessmentModel
+            .findById(assessment.questionnaireAssessmentId)
+            .populate({
+                path: 'questionnaires',
+                model: QuestionnaireVersion.name,
+            })
+            .exec();
+        return assessment;
     }
 }

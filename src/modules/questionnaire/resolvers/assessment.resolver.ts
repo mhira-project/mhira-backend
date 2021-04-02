@@ -14,7 +14,8 @@ import {
 import { QuestionnaireAssessment } from '../models/questionnaire-assessment.schema';
 import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
 import { AssessmentService } from '../services/assessment.service';
-import { Assessment } from '../../assessment/models/assessment.model';
+import { Assessment, FullAssessment } from '../../assessment/models/assessment.model';
+import { Int } from '@nestjs/graphql';
 
 @Resolver(() => QuestionnaireAssessment)
 export class AssessmentResolver {
@@ -25,6 +26,13 @@ export class AssessmentResolver {
         @Args('_id', { type: () => String }) assessmentId: Types.ObjectId,
     ): Promise<QuestionnaireAssessment> {
         return this.assessmentService.getById(assessmentId);
+    }
+
+    @Query(() => FullAssessment)
+    getMongoAssessment(
+        @Args('id', { type: () => Int }) assessmentId: number,
+    ): Promise<FullAssessment> {
+        return this.assessmentService.getFullAssessment(assessmentId);
     }
 
     @Mutation(() => QuestionnaireAssessment)

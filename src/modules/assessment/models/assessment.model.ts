@@ -2,6 +2,7 @@ import { FilterableField, Relation } from '@nestjs-query/query-graphql';
 import { Field, GraphQLISODateTime, Int, ObjectType } from '@nestjs/graphql';
 import { Patient } from 'src/modules/patient/models/patient.model';
 import { User } from 'src/modules/user/models/user.model';
+import { QuestionnaireAssessment } from '../../questionnaire/models/questionnaire-assessment.schema';
 import {
     BaseEntity,
     Column,
@@ -22,6 +23,7 @@ export class Assessment extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Field(() => String)
     @Column({ nullable: false })
     questionnaireAssessmentId: string;
 
@@ -69,4 +71,16 @@ export class Assessment extends BaseEntity {
 
     @ManyToOne(() => User)
     clinician: User;
+}
+
+@ObjectType()
+export class FullAssessment extends Assessment {
+    @Field(() => QuestionnaireAssessment)
+    questionnaireAssessment: QuestionnaireAssessment;
+
+    @Field(() => User)
+    clinician: User;
+
+    @Field(() => Patient)
+    patient: Patient;
 }
