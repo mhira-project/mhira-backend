@@ -14,6 +14,7 @@ import { QuestionValidatorFactory } from '../helpers/question-validator.factory'
 import { InjectRepository } from '@nestjs/typeorm';
 import { Assessment, FullAssessment } from '../../assessment/models/assessment.model';
 import { Repository } from 'typeorm';
+import { Questionnaire } from '../models/questionnaire.schema';
 
 export class AssessmentService {
     constructor(
@@ -162,13 +163,7 @@ export class AssessmentService {
 
     async getFullAssessment(assessmentId: number): Promise<FullAssessment> {
         const assessment: FullAssessment = await this.assessmentRepository.findOne(assessmentId, { relations: ['clinician', 'patient'] }) as FullAssessment;
-        assessment.questionnaireAssessment = await this.assessmentModel
-            .findById(assessment.questionnaireAssessmentId)
-            .populate({
-                path: 'questionnaires',
-                model: QuestionnaireVersion.name,
-            })
-            .exec();
+        assessment.questionnaireAssessment = await this.assessmentModel.findById(assessment.questionnaireAssessmentId);
         return assessment;
     }
 

@@ -17,6 +17,7 @@ import { AssessmentService } from '../services/assessment.service';
 import { Assessment, FullAssessment } from '../../assessment/models/assessment.model';
 import { Int } from '@nestjs/graphql';
 import { UpdateQuestionnaireAssessmentInput } from '../dtos/assessment.input';
+import { Questionnaire } from '../models/questionnaire.schema';
 
 @Resolver(() => QuestionnaireAssessment)
 export class AssessmentResolver {
@@ -82,6 +83,10 @@ export class AssessmentResolver {
                 .populate({
                     path: 'questionnaires',
                     model: QuestionnaireVersion.name,
+                    populate: {
+                        path: 'questionnaire',
+                        model: Questionnaire.name
+                    }
                 })
                 .execPopulate();
 
