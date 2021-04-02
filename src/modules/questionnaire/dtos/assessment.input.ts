@@ -1,4 +1,5 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
+import { ArrayNotEmpty } from 'class-validator';
 import { Types } from 'mongoose';
 
 @InputType()
@@ -16,6 +17,7 @@ export class CreateQuestionnaireAssessmentInput {
     informant: string;
 
     @Field(() => [String])
+    @ArrayNotEmpty()
     questionnaires: Types.ObjectId[];
 }
 
