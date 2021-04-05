@@ -54,7 +54,7 @@ export class QuestionnaireVersion extends Document {
     @Prop()
     license: string;
 
-    @Field(() => Number)
+    @Field(() => Number, { nullable: true })
     @Prop()
     timeToComplete: number;
 
