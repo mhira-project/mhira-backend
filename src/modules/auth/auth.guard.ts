@@ -20,6 +20,11 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
     if (err || !user) {
       throw err || new AuthenticationError('Session expired! Please login.');
     }
+
+    if (!user.active) {
+      throw err || new AuthenticationError('User deactivated! Please contact your administrator.');
+    }
+
     return user;
   }
 }
