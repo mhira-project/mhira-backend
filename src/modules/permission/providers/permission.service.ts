@@ -77,7 +77,7 @@ export class PermissionService implements OnModuleInit {
             this.logger.log('Role No-Role not found in DB. System seeding it');
 
             noRole = new Role();
-            noRole.name = 'No Role';
+            noRole.name = 'Default';
             noRole.code = RoleCode.NO_ROLE;
             await noRole.save();
         }
