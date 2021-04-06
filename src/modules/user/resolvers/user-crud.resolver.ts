@@ -16,6 +16,7 @@ import { UpdateUserInput } from '../dto/update-user.input';
 import { User } from '../models/user.model';
 import { UserCrudService } from '../providers/user-crud.service';
 import { PermissionService } from '../../permission/providers/permission.service';
+import { Permission } from 'src/modules/permission/models/permission.model';
 
 @Resolver(() => User)
 @UseGuards(GqlAuthGuard, PermissionGuard)
@@ -105,7 +106,7 @@ export class UserCrudResolver extends CRUDResolver(User, {
         return this.service.passwordChangeRequired(user);
     }
 
-        // permission grants
+    // permission grants
     @ResolveField(() => [Permission], { description: 'Get User Permission Grants. ' })
     @UseGuards(GqlAuthGuard)
     permissionGrants(@Parent() user: User): Promise<Permission[]> {
