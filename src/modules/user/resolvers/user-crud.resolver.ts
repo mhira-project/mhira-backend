@@ -104,4 +104,12 @@ export class UserCrudResolver extends CRUDResolver(User, {
 
         return this.service.passwordChangeRequired(user);
     }
+
+        // permission grants
+    @ResolveField(() => [Permission], { description: 'Get User Permission Grants. ' })
+    @UseGuards(GqlAuthGuard)
+    permissionGrants(@Parent() user: User): Promise<Permission[]> {
+
+        return PermissionService.userPermissionGrants(user.id);
+    }
 }
