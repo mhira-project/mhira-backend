@@ -11,10 +11,11 @@ import { SettingService } from 'src/modules/setting/providers/setting.service';
 import { ChangeOwnPasswordInput } from '../dto/change-own-password.input';
 import { ChangePasswordInput } from '../dto/change-password.input';
 import { SettingKey } from 'src/modules/setting/enums/setting-name.enum';
+import { PermissionService } from '../../permission/providers/permission.service';
 
 @Injectable()
 export class ChangePasswordService {
-    constructor(private readonly setting: SettingService) {}
+    constructor(private readonly setting: SettingService) { }
 
     async changeOwnPassword(
         input: ChangeOwnPasswordInput,
@@ -48,27 +49,12 @@ export class ChangePasswordService {
         targetUserId: number,
         currentUserId: number,
     ): Promise<boolean> {
-        // Reload current user with roles
-        const currentUser = await User.findOneOrFail({
-            where: { id: currentUserId },
-            relations: ['roles'],
-        });
-
-        // Load targetUser with roles
         const targetUser = await User.findOneOrFail({
-            where: { targetUserId },
+            where: { id: targetUserId },
             relations: ['roles'],
         });
 
-        const currentUserMaxRole = currentUser.roles.reduce((prev, current) => {
-            return prev.hierarchy > current.hierarchy ? prev : current;
-        });
-
-        const targetUserMaxRole = targetUser.roles.reduce((prev, current) => {
-            return prev.hierarchy > current.hierarchy ? prev : current;
-        });
-
-        if (currentUserMaxRole.hierarchy <= targetUserMaxRole.hierarchy) {
+        if (!await PermissionService.compareHierarchy(currentUserId, targetUser)) {
             throw new BadRequestException(
                 'Permission denied to modify user! User has higher role than current user',
             );
@@ -100,8 +86,8 @@ export class ChangePasswordService {
         if (!isStrongPassword) {
             throw new BadRequestException(
                 'Password must be atleast 8 characters long and' +
-                    ' contain 1 lowercase, 1 uppercase, 1 numeric,' +
-                    ' and one special character',
+                ' contain 1 lowercase, 1 uppercase, 1 numeric,' +
+                ' and one special character',
             );
         }
 
@@ -111,7 +97,7 @@ export class ChangePasswordService {
         if (input.newPassword !== input.newPasswordConfirmation) {
             throw new BadRequestException(
                 'Password confirmation mismatch!' +
-                    ' Provided password and password confirmation did not match.',
+                ' Provided password and password confirmation did not match.',
             );
         }
 
@@ -168,8 +154,8 @@ export class ChangePasswordService {
         const passwordExpiresAt = input.requirePasswordChangeOnLogin
             ? moment().toDate()
             : moment()
-                  .add(passwordLifeTime, 'days')
-                  .toDate();
+                .add(passwordLifeTime, 'days')
+                .toDate();
 
         // save password
         targetUser.passwordExpiresAt = passwordExpiresAt;

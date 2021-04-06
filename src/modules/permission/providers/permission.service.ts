@@ -33,7 +33,7 @@ export class PermissionService implements OnModuleInit {
         if (permissionsToDelete.length > 0) {
             this.logger.log(
                 'Prunning un-needed permissions: ' +
-                    permissionsToDelete.join(','),
+                permissionsToDelete.join(','),
             );
 
             await Permission.createQueryBuilder()
@@ -137,5 +137,30 @@ export class PermissionService implements OnModuleInit {
         ];
 
         return permissions;
+    }
+
+    /**
+     * Compares hierarchy of one user and another target
+     * @param currentUser user to compare to target
+     * @param targetUser target to compare with
+     * @returns true when currentUser has stronger hierarchy than targetUser
+     */
+    static async compareHierarchy(currentUser: User | number, targetUser: User | number): Promise<boolean> {
+        if (typeof currentUser === 'number') {
+            currentUser = await User.findOneOrFail({
+                where: { id: currentUser },
+                relations: ['roles'],
+            });
+        }
+
+        if (typeof targetUser === 'number') {
+            targetUser = await User.findOneOrFail({
+                where: { id: targetUser },
+                relations: ['roles'],
+            });
+        }
+
+        // true if currentUser is stronger than targetUser
+        return Math.min(...currentUser.roles.map(r => r.hierarchy)) < Math.min(...targetUser.roles.map(r => r.hierarchy));
     }
 }

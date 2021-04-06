@@ -60,8 +60,11 @@ export class QuestionnaireResolver {
 
     @Mutation(() => Questionnaire)
     async deleteQuestionnaire(
-        @Args('_id', { type: () => String }) _id: Types.ObjectId,
+        @Args('_id', { type: () => String }) questionnaireId: string,
+        @Args('softDelete', { type: () => Boolean, defaultValue: true })
+        softDelete: boolean,
     ) {
-        return this.questionnaireService.delete(_id);
+        const _id = Types.ObjectId(questionnaireId);
+        return this.questionnaireService.deleteQuestionnaire(_id, softDelete);
     }
 }

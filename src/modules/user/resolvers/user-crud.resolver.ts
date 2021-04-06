@@ -15,6 +15,7 @@ import { UpdateOneUserInput } from '../dto/update-one-user.input';
 import { UpdateUserInput } from '../dto/update-user.input';
 import { User } from '../models/user.model';
 import { UserCrudService } from '../providers/user-crud.service';
+import { PermissionService } from '../../permission/providers/permission.service';
 
 @Resolver(() => User)
 @UseGuards(GqlAuthGuard, PermissionGuard)
@@ -64,22 +65,7 @@ export class UserCrudResolver extends CRUDResolver(User, {
 
         const { id, update } = input;
 
-        // Reload current user with roles
-        currentUser = await User.findOneOrFail({
-            where: { id: currentUser.id },
-            relations: ['roles'],
-        });
-
-        // Load targetUser with roles
-        const targetUser = await User.findOneOrFail({
-            where: { id },
-            relations: ['roles'],
-        });
-
-        const currentUserHierarchy = Math.min(...currentUser.roles.map(r => r.hierarchy));
-        const targetUserHierarchy = Math.min(...targetUser.roles.map(r => r.hierarchy));
-
-        if (currentUserHierarchy >= targetUserHierarchy) {
+        if (!await PermissionService.compareHierarchy(currentUser.id, +id)) {
             throw new BadRequestException('Permission denied to modify user! User has higher or equal role than current user');
         }
 
