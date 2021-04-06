@@ -45,25 +45,9 @@ export class QuestionnaireService {
         _id: Types.ObjectId,
         xlsForm: UpdateQuestionnaireInput,
     ) {
-        const version = await this.questionnaireVersionModel.findById(_id);
-
-        const newestVersionByQuestionnaire = !!version
-            ? await this.getNewestVersionById(
-                  version.questionnaire as Types.ObjectId,
-              )
-            : null;
-
-        if (!version || newestVersionByQuestionnaire._id != _id) {
-            throw new Error(
-                'This version is invalid. Maybe this is not the newest version of questionnaire?',
-            );
-        }
-
-        version._id = Types.ObjectId();
-        version.isNew = true;
-
-        version.createdAt = null;
-        version.updatedAt = null;
+        const version = await this.createNewVersion(
+            await this.questionnaireVersionModel.findById(_id),
+        );
 
         Object.entries(xlsForm).forEach(
             ([key, value]) => (version[key] = value),
@@ -143,6 +127,11 @@ export class QuestionnaireService {
             return version as QuestionnaireVersion;
         });
 
+        // only return questionnaireVersions with existing questionnaire... <= cannot delete questionnaireVersions if you want to recreate the questions for statistic purposes
+        questionnaireVersions = questionnaireVersions.filter(
+            version => version.questionnaire !== null,
+        );
+
         const populatedQuestionnaires = await this.questionnaireVersionModel.populate(
             questionnaireVersions,
             {
@@ -169,10 +158,54 @@ export class QuestionnaireService {
         });
     }
 
-    delete(_id: Types.ObjectId) {
-        // TODO: implement a soft delete with an ARCHIVE status => new Version with Archive
-        // TODO: delete all versions by questionnaire
+    async deleteQuestionnaire(_id: Types.ObjectId, softDelete = true) {
+        if (softDelete) {
+            // only create archive version as most recent version.
+            const version = await this.createNewVersion(
+                await this.getNewestVersionById(_id),
+            );
+
+            if (version.status === QuestionnaireStatus.ARCHIVED) {
+                throw new Error('QUestionnaire is already archived.');
+            }
+
+            version.status = QuestionnaireStatus.ARCHIVED;
+
+            return version.save();
+        }
+
+        await this.questionnaireVersionModel
+            .updateMany(
+                { questionnaire: _id },
+                {
+                    questionnaire: null,
+                },
+            )
+            .exec();
+
         return this.questionnaireModel.findByIdAndDelete(_id).exec();
+    }
+
+    private async createNewVersion(version: QuestionnaireVersion) {
+        const newestVersionByQuestionnaire = await this.getNewestVersionById(
+            (version.questionnaire as Questionnaire)._id ??
+                (version.questionnaire as Types.ObjectId),
+        );
+
+        if (!version || !newestVersionByQuestionnaire._id.equals(version._id)) {
+            throw new Error(
+                'This version is invalid. Maybe this is not the newest version of questionnaire?',
+            );
+        }
+
+        version._id = Types.ObjectId();
+
+        version.isNew = true;
+
+        version.createdAt = null;
+        version.updatedAt = null;
+
+        return version;
     }
 
     private findUniqueQuestionnaire(
