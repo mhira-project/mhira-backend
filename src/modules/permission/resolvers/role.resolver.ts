@@ -38,7 +38,7 @@ export class RoleResolver extends CRUDResolver(Role, {
         @CurrentUser() currentUser: User,
     ): Promise<Role> {
 
-        const roleInput = input['role'].name as RoleInput;
+        const roleInput = input['role'] as RoleInput;
 
         const exists = await Role.findOne({ name: roleInput.name });
 
