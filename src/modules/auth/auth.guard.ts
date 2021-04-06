@@ -22,7 +22,7 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
     }
 
     if (!user.active) {
-      throw err || new AuthenticationError('User deactivated! Please contact your administrator.');
+      throw err || new AuthenticationError('User de-activated! Please contact your administrator.');
     }
 
     return user;
