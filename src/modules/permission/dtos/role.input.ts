@@ -1,5 +1,6 @@
 import { InputType, Field } from '@nestjs/graphql';
-import { MaxLength } from 'class-validator';
+import { Max, MaxLength, Min } from 'class-validator';
+import { MAX_ROLE_HIERARCHY, MIN_ROLE_HIERARCHY } from '../constants';
 
 @InputType()
 export class RoleInput {
@@ -8,5 +9,7 @@ export class RoleInput {
     name: string;
 
     @Field()
+    @Max(MAX_ROLE_HIERARCHY)
+    @Min(MIN_ROLE_HIERARCHY)
     hierarchy: number;
 }

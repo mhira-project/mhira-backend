@@ -20,6 +20,7 @@ import {
 } from '@nestjs-query/query-graphql';
 import { User } from 'src/modules/user/models/user.model';
 import { RoleCode } from '../enums/role-code.enum';
+import { MAX_ROLE_HIERARCHY } from '../constants';
 
 @ObjectType()
 @Relation('permissions', () => [Permission], {
@@ -41,7 +42,7 @@ export class Role extends BaseEntity {
     code: RoleCode;
 
     @FilterableField()
-    @Column({ default: 10 })
+    @Column({ default: MAX_ROLE_HIERARCHY })
     hierarchy: number;
 
     @FilterableField()
