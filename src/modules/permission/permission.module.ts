@@ -4,11 +4,8 @@ import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { Module } from '@nestjs/common';
 import { GqlAuthGuard } from '../auth/auth.guard';
 import { UsePermission } from './decorators/permission.decorator';
-import { AllowRoleType } from './decorators/role-type.decorator';
 import { PermissionEnum } from './enums/permission.enum';
-import { RoleCode } from './enums/role-code.enum';
 import { PermissionGuard } from './guards/permission.guard';
-import { RoleTypeGuard } from './guards/role-type.guard';
 import { Permission } from './models/permission.model';
 import { Role } from './models/role.model';
 import { PermissionService } from './providers/permission.service';
@@ -37,39 +34,6 @@ import { PermissionService } from './providers/permission.service';
                     create: { disabled: true },
                     update: { disabled: true },
                     delete: { disabled: true },
-                },
-                {
-                    DTOClass: Role,
-                    EntityClass: Role,
-                    guards: [
-                        GqlAuthGuard,
-                        PermissionGuard,
-                        RoleTypeGuard,
-                    ],
-                    read: {
-                        defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
-                        decorators: [
-                            UsePermission(PermissionEnum.VIEW_ROLES_PERMISSIONS), // non-super admins can still view
-                        ]
-                    },
-                    create: {
-                        decorators: [
-                            UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS),
-                            AllowRoleType(RoleCode.SUPER_ADMIN), // restrict access to super-admin role
-                        ],
-                    },
-                    update: {
-                        decorators: [
-                            UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS),
-                            AllowRoleType(RoleCode.SUPER_ADMIN), // restrict access to super-admin role
-                        ],
-                    },
-                    delete: {
-                        decorators: [
-                            UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS),
-                            AllowRoleType(RoleCode.SUPER_ADMIN), // restrict access to super-admin role
-                        ],
-                    },
                 },
             ],
         }),
