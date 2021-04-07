@@ -1,6 +1,6 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { AnswerAssessmentInput, UpdateQuestionnaireAssessmentInput } from '../dtos/assessment.input';
+import { AnswerAssessmentInput } from '../dtos/assessment.input';
 import { Answer } from '../models/answer.schema';
 import {
     QuestionnaireAssessment,
@@ -11,9 +11,6 @@ import {
     QuestionnaireVersion,
 } from '../models/questionnaire-version.schema';
 import { QuestionValidatorFactory } from '../helpers/question-validator.factory';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Assessment, FullAssessment } from '../../assessment/models/assessment.model';
-import { Repository } from 'typeorm';
 import { Questionnaire } from '../models/questionnaire.schema';
 
 export class AssessmentService {
@@ -24,13 +21,9 @@ export class AssessmentService {
         private answerModel: Model<Answer>,
         @InjectModel(QuestionnaireVersion.name)
         private questionnaireVersionModel: Model<QuestionnaireVersion>,
-        @InjectRepository(Assessment)
-        private assessmentRepository: Repository<Assessment>
-    ) { }
+    ) {}
 
-    async createNewAssessment(
-        questionnaires: Types.ObjectId[],
-    ) {
+    async createNewAssessment(questionnaires: Types.ObjectId[]) {
         await Promise.all(
             questionnaires.map(async versionId => {
                 const questionnaireVersion = await this.questionnaireVersionModel.findById(
@@ -53,6 +46,11 @@ export class AssessmentService {
         return this.assessmentModel.create({ questionnaires });
     }
 
+    /**
+     * Adds an answer subdocument to existing mongodb questionnaire assessment
+     * @param assessmentAnswerInput
+     * @returns
+     */
     async addAnswerToAssessment(assessmentAnswerInput: AnswerAssessmentInput) {
         const foundAssessment: QuestionnaireAssessment = await this.assessmentModel.findById(
             assessmentAnswerInput.assessmentId,
@@ -151,41 +149,40 @@ export class AssessmentService {
     deleteAssessment(_id: Types.ObjectId, archive = true) {
         return (archive
             ? this.assessmentModel.findByIdAndUpdate(_id, {
-                status: AssessmentStatus.ARCHIVED,
-            })
+                  status: AssessmentStatus.ARCHIVED,
+              })
             : this.assessmentModel.findByIdAndDelete(_id)
         ).exec();
     }
 
-    getById(_id: Types.ObjectId) {
-        return this.assessmentModel.findById(_id).exec();
-    }
-
-    async getFullAssessment(assessmentId: number): Promise<FullAssessment> {
-        const assessment: FullAssessment = await this.assessmentRepository.findOne(assessmentId, { relations: ['clinician', 'patient'] }) as FullAssessment;
-        assessment.questionnaireAssessment = await this.assessmentModel.findById(assessment.questionnaireAssessmentId);
-        return assessment;
-    }
-
-    async updateAssessment(assessmentInput: UpdateQuestionnaireAssessmentInput) {
-        const assessment = await this.assessmentRepository.findOne(assessmentInput.assessmentId);
-        const questionnaireAssessment = await this.assessmentModel.findById(assessment.questionnaireAssessmentId);
-
-        // update questionnaires
-        const originalQuestionnaires = [...questionnaireAssessment.questionnaires] as QuestionnaireVersion[];
-        questionnaireAssessment.questionnaires = assessmentInput.questionnaires;
-        questionnaireAssessment.save();
-
-        // update assessment
-        delete assessmentInput.assessmentId;
-        for (const key in assessmentInput) {
-            if (key in assessment) assessment[key] = assessmentInput[key];
+    getById(_id: Types.ObjectId | string, populate = true) {
+        if (typeof _id === 'string') {
+            _id = Types.ObjectId(_id);
         }
-        return assessment.save().catch(err => {
-            // revert questionnaires
-            questionnaireAssessment.questionnaires = originalQuestionnaires;
-            questionnaireAssessment.save();
-            throw err;
-        });
+
+        return (populate
+            ? this.assessmentModel.findById(_id).populate({
+                  path: 'questionnaires',
+                  model: QuestionnaireVersion.name,
+                  populate: {
+                      path: 'questionnaire',
+                      model: Questionnaire.name,
+                  },
+              })
+            : this.assessmentModel.findById(_id)
+        ).exec();
+    }
+
+    async updateAssessment(
+        assessmentId: Types.ObjectId,
+        questionnaires: Types.ObjectId[],
+    ) {
+        const questionnaireAssessment = await this.assessmentModel.findById(
+            assessmentId,
+        );
+
+        questionnaireAssessment.questionnaires = questionnaires;
+
+        return questionnaireAssessment.save();
     }
 }

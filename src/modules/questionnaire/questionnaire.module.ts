@@ -19,8 +19,6 @@ import { QuestionnaireService } from './services/questionnaire.service';
 import { QuestionnaireResolver } from './resolvers/questionnaire.resolver';
 import { AssessmentService } from './services/assessment.service';
 import { AssessmentResolver } from './resolvers/assessment.resolver';
-import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
-import { Assessment } from '../assessment/models/assessment.model';
 import {
     Questionnaire,
     QuestionnaireSchema,
@@ -44,9 +42,6 @@ import {
             { name: Choice.name, schema: ChoiceSchema },
             { name: QuestionnaireAssessment.name, schema: AssessmentSchema },
         ]),
-        NestjsQueryTypeOrmModule.forFeature([
-            Assessment
-        ]),
     ],
     providers: [
         QuestionnaireService,
@@ -55,4 +50,4 @@ import {
         AssessmentResolver,
     ],
 })
-export class QuestionnaireModule { }
+export class QuestionnaireModule {}

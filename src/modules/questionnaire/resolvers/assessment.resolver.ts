@@ -14,27 +14,17 @@ import {
 import { QuestionnaireAssessment } from '../models/questionnaire-assessment.schema';
 import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
 import { AssessmentService } from '../services/assessment.service';
-import { Assessment, FullAssessment } from '../../assessment/models/assessment.model';
-import { Int } from '@nestjs/graphql';
-import { UpdateQuestionnaireAssessmentInput } from '../dtos/assessment.input';
 import { Questionnaire } from '../models/questionnaire.schema';
 
 @Resolver(() => QuestionnaireAssessment)
 export class AssessmentResolver {
-    constructor(private assessmentService: AssessmentService) { }
+    constructor(private assessmentService: AssessmentService) {}
 
     @Query(() => QuestionnaireAssessment)
     getAssessment(
         @Args('_id', { type: () => String }) assessmentId: Types.ObjectId,
     ): Promise<QuestionnaireAssessment> {
         return this.assessmentService.getById(assessmentId);
-    }
-
-    @Query(() => FullAssessment)
-    getMongoAssessment(
-        @Args('id', { type: () => Int }) assessmentId: number,
-    ): Promise<FullAssessment> {
-        return this.assessmentService.getFullAssessment(assessmentId);
     }
 
     @Mutation(() => QuestionnaireAssessment)
@@ -44,33 +34,18 @@ export class AssessmentResolver {
         return this.assessmentService.addAnswerToAssessment(assessmentInput);
     }
 
-    @Mutation(() => Assessment)
-    async createNewAssessment(
-        @Args('assessment') assessmentInput: CreateQuestionnaireAssessmentInput,
-    ) {
-        const questionnaireAssessment = await this.assessmentService.createNewAssessment(assessmentInput.questionnaires);
-        const assessment = new Assessment();
-        assessment.name = assessmentInput.name;
-        assessment.patientId = assessmentInput.patientId;
-        assessment.clinicianId = assessmentInput.clinicianId;
-        assessment.informant = assessmentInput.informant;
-        assessment.questionnaireAssessmentId = questionnaireAssessment.id;
-        return assessment.save().catch(err => {
-            questionnaireAssessment.remove();
-            throw err;
-        });
-    }
-
-    @Mutation(() => Assessment)
-    async updateAssessment(
-        @Args('assessment') assessmentInput: UpdateQuestionnaireAssessmentInput,
-    ) {
-        return this.assessmentService.updateAssessment(assessmentInput);
-    }
-
     @Mutation(() => QuestionnaireAssessment)
     deleteAssessment(_id: Types.ObjectId) {
         return this.assessmentService.deleteAssessment(_id);
+    }
+
+    @Mutation(() => QuestionnaireAssessment)
+    createQuestionnaireAssessment(
+        @Args('assessment') assessmentInput: CreateQuestionnaireAssessmentInput,
+    ) {
+        return this.assessmentService.createNewAssessment(
+            assessmentInput.questionnaires,
+        );
     }
 
     @ResolveField()
@@ -85,8 +60,8 @@ export class AssessmentResolver {
                     model: QuestionnaireVersion.name,
                     populate: {
                         path: 'questionnaire',
-                        model: Questionnaire.name
-                    }
+                        model: Questionnaire.name,
+                    },
                 })
                 .execPopulate();
 
