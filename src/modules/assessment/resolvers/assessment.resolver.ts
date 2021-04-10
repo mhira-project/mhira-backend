@@ -1,5 +1,5 @@
-import { UseGuards, Type } from '@nestjs/common';
-import { Resolver, Query, Int, Args, Mutation, ID } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
+import { Resolver, Query, Int, Args, Mutation } from '@nestjs/graphql';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
 import { Assessment, FullAssessment } from '../models/assessment.model';

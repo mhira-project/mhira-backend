@@ -1,4 +1,4 @@
-import { Field, InputType, Int } from '@nestjs/graphql';
+import { Field, InputType } from '@nestjs/graphql';
 import { ArrayNotEmpty } from 'class-validator';
 import { Types } from 'mongoose';
 
@@ -10,7 +10,7 @@ export class CreateQuestionnaireAssessmentInput {
 }
 
 @InputType()
-export class UpdateQuestionnaireAssessmentInput extends CreateQuestionnaireAssessmentInput {}
+export class UpdateQuestionnaireAssessmentInput extends CreateQuestionnaireAssessmentInput { }
 
 @InputType()
 export class AnswerAssessmentInput {
