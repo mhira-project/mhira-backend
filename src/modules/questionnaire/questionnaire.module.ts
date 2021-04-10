@@ -17,7 +17,7 @@ import {
 } from './models/questionnaire-version.schema';
 import { QuestionnaireService } from './services/questionnaire.service';
 import { QuestionnaireResolver } from './resolvers/questionnaire.resolver';
-import { AssessmentService } from './services/assessment.service';
+import { QuestionnaireAssessmentService } from './services/questionnaire-assessment.service';
 import { AssessmentResolver } from './resolvers/assessment.resolver';
 import {
     Questionnaire,
@@ -46,8 +46,8 @@ import {
     providers: [
         QuestionnaireService,
         QuestionnaireResolver,
-        AssessmentService,
+        QuestionnaireAssessmentService,
         AssessmentResolver,
     ],
 })
-export class QuestionnaireModule {}
+export class QuestionnaireModule { }

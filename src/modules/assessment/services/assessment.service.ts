@@ -1,41 +1,43 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Model } from 'mongoose';
-import { QuestionnaireAssessment } from 'src/modules/questionnaire/models/questionnaire-assessment.schema';
-import { Repository } from 'typeorm';
+import { Types } from 'mongoose';
+import { getConnection, Repository } from 'typeorm';
 import {
     CreateFullAssessmentInput,
     UpdateFullAssessmentInput,
 } from '../dtos/create-assessment.input';
 import { Assessment, FullAssessment } from '../models/assessment.model';
+import { QuestionnaireAssessmentService } from '../../questionnaire/services/questionnaire-assessment.service';
 
 @Injectable()
 export class AssessmentService {
     constructor(
-        @InjectRepository(Assessment)
-        private assessmentRepository: Repository<Assessment>,
-        @InjectModel(QuestionnaireAssessment.name)
-        private assessmentModel: Model<QuestionnaireAssessment>,
-    ) {}
+        private questionnaireAssessmentService: QuestionnaireAssessmentService,
+        @InjectRepository(Assessment) private assessmentRepository: Repository<Assessment>,
+    ) { }
 
-    async createNewTransaction() {
-        const session = await this.assessmentModel.db.startSession();
-        session.startTransaction();
+    async createNewAssessment(assessmentInput: CreateFullAssessmentInput) {
+        let assessment: Assessment;
 
-        return session;
-    }
+        // create mongo assessment
+        const questionnaireAssessment = await this.questionnaireAssessmentService.createNewAssessment(
+            assessmentInput.questionnaires,
+        );
 
-    createNewAssessment(
-        assessmentInput: CreateFullAssessmentInput,
-        questionnaireAssessment: QuestionnaireAssessment,
-    ) {
-        const assessment = new Assessment();
-        assessment.name = assessmentInput.name;
-        assessment.patientId = assessmentInput.patientId;
-        assessment.clinicianId = assessmentInput.clinicianId;
-        assessment.informant = assessmentInput.informant;
-        assessment.questionnaireAssessmentId = questionnaireAssessment.id;
+        try {
+            // create postgres assessment
+            assessment = new Assessment();
+            assessment.name = assessmentInput.name;
+            assessment.patientId = assessmentInput.patientId;
+            assessment.clinicianId = assessmentInput.clinicianId;
+            assessment.informant = assessmentInput.informant;
+            assessment.questionnaireAssessmentId = questionnaireAssessment.id;
+            await assessment.save();
+        } catch (err) {
+            // undo mongo assessment and rethrow
+            await questionnaireAssessment.remove();
+            throw err;
+        }
 
         return assessment;
     }
@@ -50,43 +52,57 @@ export class AssessmentService {
             assessmentId,
             { relations: ['clinician', 'patient'] },
         )) as FullAssessment;
-        assessment.questionnaireAssessment = await this.assessmentModel.findById(
-            assessment.questionnaireAssessmentId,
-        );
+        assessment.questionnaireAssessment = await this.questionnaireAssessmentService.getById(assessment.questionnaireAssessmentId);
         return assessment;
     }
 
     async updateAssessment(assessmentInput: UpdateFullAssessmentInput) {
-        const assessment = await this.assessmentRepository.findOne(
+        // find postgres assessment
+        const assessment = await this.assessmentRepository.findOneOrFail(
             assessmentInput.assessmentId,
         );
 
-        const session = await this.createNewTransaction();
-
-        this.assessmentModel.findByIdAndUpdate(
-            assessment.questionnaireAssessmentId,
-            {
-                questionnaires: assessmentInput.questionnaires,
-            },
+        // find & update mongo assessment
+        let questionnaireAssessment = await this.questionnaireAssessmentService.getById(assessment.questionnaireAssessmentId);
+        const originalQuestionnaires = [...questionnaireAssessment.questionnaires] as Types.ObjectId[];
+        questionnaireAssessment = await this.questionnaireAssessmentService.updateAssessment(
+            questionnaireAssessment,
+            assessmentInput.questionnaires
         );
 
-        // update assessment
-        delete assessmentInput.assessmentId;
-        for (const key in assessmentInput) {
-            if (key in assessment) assessment[key] = assessmentInput[key];
+        try {
+            // update postgres assessment
+            assessment.name = assessmentInput.name;
+            assessment.patientId = assessmentInput.patientId;
+            assessment.clinicianId = assessmentInput.clinicianId;
+            assessment.informant = assessmentInput.informant;
+            assessment.questionnaireAssessmentId = questionnaireAssessment.id;
+            await assessment.save()
+        } catch (err) {
+            // undo mongo changes
+            await this.questionnaireAssessmentService.updateAssessment(questionnaireAssessment, originalQuestionnaires);
+            throw err;
         }
 
-        return assessment
-            .save()
-            .catch(err => {
-                // revert questionnaires
-                session.abortTransaction();
-                session.endSession();
-                throw err; // since we rethrow the error, we need to end the session here too (finally would not be reached imo)
-            })
-            .then(() => {
-                session.commitTransaction();
-                session.endSession();
-            });
+        return assessment;
+    }
+
+    public async deleteAssessment(id: number, archive = true) {
+        const assessment = await this.assessmentRepository.findOneOrFail(id);
+        const queryRunner = getConnection().createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        if (!archive) await queryRunner.manager.delete(Assessment, id);
+
+        try {
+            await this.questionnaireAssessmentService.deleteAssessment(assessment.questionnaireAssessmentId as any as Types.ObjectId, archive);
+            await queryRunner.commitTransaction();
+        } catch (err) {
+            await queryRunner.rollbackTransaction();
+            throw err;
+        } finally {
+            await queryRunner.release();
+        }
     }
 }

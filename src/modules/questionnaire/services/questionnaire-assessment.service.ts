@@ -1,5 +1,5 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { isValidObjectId, Model, Types } from 'mongoose';
 import { AnswerAssessmentInput } from '../dtos/assessment.input';
 import { Answer } from '../models/answer.schema';
 import {
@@ -13,7 +13,7 @@ import {
 import { QuestionValidatorFactory } from '../helpers/question-validator.factory';
 import { Questionnaire } from '../models/questionnaire.schema';
 
-export class AssessmentService {
+export class QuestionnaireAssessmentService {
     constructor(
         @InjectModel(QuestionnaireAssessment.name)
         private assessmentModel: Model<QuestionnaireAssessment>,
@@ -21,7 +21,7 @@ export class AssessmentService {
         private answerModel: Model<Answer>,
         @InjectModel(QuestionnaireVersion.name)
         private questionnaireVersionModel: Model<QuestionnaireVersion>,
-    ) {}
+    ) { }
 
     async createNewAssessment(questionnaires: Types.ObjectId[]) {
         await Promise.all(
@@ -40,6 +40,8 @@ export class AssessmentService {
                         `${questionnaireVersion.name} has status ${questionnaireVersion.status} and cannot be added to assessment.`,
                     );
                 }
+
+                return questionnaireVersion;
             }),
         );
 
@@ -149,10 +151,10 @@ export class AssessmentService {
     deleteAssessment(_id: Types.ObjectId, archive = true) {
         return (archive
             ? this.assessmentModel.findByIdAndUpdate(_id, {
-                  status: AssessmentStatus.ARCHIVED,
-              })
+                status: AssessmentStatus.ARCHIVED,
+            })
             : this.assessmentModel.findByIdAndDelete(_id)
-        ).exec();
+        ).orFail().exec();
     }
 
     getById(_id: Types.ObjectId | string, populate = true) {
@@ -162,27 +164,33 @@ export class AssessmentService {
 
         return (populate
             ? this.assessmentModel.findById(_id).populate({
-                  path: 'questionnaires',
-                  model: QuestionnaireVersion.name,
-                  populate: {
-                      path: 'questionnaire',
-                      model: Questionnaire.name,
-                  },
-              })
+                path: 'questionnaires',
+                model: QuestionnaireVersion.name,
+                populate: {
+                    path: 'questionnaire',
+                    model: Questionnaire.name,
+                },
+            })
             : this.assessmentModel.findById(_id)
-        ).exec();
+        ).orFail().exec();
     }
 
     async updateAssessment(
-        assessmentId: Types.ObjectId,
+        assessmentId: Types.ObjectId | QuestionnaireAssessment,
         questionnaires: Types.ObjectId[],
     ) {
-        const questionnaireAssessment = await this.assessmentModel.findById(
-            assessmentId,
-        );
+        let questionnaireAssessment: QuestionnaireAssessment;
+
+        if (isValidObjectId(assessmentId)) {
+            questionnaireAssessment = await this.assessmentModel
+                .findById(assessmentId)
+                .orFail()
+                .exec();
+        } else {
+            questionnaireAssessment = assessmentId as QuestionnaireAssessment;
+        }
 
         questionnaireAssessment.questionnaires = questionnaires;
-
         return questionnaireAssessment.save();
     }
 }

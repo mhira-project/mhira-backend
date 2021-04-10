@@ -13,12 +13,12 @@ import {
 } from '../dtos/assessment.input';
 import { QuestionnaireAssessment } from '../models/questionnaire-assessment.schema';
 import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
-import { AssessmentService } from '../services/assessment.service';
+import { QuestionnaireAssessmentService } from '../services/questionnaire-assessment.service';
 import { Questionnaire } from '../models/questionnaire.schema';
 
 @Resolver(() => QuestionnaireAssessment)
 export class AssessmentResolver {
-    constructor(private assessmentService: AssessmentService) {}
+    constructor(private assessmentService: QuestionnaireAssessmentService) { }
 
     @Query(() => QuestionnaireAssessment)
     getAssessment(
@@ -32,11 +32,6 @@ export class AssessmentResolver {
         @Args('assessment') assessmentInput: AnswerAssessmentInput,
     ): Promise<QuestionnaireAssessment> {
         return this.assessmentService.addAnswerToAssessment(assessmentInput);
-    }
-
-    @Mutation(() => QuestionnaireAssessment)
-    deleteAssessment(_id: Types.ObjectId) {
-        return this.assessmentService.deleteAssessment(_id);
     }
 
     @Mutation(() => QuestionnaireAssessment)
