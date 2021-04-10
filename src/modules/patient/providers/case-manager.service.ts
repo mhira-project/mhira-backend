@@ -67,7 +67,6 @@ export class CaseManagerService {
     async assignPatientCaseManager(patientId: number, caseManagerId: number): Promise<boolean> {
 
         const caseManager = await createQueryBuilder('patient_case_manager')
-            .select()
             .where(
                 'patientId = :patientId and userId = :caseManagerId',
                 { patientId, caseManagerId }

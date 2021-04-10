@@ -13,7 +13,7 @@ export class UpdateQuestionnaireInput {
     @Field(() => String, { nullable: true })
     name: string;
 
-    @Field(() => Number, { nullable: false })
+    @Field(() => Number, { nullable: true })
     timeToComplete: number;
 
     @Field(() => String, { nullable: true })
