@@ -13,11 +13,12 @@ import {
 } from '../dtos/assessment.input';
 import { QuestionnaireAssessment } from '../models/questionnaire-assessment.schema';
 import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
-import { AssessmentService } from '../services/assessment.service';
+import { QuestionnaireAssessmentService } from '../services/questionnaire-assessment.service';
+import { Questionnaire } from '../models/questionnaire.schema';
 
 @Resolver(() => QuestionnaireAssessment)
 export class AssessmentResolver {
-    constructor(private assessmentService: AssessmentService) {}
+    constructor(private assessmentService: QuestionnaireAssessmentService) { }
 
     @Query(() => QuestionnaireAssessment)
     getAssessment(
@@ -34,15 +35,12 @@ export class AssessmentResolver {
     }
 
     @Mutation(() => QuestionnaireAssessment)
-    createNewAssessment(
+    createQuestionnaireAssessment(
         @Args('assessment') assessmentInput: CreateQuestionnaireAssessmentInput,
     ) {
-        return this.assessmentService.createNewAssessment(assessmentInput);
-    }
-
-    @Mutation(() => QuestionnaireAssessment)
-    deleteAssessment(_id: Types.ObjectId) {
-        return this.assessmentService.deleteAssessment(_id);
+        return this.assessmentService.createNewAssessment(
+            assessmentInput.questionnaires,
+        );
     }
 
     @ResolveField()
@@ -55,6 +53,10 @@ export class AssessmentResolver {
                 .populate({
                     path: 'questionnaires',
                     model: QuestionnaireVersion.name,
+                    populate: {
+                        path: 'questionnaire',
+                        model: Questionnaire.name,
+                    },
                 })
                 .execPopulate();
 
