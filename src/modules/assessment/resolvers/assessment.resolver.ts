@@ -44,7 +44,7 @@ export class AssessmentResolver {
 
     @Mutation(() => Boolean)
     @UsePermission(PermissionEnum.DELETE_ASSESSMENTS)
-    async deleteAssessment(@Args('id') id: number, @Args('archive', { nullable: true, defaultValue: true }) archive: boolean) {
+    async deleteAssessment(@Args('id', { type: () => Int }) id: number, @Args('archive', { nullable: true, defaultValue: true }) archive: boolean) {
         await this.assessmentService.deleteAssessment(id, archive);
         return archive;
     }
