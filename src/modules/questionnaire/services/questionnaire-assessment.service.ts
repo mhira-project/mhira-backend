@@ -1,9 +1,6 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import {
-    AnswerAssessmentInput,
-    CreateQuestionnaireAssessmentInput,
-} from '../dtos/assessment.input';
+import { isValidObjectId, Model, Types } from 'mongoose';
+import { AnswerAssessmentInput } from '../dtos/assessment.input';
 import { Answer } from '../models/answer.schema';
 import {
     QuestionnaireAssessment,
@@ -14,8 +11,9 @@ import {
     QuestionnaireVersion,
 } from '../models/questionnaire-version.schema';
 import { QuestionValidatorFactory } from '../helpers/question-validator.factory';
+import { Questionnaire } from '../models/questionnaire.schema';
 
-export class AssessmentService {
+export class QuestionnaireAssessmentService {
     constructor(
         @InjectModel(QuestionnaireAssessment.name)
         private assessmentModel: Model<QuestionnaireAssessment>,
@@ -23,13 +21,11 @@ export class AssessmentService {
         private answerModel: Model<Answer>,
         @InjectModel(QuestionnaireVersion.name)
         private questionnaireVersionModel: Model<QuestionnaireVersion>,
-    ) {}
+    ) { }
 
-    async createNewAssessment(
-        assessmentInput: CreateQuestionnaireAssessmentInput,
-    ) {
+    async createNewAssessment(questionnaires: Types.ObjectId[]) {
         await Promise.all(
-            assessmentInput.questionnaires.map(async versionId => {
+            questionnaires.map(async versionId => {
                 const questionnaireVersion = await this.questionnaireVersionModel.findById(
                     versionId,
                 );
@@ -44,12 +40,19 @@ export class AssessmentService {
                         `${questionnaireVersion.name} has status ${questionnaireVersion.status} and cannot be added to assessment.`,
                     );
                 }
+
+                return questionnaireVersion;
             }),
         );
 
-        return this.assessmentModel.create(assessmentInput);
+        return this.assessmentModel.create({ questionnaires });
     }
 
+    /**
+     * Adds an answer subdocument to existing mongodb questionnaire assessment
+     * @param assessmentAnswerInput
+     * @returns
+     */
     async addAnswerToAssessment(assessmentAnswerInput: AnswerAssessmentInput) {
         const foundAssessment: QuestionnaireAssessment = await this.assessmentModel.findById(
             assessmentAnswerInput.assessmentId,
@@ -148,13 +151,46 @@ export class AssessmentService {
     deleteAssessment(_id: Types.ObjectId, archive = true) {
         return (archive
             ? this.assessmentModel.findByIdAndUpdate(_id, {
-                  status: AssessmentStatus.ARCHIVED,
-              })
+                status: AssessmentStatus.ARCHIVED,
+            })
             : this.assessmentModel.findByIdAndDelete(_id)
-        ).exec();
+        ).orFail().exec();
     }
 
-    getById(_id: Types.ObjectId) {
-        return this.assessmentModel.findById(_id).exec();
+    getById(_id: Types.ObjectId | string, populate = true) {
+        if (typeof _id === 'string') {
+            _id = Types.ObjectId(_id);
+        }
+
+        return (populate
+            ? this.assessmentModel.findById(_id).populate({
+                path: 'questionnaires',
+                model: QuestionnaireVersion.name,
+                populate: {
+                    path: 'questionnaire',
+                    model: Questionnaire.name,
+                },
+            })
+            : this.assessmentModel.findById(_id)
+        ).orFail().exec();
+    }
+
+    async updateAssessment(
+        assessmentId: Types.ObjectId | QuestionnaireAssessment,
+        questionnaires: Types.ObjectId[],
+    ) {
+        let questionnaireAssessment: QuestionnaireAssessment;
+
+        if (isValidObjectId(assessmentId)) {
+            questionnaireAssessment = await this.assessmentModel
+                .findById(assessmentId)
+                .orFail()
+                .exec();
+        } else {
+            questionnaireAssessment = assessmentId as QuestionnaireAssessment;
+        }
+
+        questionnaireAssessment.questionnaires = questionnaires;
+        return questionnaireAssessment.save();
     }
 }

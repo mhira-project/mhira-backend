@@ -1,14 +1,16 @@
 import { Field, InputType } from '@nestjs/graphql';
+import { ArrayNotEmpty } from 'class-validator';
 import { Types } from 'mongoose';
 
 @InputType()
 export class CreateQuestionnaireAssessmentInput {
-    @Field()
-    assessmentDate: Date;
-
     @Field(() => [String])
+    @ArrayNotEmpty()
     questionnaires: Types.ObjectId[];
 }
+
+@InputType()
+export class UpdateQuestionnaireAssessmentInput extends CreateQuestionnaireAssessmentInput { }
 
 @InputType()
 export class AnswerAssessmentInput {
