@@ -1,7 +1,8 @@
-import { FilterableField, Relation, FilterableRelation } from '@nestjs-query/query-graphql';
+import { FilterableField, FilterableRelation } from '@nestjs-query/query-graphql';
 import { Field, GraphQLISODateTime, Int, ObjectType } from '@nestjs/graphql';
 import { Patient } from 'src/modules/patient/models/patient.model';
 import { User } from 'src/modules/user/models/user.model';
+import { QuestionnaireAssessment } from '../../questionnaire/models/questionnaire-assessment.schema';
 import {
     BaseEntity,
     Column,
@@ -16,13 +17,13 @@ import {
 @ObjectType()
 @FilterableRelation('patient', () => Patient)
 @FilterableRelation('clinician', () => User)
-@Relation('informant', () => User)
 @Entity()
 export class Assessment extends BaseEntity {
     @FilterableField(() => Int)
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Field(() => String)
     @Column({ nullable: false })
     questionnaireAssessmentId: string;
 
@@ -42,9 +43,9 @@ export class Assessment extends BaseEntity {
     @Column({ nullable: true })
     clinicianId?: number;
 
-    @FilterableField(() => Int, { nullable: true })
+    @FilterableField(() => String, { nullable: true })
     @Column({ nullable: true })
-    informantId?: number;
+    informant?: string;
 
     @FilterableField({ nullable: true })
     @Column({ default: 'PENDING' })
@@ -70,7 +71,16 @@ export class Assessment extends BaseEntity {
 
     @ManyToOne(() => User)
     clinician: User;
+}
 
-    @ManyToOne(() => User)
-    informant: User;
+@ObjectType()
+export class FullAssessment extends Assessment {
+    @Field(() => QuestionnaireAssessment)
+    questionnaireAssessment: QuestionnaireAssessment;
+
+    @Field(() => User)
+    clinician: User;
+
+    @Field(() => Patient)
+    patient: Patient;
 }
