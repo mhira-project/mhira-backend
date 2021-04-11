@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import { ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthGuard } from '@nestjs/passport';
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
@@ -6,6 +6,8 @@ import { AuthenticationError } from 'apollo-server-express';
 
 @Injectable()
 export class GqlAuthGuard extends AuthGuard('jwt') {
+
+  protected readonly logger = new Logger(GqlAuthGuard.name);
 
   canActivate(context: ExecutionContext) {
     const ctx = GqlExecutionContext.create(context);
@@ -17,12 +19,20 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
   }
 
   handleRequest(err: any, user: any) {
-    if (err || !user) {
-      throw err || new AuthenticationError('Session expired! Please login.');
+
+    if (err) {
+      this.logger.error(`Auth Error! ${err.message}`);
+      throw err;
+    }
+
+    if (!user) {
+      this.logger.error('Auth Error! User not found');
+      throw new AuthenticationError('Auth Error! User not found');
     }
 
     if (!user.active) {
-      throw err || new AuthenticationError('User de-activated! Please contact your administrator.');
+      this.logger.error('Auth Error! User de-activated');
+      throw new AuthenticationError('Auth Error! User de-activated, please contact your administrator.');
     }
 
     return user;
