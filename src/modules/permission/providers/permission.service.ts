@@ -1,6 +1,7 @@
 import { Logger, OnModuleInit } from '@nestjs/common';
 import { User } from 'src/modules/user/models/user.model';
 import { Any } from 'typeorm';
+import { MAX_ROLE_HIERARCHY, MIN_ROLE_HIERARCHY } from '../constants';
 import { PermissionEnum } from '../enums/permission.enum';
 import { RoleCode } from '../enums/role-code.enum';
 import { Permission } from '../models/permission.model';
@@ -68,6 +69,7 @@ export class PermissionService implements OnModuleInit {
             superAdminRole = new Role();
             superAdminRole.name = 'Super Admin';
             superAdminRole.code = RoleCode.SUPER_ADMIN;
+            superAdminRole.hierarchy = MIN_ROLE_HIERARCHY;
             await superAdminRole.save();
         }
 
@@ -79,6 +81,7 @@ export class PermissionService implements OnModuleInit {
             noRole = new Role();
             noRole.name = 'Default';
             noRole.code = RoleCode.NO_ROLE;
+            noRole.hierarchy = MAX_ROLE_HIERARCHY;
             await noRole.save();
         }
 

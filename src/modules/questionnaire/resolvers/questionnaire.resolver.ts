@@ -9,12 +9,19 @@ import { QuestionnaireService } from '../services/questionnaire.service';
 import { Questionnaire } from '../models/questionnaire.schema';
 import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
 import { Types } from 'mongoose';
+import { UseGuards } from '@nestjs/common';
+import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
+import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
+import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
+import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
 
 @Resolver(() => Questionnaire)
+@UseGuards(GqlAuthGuard, PermissionGuard)
 export class QuestionnaireResolver {
     constructor(private questionnaireService: QuestionnaireService) {}
 
     @Query(() => Questionnaire)
+    @UsePermission(PermissionEnum.VIEW_QUESTIONNAIRES)
     getQuestionnaire(
         @Args('_id', { type: () => String }) questionnaireId: Types.ObjectId,
     ): Promise<Questionnaire> {
@@ -22,6 +29,7 @@ export class QuestionnaireResolver {
     }
 
     @Query(() => QuestionnaireVersion)
+    @UsePermission(PermissionEnum.VIEW_QUESTIONNAIRES)
     NewestQuestionnaireVersion(
         @Args('_id', { type: () => String }) questionnaireId: string,
     ): Promise<QuestionnaireVersion> {
@@ -33,6 +41,7 @@ export class QuestionnaireResolver {
     }
 
     @Query(() => [QuestionnaireVersion])
+    @UsePermission(PermissionEnum.VIEW_QUESTIONNAIRES)
     async questionnaires(
         @Args('filters') questionnaireFilter: ListQuestionnaireInput,
     ) {
@@ -40,6 +49,7 @@ export class QuestionnaireResolver {
     }
 
     @Mutation(() => QuestionnaireVersion)
+    @UsePermission(PermissionEnum.MANAGE_QUESTIONNAIRES)
     async createQuestionnaire(
         @Args('xlsForm', { type: () => CreateQuestionnaireInput })
         xlsForm: CreateQuestionnaireInput,
@@ -48,6 +58,7 @@ export class QuestionnaireResolver {
     }
 
     @Mutation(() => QuestionnaireVersion)
+    @UsePermission(PermissionEnum.MANAGE_QUESTIONNAIRES)
     async updateQuestionnaire(
         @Args('_id', { type: () => String })
         id: Types.ObjectId,
@@ -59,6 +70,7 @@ export class QuestionnaireResolver {
     }
 
     @Mutation(() => Questionnaire)
+    @UsePermission(PermissionEnum.DELETE_QUESTIONNAIRES)
     async deleteQuestionnaire(
         @Args('_id', { type: () => String }) questionnaireId: string,
         @Args('softDelete', { type: () => Boolean, defaultValue: true })
