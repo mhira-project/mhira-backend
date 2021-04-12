@@ -9,6 +9,8 @@ import { PermissionGuard } from './guards/permission.guard';
 import { Permission } from './models/permission.model';
 import { Role } from './models/role.model';
 import { PermissionService } from './providers/permission.service';
+import { RoleCrudService } from './providers/role-crud.service';
+import { RoleResolver } from './resolvers/role.resolver';
 
 @Module({
     imports: [
@@ -41,6 +43,8 @@ import { PermissionService } from './providers/permission.service';
     providers: [
         PermissionGuard,
         PermissionService,
+        RoleResolver,
+        RoleCrudService,
     ],
     exports: [
         PermissionGuard,
