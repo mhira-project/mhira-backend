@@ -1,4 +1,5 @@
 import {
+    Authorize,
     FilterableField,
     FilterableRelation,
 } from '@nestjs-query/query-graphql';
@@ -19,21 +20,22 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
+import { PatientAuthorizer } from '../authorizers/patient.authorizer';
 import { EmergencyContact } from './emergency-contact.model';
 import { GenderEnum } from './gender.enum';
 import { Informant } from './informant.model';
 import { PatientStatus } from './patient-status.model';
 
 @ObjectType()
+@Authorize(PatientAuthorizer)
 @FilterableRelation('status', () => PatientStatus, {
     nullable: true,
     disableUpdate: true,
 })
 @FilterableRelation('caseManagers', () => [User], { nullable: true })
 @FilterableRelation('informants', () => [Informant], { nullable: true })
-@FilterableRelation('emergencyContacts', () => [EmergencyContact], {
-    nullable: true,
-})
+@FilterableRelation('emergencyContacts', () => [EmergencyContact], { nullable: true })
+@FilterableRelation('departments', () => [Department], { nullable: true })
 @Entity()
 export class Patient extends BaseEntity {
     static searchable = [
