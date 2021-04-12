@@ -4,7 +4,6 @@ import { RoleInput } from "./role.input";
 
 @InputType()
 export class CreateOneRoleInput extends
-    CreateOneInputType('user', RoleInput) {
-
+    CreateOneInputType('role', RoleInput) {
 }
 
