@@ -10,6 +10,7 @@ import { PermissionGuard } from 'src/modules/permission/guards/permission.guard'
 import { Role } from 'src/modules/permission/models/role.model';
 import { User } from 'src/modules/user/models/user.model';
 import { CreateOneRoleInput } from '../dtos/create-one-role.input';
+import { DeleteOneRoleInput } from '../dtos/delete-one-role.input';
 import { RoleInput } from '../dtos/role.input';
 import { UpdateOneRoleInput } from '../dtos/update-one-role.input';
 import { RoleCrudService } from '../providers/role-crud.service';
@@ -93,7 +94,7 @@ export class RoleResolver extends CRUDResolver(Role, {
     @Mutation(() => Role)
     @UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS)
     async deleteOneRole(
-        @Args('input', { type: () => DeleteOneInputType }) input: DeleteOneInputType,
+        @Args('input', { type: () => DeleteOneRoleInput }) input: DeleteOneRoleInput,
         @CurrentUser() currentUser: User,
     ): Promise<Role> {
 
