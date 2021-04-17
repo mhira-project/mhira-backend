@@ -1,5 +1,5 @@
 import { SortDirection } from '@nestjs-query/core';
-import { CRUDResolver, DeleteOneInputType } from '@nestjs-query/query-graphql';
+import { CRUDResolver } from '@nestjs-query/query-graphql';
 import { BadRequestException, UseGuards } from '@nestjs/common';
 import { Resolver, Args, Mutation } from '@nestjs/graphql';
 import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
