@@ -14,6 +14,7 @@ import { DeleteOneRoleInput } from '../dtos/delete-one-role.input';
 import { RoleInput } from '../dtos/role.input';
 import { UpdateOneRoleInput } from '../dtos/update-one-role.input';
 import { RoleCrudService } from '../providers/role-crud.service';
+import { UseOrPermissions } from '../decorators/permission.decorator';
 
 @Resolver(() => Role)
 @UseGuards(GqlAuthGuard, PermissionGuard)
@@ -22,7 +23,14 @@ export class RoleResolver extends CRUDResolver(Role, {
     UpdateDTOClass: RoleInput,
     read: {
         defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
-        decorators: [UsePermission(PermissionEnum.VIEW_ROLES_PERMISSIONS)]
+        decorators: [
+            UseOrPermissions([
+                PermissionEnum.VIEW_ROLES_PERMISSIONS,
+                PermissionEnum.MANAGE_ROLES_PERMISSIONS,
+                PermissionEnum.VIEW_USERS,
+                PermissionEnum.MANAGE_USERS,
+            ]),
+        ],
     },
     create: { disabled: true }, // overriden with custom implementation
     update: { disabled: true }, // overriden with custom implementation
