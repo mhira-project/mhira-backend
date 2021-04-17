@@ -13,48 +13,47 @@ export class PermissionGuard implements CanActivate {
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
 
-        const ctx = GqlExecutionContext.create(context);
+        const userId = GqlExecutionContext.create(context)?.getContext()?.req?.user?.id;
 
-        // Gets Anotations defined on method level
-        const permissionFromHandler = this.reflector.get<string[] | string>("permissions", context.getHandler()) || [];
+        // Return failure if un-authenticated request
+        if (!userId) return false;
 
-        // Gets Anotations defined on Controller/Resolver class level
-        const permissionFromClass = this.reflector.get<string[] | string>("permissions", context.getClass()) || [];
+        const permissions = this.getPermissions(context);
+        const orPermissions = this.getOrPermissions(context);
+        const permissionGrants = await PermissionService.userPermissionGrants(userId);
 
-        // merge all types defined
-        const permissions = [] as string[];
-
-        if (typeof permissionFromHandler === 'string') {
-            permissions.push(permissionFromHandler)
-        } else {
-            permissions.push(...permissionFromHandler);
-        }
-
-        if (permissionFromClass === 'string') {
-            permissions.push(permissionFromClass)
-        } else {
-            permissions.push(...permissionFromClass);
-        }
-
-        const request = ctx.getContext().req;
-        const user = request.user;
-
-
-        if (!user) {
-            // Return failure if un-authenticated request
-            return false;
-        }
-
-        const permissionGrants = await PermissionService.userPermissionGrants(user.id);
-
-        // Check each permission is available on User
+        // Check each required permission is available on User
+        // Return failure on first missing permission
         for (const permission of permissions) {
-            const isFound = !!permissionGrants?.find(p => p.name === permission);
+            if (permissionGrants.find(p => p.name === permission)) continue;
+            throw new ForbiddenError(`Forbidden! Permission '${permission}' required to access this resource`);
+        }
 
-            // Return failure on first missing permission
-            if (!isFound) throw new ForbiddenError(`Forbidden! Permission '${permission}' required to access this resource`);
+        // Check if one of the or_permissions is available on User
+        if (orPermissions.length && !orPermissions.some(p => permissionGrants.find(pg => pg.name === p))) {
+            throw new ForbiddenError(`Forbidden! At least one of the permissions '${orPermissions.join(', ')}' is required to access this resource`);
         }
 
         return true;
+    }
+
+    private getOrPermissions(context: ExecutionContext): string[] {
+        return [
+            // Gets Anotations defined on method level
+            this.reflector.get<string[] | string>("or_permissions", context.getHandler()) ?? [],
+
+            // Gets Anotations defined on Controller/Resolver class level
+            this.reflector.get<string[] | string>("or_permissions", context.getClass()) ?? [],
+        ].flat();
+    }
+
+    private getPermissions(context: ExecutionContext): string[] {
+        return [
+            // Gets Anotations defined on method level
+            this.reflector.get<string[] | string>("permissions", context.getHandler()) ?? [],
+
+            // Gets Anotations defined on Controller/Resolver class level
+            this.reflector.get<string[] | string>("permissions", context.getClass()) ?? [],
+        ].flat();
     }
 }
