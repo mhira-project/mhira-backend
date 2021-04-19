@@ -36,9 +36,6 @@ class SharedQuestionnaireInput {
 export class UpdateQuestionnaireInput extends SharedQuestionnaireInput {
     @Field(() => String, { nullable: false })
     name: string;
-
-    @Field(() => String, { nullable: false })
-    abbreviation: string;
 }
 
 @InputType()

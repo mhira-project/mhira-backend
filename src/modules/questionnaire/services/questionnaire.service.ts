@@ -56,8 +56,7 @@ export class QuestionnaireService {
         await this.questionnaireModel.updateOne(
             { _id: version.questionnaire },
             {
-                language: xlsForm.language,
-                abbreviation: xlsForm.abbreviation,
+                language: xlsForm.language
             },
         );
 
