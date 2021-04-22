@@ -7,6 +7,7 @@ import { SortDirection } from '@nestjs-query/core';
 import { PermissionGuard } from '../permission/guards/permission.guard';
 import { UsePermission } from '../permission/decorators/permission.decorator';
 import { PermissionEnum } from '../permission/enums/permission.enum';
+import { DepartmentCrudService } from './providers/deparment-crud.service';
 
 @Module({
     imports: [
@@ -18,16 +19,18 @@ import { PermissionEnum } from '../permission/enums/permission.enum';
                     Department
                 ])
             ],
+            services: [DepartmentCrudService],
             // describe the resolvers you want to expose
             resolvers: [
                 {
                     DTOClass: Department,
                     EntityClass: Department,
                     guards: [GqlAuthGuard, PermissionGuard],
+                    ServiceClass: DepartmentCrudService,
                     read: { defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
-                    create: { decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)] },
-                    update: { decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)] },
-                    delete: { decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)] },
+                    create: { decorators: [UsePermission(PermissionEnum.MANAGE_SYSCONFIG)] },
+                    update: { decorators: [UsePermission(PermissionEnum.MANAGE_SYSCONFIG)] },
+                    delete: { decorators: [UsePermission(PermissionEnum.MANAGE_SYSCONFIG)] },
                 },
             ],
         }),
