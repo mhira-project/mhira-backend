@@ -27,7 +27,7 @@ import { Informant } from './informant.model';
 import { PatientStatus } from './patient-status.model';
 
 @ObjectType()
-// @Authorize(PatientAuthorizer)
+@Authorize(PatientAuthorizer)
 @FilterableRelation('status', () => PatientStatus, {
     nullable: true,
     disableUpdate: true,
