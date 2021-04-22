@@ -17,6 +17,7 @@ import { User } from '../models/user.model';
 import { UserCrudService } from '../providers/user-crud.service';
 import { PermissionService } from '../../permission/providers/permission.service';
 import { Permission } from 'src/modules/permission/models/permission.model';
+import { DeleteOneUserInput } from '../dto/delete-one-user.input';
 
 @Resolver(() => User)
 @UseGuards(GqlAuthGuard, PermissionGuard)
@@ -29,6 +30,7 @@ export class UserCrudResolver extends CRUDResolver(User, {
     },
     create: { disabled: true },
     update: { disabled: true },
+    delete: { disabled: true },
 }) {
     constructor(readonly service: UserCrudService) {
         super(service);
@@ -81,6 +83,22 @@ export class UserCrudResolver extends CRUDResolver(User, {
         }
 
         return this.service.updateOne(id, update);
+    }
+
+    @Mutation(() => User)
+    @UsePermission(PermissionEnum.MANAGE_USERS)
+    async deleteOneUser(
+        @Args('input', { type: () => DeleteOneUserInput }) input: DeleteOneUserInput,
+        @CurrentUser() currentUser: User,
+    ): Promise<User> {
+
+        const { id } = input;
+
+        if (!await PermissionService.compareHierarchy(currentUser.id, +id)) {
+            throw new BadRequestException('Permission denied to delete user! User has higher or equal role than current user');
+        }
+
+        return this.service.deleteOne(id);
     }
 
     // restore one mutation will update the `deletedAt` column to null.
