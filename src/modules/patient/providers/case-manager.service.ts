@@ -3,7 +3,7 @@ import { UserConnectionDto } from "src/modules/user/dto/user-connection.model";
 import { User } from "src/modules/user/models/user.model";
 import { applySearchQuery } from "src/shared/helpers/search.helper";
 import { paginate } from "src/shared/pagination/services/paginate";
-import { createQueryBuilder } from "typeorm";
+import { createQueryBuilder, getManager } from "typeorm";
 import { CaseManagerFilter } from "../dto/case-manager.filter";
 
 
@@ -49,29 +49,26 @@ export class CaseManagerService {
         return paginate(query, caseManagerFilter, 'caseManager.id');
     }
 
-    async unassignPatientCaseManager(patientId: number, caseManagerId: number): Promise<boolean> {
+    async unassignPatientCaseManager(patientId: number, userId: number): Promise<boolean> {
 
         const result = await createQueryBuilder()
             .delete()
             .from('patient_case_manager')
-            .where(
-                'patientId = :patientId and userId = :caseManagerId',
-                { patientId, caseManagerId }
-            )
+            .where({ patientId, userId })
             .execute();
 
 
         return result.affected > 0;
     }
 
-    async assignPatientCaseManager(patientId: number, caseManagerId: number): Promise<boolean> {
+    async assignPatientCaseManager(patientId: number, userId: number): Promise<boolean> {
 
-        const caseManager = await createQueryBuilder('patient_case_manager')
-            .where(
-                'patientId = :patientId and userId = :caseManagerId',
-                { patientId, caseManagerId }
-            )
-            .getOne();
+        const caseManager = await getManager()
+            .createQueryBuilder()
+            .select('*')
+            .from('patient_case_manager', 'patient_case_manager')
+            .where({ patientId, userId })
+            .getRawOne();
 
         if (caseManager) {
             return true;
@@ -81,7 +78,7 @@ export class CaseManagerService {
             .insert()
             .into('patient_case_manager')
             .values([
-                { patientId, caseManagerId }
+                { patientId, userId }
             ])
             .execute();
 
