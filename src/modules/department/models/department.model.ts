@@ -16,7 +16,7 @@ import { Patient } from 'src/modules/patient/models/patient.model';
 @ObjectType()
 @KeySet(['id'])
 @FilterableRelation('users', () => [User], { disableUpdate: true, disableRemove: true })
-@FilterableRelation('patients', () => [User], { disableUpdate: true, disableRemove: true })
+@FilterableRelation('patients', () => [Patient], { disableUpdate: true, disableRemove: true })
 @Entity()
 export class Department extends BaseEntity {
 
