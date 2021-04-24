@@ -6,12 +6,9 @@ import { FileUpload } from 'graphql-upload';
 import { QuestionnaireStatus } from '../models/questionnaire-version.schema';
 
 @InputType()
-export class UpdateQuestionnaireInput {
+class SharedQuestionnaireInput {
     @Field(() => String, { nullable: false })
     language: string;
-
-    @Field(() => String, { nullable: true })
-    name: string;
 
     @Field(() => Number, { nullable: true })
     timeToComplete: number;
@@ -36,7 +33,16 @@ export class UpdateQuestionnaireInput {
 }
 
 @InputType()
-export class CreateQuestionnaireInput extends UpdateQuestionnaireInput {
+export class UpdateQuestionnaireInput extends SharedQuestionnaireInput {
+    @Field(() => String, { nullable: false })
+    name: string;
+}
+
+@InputType()
+export class CreateQuestionnaireInput extends SharedQuestionnaireInput {
+    @Field(() => String, { nullable: true })
+    name: string;
+
     @Field(() => GraphQLUpload)
     @Exclude()
     excelFile: Promise<FileUpload>;

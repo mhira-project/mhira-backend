@@ -32,7 +32,7 @@ export class PatientAuthorizer implements Authorizer<Patient> {
         // User has no departments
         if (deparmentIds.length < 1) {
 
-            Promise.resolve(
+            return Promise.resolve(
                 { departments: { id: { is: null } } } // include patients without a department
             );
         }
