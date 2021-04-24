@@ -14,7 +14,6 @@ export class DepartmentCrudService extends TypeOrmQueryService<Department> {
 
     async deleteOne(id: number | string): Promise<Department> {
 
-
         // Check deparment has user or patient assigned before deleting
         const hasUsersOrPatients = await this.deparmentIdsHaveUsersOrPatients({ id: { eq: Number(id) } });
 
@@ -64,6 +63,4 @@ export class DepartmentCrudService extends TypeOrmQueryService<Department> {
         // has either a User or Patient assigned.
         return (hasUsersOrPatients.length > 0);
     }
-
-
 }
