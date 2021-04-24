@@ -15,6 +15,7 @@ import { QuestionnaireAssessment } from '../models/questionnaire-assessment.sche
 import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
 import { QuestionnaireAssessmentService } from '../services/questionnaire-assessment.service';
 import { Questionnaire } from '../models/questionnaire.schema';
+import { ChangeAssessmentStatusInput } from '../dtos/assessment.input';
 
 @Resolver(() => QuestionnaireAssessment)
 export class AssessmentResolver {
@@ -32,6 +33,13 @@ export class AssessmentResolver {
         @Args('assessment') assessmentInput: AnswerAssessmentInput,
     ): Promise<QuestionnaireAssessment> {
         return this.assessmentService.addAnswerToAssessment(assessmentInput);
+    }
+
+    @Mutation(() => QuestionnaireAssessment)
+    changeAssessmentStatus(
+        @Args('statusInput') { assessmentId, status }: ChangeAssessmentStatusInput,
+    ): Promise<QuestionnaireAssessment> {
+        return this.assessmentService.changeAssessmentStatus(assessmentId, status);
     }
 
     @Mutation(() => QuestionnaireAssessment)

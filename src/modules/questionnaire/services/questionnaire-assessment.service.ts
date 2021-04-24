@@ -2,16 +2,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { isValidObjectId, Model, Types } from 'mongoose';
 import { AnswerAssessmentInput } from '../dtos/assessment.input';
 import { Answer } from '../models/answer.schema';
-import {
-    QuestionnaireAssessment,
-    AssessmentStatus,
-} from '../models/questionnaire-assessment.schema';
+import { QuestionnaireAssessment } from '../models/questionnaire-assessment.schema';
 import {
     QuestionnaireStatus,
     QuestionnaireVersion,
 } from '../models/questionnaire-version.schema';
 import { QuestionValidatorFactory } from '../helpers/question-validator.factory';
 import { Questionnaire } from '../models/questionnaire.schema';
+import { AssessmentStatus } from '../enums/assessment-status.enum';
 
 export class QuestionnaireAssessmentService {
     constructor(
@@ -150,6 +148,13 @@ export class QuestionnaireAssessmentService {
         }
 
         return null;
+    }
+
+    changeAssessmentStatus(assessmentId: Types.ObjectId, status: AssessmentStatus) {
+        return this.assessmentModel.findByIdAndUpdate(
+            assessmentId,
+            { status }
+        ).exec();
     }
 
     deleteAssessment(_id: Types.ObjectId, archive = true) {
