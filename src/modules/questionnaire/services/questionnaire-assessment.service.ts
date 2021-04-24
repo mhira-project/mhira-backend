@@ -137,12 +137,16 @@ export class QuestionnaireAssessmentService {
                 ? AssessmentStatus.COMPLETED
                 : AssessmentStatus.PARTIALLY_COMPLETED;
 
-            return this.assessmentModel
+            // this returns old model instead of updated one
+            await this.assessmentModel
                 .findByIdAndUpdate(
                     assessmentAnswerInput.assessmentId,
                     foundAssessment,
                 )
                 .exec();
+
+            // return updated model
+            return foundAssessment;
         }
 
         return null;
