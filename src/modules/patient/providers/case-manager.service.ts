@@ -65,7 +65,6 @@ export class CaseManagerService {
 
         const caseManager = await getManager()
             .createQueryBuilder()
-            .select('*')
             .from('patient_case_manager', 'patient_case_manager')
             .where({ patientId, userId })
             .getRawOne();
