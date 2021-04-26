@@ -58,7 +58,7 @@ const isEnumKey = <T>(obj: T, key: any): key is T => {
 export class XLSForm {
     private choiceData: Partial<ChoiceData>[];
 
-    constructor(private sheets: FileData[]) {}
+    constructor(private sheets: FileData[]) { }
 
     public getSettings(): Partial<FormSettings> {
         return this.formatData<FormSettings>(XLSFormSheets.SETTINGS)[0];
@@ -97,7 +97,7 @@ export class XLSForm {
                     column,
                 );
 
-                if (columnValue) {
+                if (columnValue !== undefined) {
                     if (column === 'questionnaire_type') {
                         dataObject[column] = !isEnumKey(
                             QuestionnaireType,

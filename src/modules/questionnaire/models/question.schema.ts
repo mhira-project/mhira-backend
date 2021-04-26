@@ -57,55 +57,55 @@ export class Question extends Document {
     @Prop()
     type: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Prop()
     hint: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Prop()
     relevant: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Prop()
     calculation: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Prop()
     constraint: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Prop()
     constraintMessage: string;
 
-    @Field(() => Number)
+    @Field(() => Number, { nullable: true })
     @Prop()
     min: number;
 
-    @Field(() => Number)
+    @Field(() => Number, { nullable: true })
     @Prop()
     max: number;
 
-    @Field(() => Boolean)
+    @Field(() => Boolean, { nullable: true })
     @Prop()
     required: boolean;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Prop()
     requiredMessage: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Prop()
     image: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Prop()
     appearance: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Prop()
     default: string;
 
-    @Field(() => [Choice])
+    @Field(() => [Choice], { nullable: true })
     @Prop({ type: [ChoiceSchema] })
     choices: Choice[];
 }

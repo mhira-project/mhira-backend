@@ -1,4 +1,5 @@
 import { Answer } from '../models/answer.schema';
+import { QuestionType } from '../models/question.schema';
 import { BasicValidator } from './basic.validation';
 
 export class ChoiceQuestionValidator extends BasicValidator {
@@ -16,9 +17,8 @@ export class ChoiceQuestionValidator extends BasicValidator {
         }
 
         if (
-            (answer.multipleChoiceValue &&
-                answer.multipleChoiceValue?.some(c => !choices.includes(c))) ||
-            !choices.includes(answer.textValue)
+            (this.question.type === QuestionType.SELECT_ONE && !choices.includes(answer.textValue)) ||
+            (this.question.type === QuestionType.SELECT_MULTIPLE && answer.multipleChoiceValue?.some(av => !choices.includes(av)))
         ) {
             throw new Error(`Please only choose available answers!`);
         }

@@ -3,14 +3,7 @@ import { Answer, AnswerSchema } from './answer.schema';
 import { Document, Types } from 'mongoose';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { QuestionnaireVersion } from './questionnaire-version.schema';
-
-export enum AssessmentStatus {
-    COMPLETED = 'COMPLETED',
-    PENDING = 'PENDING',
-    PARTIALLY_COMPLETED = 'PARTIALLY_COMPLETED',
-    EXPIRED = 'EXPIRED',
-    ARCHIVED = 'ARCHIVED',
-}
+import { AssessmentStatus } from '../enums/assessment-status.enum';
 
 @ObjectType()
 @Schema({ collection: 'assessments', timestamps: true })

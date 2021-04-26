@@ -1,6 +1,7 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { ArrayNotEmpty } from 'class-validator';
 import { Types } from 'mongoose';
+import { AssessmentStatus } from '../enums/assessment-status.enum';
 
 @InputType()
 export class CreateQuestionnaireAssessmentInput {
@@ -40,4 +41,13 @@ export class AnswerAssessmentInput {
 
     @Field({ nullable: true })
     booleanValue?: boolean;
+}
+
+@InputType()
+export class ChangeAssessmentStatusInput {
+    @Field(() => String)
+    assessmentId: Types.ObjectId;
+
+    @Field(() => AssessmentStatus)
+    status: AssessmentStatus;
 }
