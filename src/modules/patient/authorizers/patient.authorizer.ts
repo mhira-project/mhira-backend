@@ -10,13 +10,13 @@ export class PatientAuthorizer implements Authorizer<Patient> {
     async authorize(context: UserContext): Promise<Filter<Patient>> {
 
         // delegates to `authorizePatient` method
-        return Promise.resolve({}); //this.authorizePatient(context); // temporary fix to create-patient-api
+        return this.authorizePatient(context);
     }
 
     async authorizeRelation(relationName: string, context: UserContext): Promise<Filter<Patient>> {
 
         // delegates to `authorizePatient` method
-        return Promise.resolve({}); //this.authorizePatient(context); // temporary fix to create-patient-api
+        return this.authorizePatient(context);
     }
 
     protected async authorizePatient(context: UserContext): Promise<Filter<Patient>> {

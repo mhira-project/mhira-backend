@@ -20,14 +20,14 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
-import { PatientAuthorizer } from '../authorizers/patient.authorizer';
+// import { PatientAuthorizer } from '../authorizers/patient.authorizer';
 import { EmergencyContact } from './emergency-contact.model';
 import { GenderEnum } from './gender.enum';
 import { Informant } from './informant.model';
 import { PatientStatus } from './patient-status.model';
 
 @ObjectType()
-@Authorize(PatientAuthorizer)
+// @Authorize(PatientAuthorizer)
 @FilterableRelation('status', () => PatientStatus, {
     nullable: true,
     disableUpdate: true,
