@@ -22,7 +22,7 @@ export class AuthService {
     constructor(
         private jwtService: JwtService,
         private readonly settingService: SettingService,
-    ) {}
+    ) { }
 
     async login(loginDto: LoginRequestDto): Promise<LoginResponseDto> {
         const user = await this.validateUserCredentials(loginDto);
@@ -41,7 +41,7 @@ export class AuthService {
         const { identifier, password } = loginDto;
 
         const user = await User.findOne({
-            username: identifier,
+            username: identifier.toLocaleLowerCase(), // compare username to lowercase
         });
 
         // invalid username
