@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserRepository } from './repositories/user.repository';
 import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
 import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { User } from './models/user.model';
@@ -13,9 +12,6 @@ import { ChangePasswordResolver } from './resolvers/change-password.resolver';
 @Module({
     imports: [
         SettingModule,
-        TypeOrmModule.forFeature([
-            UserRepository,
-        ]),
         NestjsQueryGraphQLModule.forFeature({
             // import the NestjsQueryTypeOrmModule to register the entity with typeorm
             // and provide a QueryService
