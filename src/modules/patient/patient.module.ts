@@ -36,20 +36,10 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     CreateDTOClass: CreatePatientInput,
                     UpdateDTOClass: UpdatePatientInput,
                     guards: guards,
-                    read: {
-                        disabled: true,
-                        defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
-                        decorators: [UsePermission(PermissionEnum.VIEW_PATIENTS)],
-                    },
-                    create: { decorators: [UsePermission(PermissionEnum.MANAGE_PATIENTS)] },
-                    update: {
-                        disabled: true,
-                        decorators: [UsePermission(PermissionEnum.MANAGE_PATIENTS)]
-                    },
-                    delete: {
-                        disabled: true,
-                        decorators: [UsePermission(PermissionEnum.DELETE_PATIENTS)]
-                    },
+                    read: { disabled: true },
+                    create: { disabled: true },
+                    update: { disabled: true },
+                    delete: { disabled: true },
                 },
                 {
                     DTOClass: Informant,
