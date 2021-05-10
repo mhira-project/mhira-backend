@@ -1,6 +1,11 @@
-import { mergeFilter } from '@nestjs-query/core';
-import { ConnectionType, DeleteManyResponseType, DeleteOneInputType, QueryArgsType, UpdateOneInputType } from '@nestjs-query/query-graphql';
-import { NotFoundException, UseGuards } from '@nestjs/common';
+import { mergeFilter, SortDirection } from '@nestjs-query/core';
+import {
+    ConnectionType,
+    DeleteOneInputType,
+    QueryArgsType,
+    UpdateOneInputType,
+} from '@nestjs-query/query-graphql';
+import { Logger, NotFoundException, UseGuards } from '@nestjs/common';
 import { Args, ArgsType, ID, InputType, Mutation, ObjectType, PartialType, Query, Resolver } from '@nestjs/graphql';
 import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
@@ -48,7 +53,13 @@ export class PatientResolver {
 
         const combinedFilter = mergeFilter(query.filter, authorizeFilter);
 
+        // Apply combined authorized filter
         query.filter = combinedFilter;
+
+        // Apply default sort if not provided
+        query.sorting = query.sorting?.length
+            ? query.sorting
+            : [{ field: 'id', direction: SortDirection.DESC }];
 
         return PatientConnection.createFromPromise(
             (q) => this.service.query(q),
