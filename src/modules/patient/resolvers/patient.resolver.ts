@@ -1,11 +1,12 @@
 import { mergeFilter, SortDirection } from '@nestjs-query/core';
 import {
     ConnectionType,
+    CreateOneInputType,
     DeleteOneInputType,
     QueryArgsType,
     UpdateOneInputType,
 } from '@nestjs-query/query-graphql';
-import { Logger, NotFoundException, UseGuards } from '@nestjs/common';
+import { BadRequestException, NotFoundException, UseGuards } from '@nestjs/common';
 import { Args, ArgsType, ID, InputType, Mutation, ObjectType, PartialType, Query, Resolver } from '@nestjs/graphql';
 import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
@@ -14,6 +15,7 @@ import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
 import { User } from 'src/modules/user/models/user.model';
 import { PatientAuthorizer } from '../authorizers/patient.authorizer';
+import { CreatePatientInput } from '../dto/create-patient.input';
 import { UpdatePatientInput } from '../dto/update-patient.input';
 import { Patient } from '../models/patient.model';
 import { PatientQueryService } from '../providers/patient-query.service';
@@ -24,6 +26,10 @@ class PatientQuery extends QueryArgsType(Patient) { }
 
 @ObjectType()
 class PatientConnection extends ConnectionType<Patient>(Patient) { }
+
+
+@InputType()
+export class CreateOnePatientInput extends CreateOneInputType('patient', CreatePatientInput) { }
 
 @InputType()
 class UpdateOnePatientInput extends UpdateOneInputType(UpdatePatientInput) { }
@@ -88,6 +94,38 @@ export class PatientResolver {
         }
 
         return patient;
+    }
+
+    @Mutation(() => Patient)
+    @UsePermission(PermissionEnum.MANAGE_PATIENTS)
+    async createOnePatient(
+        @Args('input', { type: () => CreateOnePatientInput }) input: CreateOnePatientInput,
+        @CurrentUser() currentUser: User,
+    ): Promise<Patient> {
+
+        const patientInput = input['patient'] as CreatePatientInput;
+
+        // Reload current user with departments
+        currentUser = await User.findOne({
+            where: { id: currentUser.id },
+            relations: ['departments'],
+        });
+
+        // Check input deparments overlapp with departments user is a member
+        const deparmentIds = currentUser.departments.map((department) => department.id);
+        const exceptionDepartments = patientInput.departmentIds.filter((inputId) => deparmentIds.indexOf(inputId) < 0);
+
+        if (exceptionDepartments) {
+            throw new BadRequestException(`User cannot create Patients in deparments of which is not a member`);
+        }
+
+        // Check for duplicate medical record no
+        const exists = await Patient.findOne({ medicalRecordNo: patientInput.medicalRecordNo });
+        if (exists) {
+            throw new BadRequestException('Patient with same Medical Record No. already exists');
+        }
+
+        return await this.service.createOne(input['patient']);
     }
 
 
