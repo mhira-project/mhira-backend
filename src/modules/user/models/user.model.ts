@@ -179,9 +179,6 @@ export class User extends BaseEntity {
     @BeforeUpdate()
     beforeUpdate() {
         if (this.isSuperUser) throw new Error('Cannot update super user');
-
-        // Always store username as lower-case
-        this.username = this.username?.toLocaleLowerCase();
     }
 
     @BeforeRemove()
