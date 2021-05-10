@@ -2,10 +2,8 @@ import { QueryService } from '@nestjs-query/core';
 import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as moment from 'moment';
 import { Patient } from '../models/patient.model';
 import { CreatePatientInput } from '../dto/create-patient.input';
-import { UpdatePatientInput } from '../dto/update-patient.input';
 
 @QueryService(Patient)
 export class PatientQueryService extends TypeOrmQueryService<Patient> {
