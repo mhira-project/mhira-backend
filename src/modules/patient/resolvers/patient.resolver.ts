@@ -6,7 +6,7 @@ import {
     QueryArgsType,
     UpdateOneInputType,
 } from '@nestjs-query/query-graphql';
-import { BadRequestException, NotFoundException, UseGuards } from '@nestjs/common';
+import { BadRequestException, Logger, NotFoundException, UseGuards } from '@nestjs/common';
 import { Args, ArgsType, ID, InputType, Mutation, ObjectType, PartialType, Query, Resolver } from '@nestjs/graphql';
 import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
@@ -115,7 +115,7 @@ export class PatientResolver {
         const deparmentIds = currentUser.departments.map((department) => department.id);
         const exceptionDepartments = patientInput.departmentIds.filter((inputId) => deparmentIds.indexOf(inputId) < 0);
 
-        if (exceptionDepartments) {
+        if (exceptionDepartments?.length) {
             throw new BadRequestException(`User cannot create Patients in deparments of which is not a member`);
         }
 
@@ -136,6 +136,8 @@ export class PatientResolver {
         @CurrentUser() currentUser: User,
     ): Promise<Patient> {
 
+        const { id, update } = input;
+
         const authorizeFilter = await PatientAuthorizer.authorizePatient(currentUser?.id);
 
         const combinedFilter = mergeFilter({ id: { eq: Number(input.id) } }, authorizeFilter);
@@ -146,6 +148,17 @@ export class PatientResolver {
 
         if (!patient) {
             throw new NotFoundException();
+        }
+
+        // Check for duplicate medical record no
+        if (!!update.medicalRecordNo) {
+            const exists = await User.createQueryBuilder()
+                .where('medicalRecordNo = :medicalRecordNo AND id <> :id', { username: update.medicalRecordNo, id })
+                .getOne();
+
+            if (exists) {
+                throw new BadRequestException('Patient with same Medical Record No. already exists');
+            }
         }
 
         return this.service.updateOne(input.id, input.update);
