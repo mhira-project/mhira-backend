@@ -12,7 +12,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         super(repo, { useSoftDelete: true });
     }
 
-    async createOnePatient(input: CreatePatientInput): Promise<Patient> {
+    async createOne(input: CreatePatientInput): Promise<Patient> {
 
         const patient = await super.createOne(input);
 
@@ -23,7 +23,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         return patient;
     }
 
-    async createManyPatient(input: CreatePatientInput[]): Promise<Patient[]> {
+    async createMany(input: CreatePatientInput[]): Promise<Patient[]> {
 
         const patients = await super.createMany(input);
 

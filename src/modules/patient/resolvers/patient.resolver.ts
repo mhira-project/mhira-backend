@@ -111,7 +111,7 @@ export class PatientResolver {
             relations: ['departments'],
         });
 
-        // Check input deparments overlapp with departments user is a member
+        // Check input deparments overlap with departments user is a member
         const deparmentIds = currentUser.departments.map((department) => department.id);
         const exceptionDepartments = patientInput.departmentIds.filter((inputId) => deparmentIds.indexOf(inputId) < 0);
 
@@ -120,12 +120,16 @@ export class PatientResolver {
         }
 
         // Check for duplicate medical record no
-        const exists = await Patient.findOne({ medicalRecordNo: patientInput.medicalRecordNo });
-        if (exists) {
-            throw new BadRequestException('Patient with same Medical Record No. already exists');
+        if (patientInput.medicalRecordNo === '') patientInput.medicalRecordNo = null; // coalesce '' to NULL, as field is nullable
+
+        if (patientInput.medicalRecordNo) {
+            const exists = await Patient.findOne({ medicalRecordNo: patientInput.medicalRecordNo });
+            if (exists) {
+                throw new BadRequestException('Patient with same Medical Record No. already exists');
+            }
         }
 
-        return await this.service.createOne(input['patient']);
+        return await this.service.createOne(patientInput);
     }
 
 
@@ -151,6 +155,8 @@ export class PatientResolver {
         }
 
         // Check for duplicate medical record no
+        if (update.medicalRecordNo === '') update.medicalRecordNo = null; // coalesce '' to NULL, as field is nullable
+
         if (!!update.medicalRecordNo) {
             const exists = await User.createQueryBuilder()
                 .where('medicalRecordNo = :medicalRecordNo AND id <> :id', { username: update.medicalRecordNo, id })
