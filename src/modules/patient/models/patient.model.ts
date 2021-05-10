@@ -172,12 +172,14 @@ export class Patient extends BaseEntity {
     @OneToMany(
         () => Informant,
         informant => informant.patient,
+        { onDelete: 'CASCADE' },
     )
     informants: Informant[];
 
     @OneToMany(
         () => EmergencyContact,
         contact => contact.patient,
+        { onDelete: 'CASCADE' },
     )
     emergencyContacts: EmergencyContact[];
 

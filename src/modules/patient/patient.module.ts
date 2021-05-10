@@ -42,8 +42,14 @@ const guards = [GqlAuthGuard, PermissionGuard];
                         decorators: [UsePermission(PermissionEnum.VIEW_PATIENTS)],
                     },
                     create: { decorators: [UsePermission(PermissionEnum.MANAGE_PATIENTS)] },
-                    update: { decorators: [UsePermission(PermissionEnum.MANAGE_PATIENTS)] },
-                    delete: { decorators: [UsePermission(PermissionEnum.DELETE_PATIENTS)] },
+                    update: {
+                        disabled: true,
+                        decorators: [UsePermission(PermissionEnum.MANAGE_PATIENTS)]
+                    },
+                    delete: {
+                        disabled: true,
+                        decorators: [UsePermission(PermissionEnum.DELETE_PATIENTS)]
+                    },
                 },
                 {
                     DTOClass: Informant,
