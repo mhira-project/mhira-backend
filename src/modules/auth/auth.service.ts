@@ -38,10 +38,13 @@ export class AuthService {
     private async validateUserCredentials(
         loginDto: LoginRequestDto,
     ): Promise<User> {
-        const { identifier, password } = loginDto;
+
+        //Username comparison done using lowercase
+        const identifier = loginDto.identifier?.toLocaleLowerCase();
+        const password = loginDto.password;
 
         const user = await User.findOne({
-            username: identifier.toLocaleLowerCase(), // compare username to lowercase
+            username: identifier,
         });
 
         // invalid username
