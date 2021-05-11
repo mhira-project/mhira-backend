@@ -2,7 +2,7 @@ import { Logger, OnModuleInit } from '@nestjs/common';
 import { User } from 'src/modules/user/models/user.model';
 import { Any } from 'typeorm';
 import { MAX_ROLE_HIERARCHY, MIN_ROLE_HIERARCHY } from '../constants';
-import { PermissionEnum } from '../enums/permission.enum';
+import { PermissionEnum, systemPermissions as PermissionsMaster } from '../enums/permission.enum';
 import { RoleCode } from '../enums/role-code.enum';
 import { Permission } from '../models/permission.model';
 import { Role } from '../models/role.model';
@@ -52,9 +52,11 @@ export class PermissionService implements OnModuleInit {
                 .insert()
                 .into(Permission)
                 .values(
-                    permissionsToCreate.map(p => {
-                        return { name: p };
-                    }),
+                    PermissionsMaster
+                        .filter(permission => permissionsToCreate.includes(permission.name))
+                        .map(permission => {
+                            return { name: permission.name, group: permission.group };
+                        }),
                 )
                 .execute();
         }

@@ -1,65 +1,50 @@
 
 
-export const Permissions = {
+export const systemPermissions = [
 
-    MANAGE_USERS: { value: 'manage users', group: 'User Management' },
-    VIEW_USERS: { value: 'view users', group: 'User Management' },
-    DELETE_USERS: { value: 'delete users', group: 'User Management' },
+    { key: 'MANAGE_USERS', name: 'manage users', group: 'User Management' },
+    { key: 'VIEW_USERS', name: 'view users', group: 'User Management' },
+    { key: 'DELETE_USERS', name: 'delete users', group: 'User Management' },
 
-    MANAGE_PATIENTS: { value: 'manage patients', group: 'Patient Management' },
-    VIEW_PATIENTS: { value: 'view patients', group: 'Patient Management' },
-    DELETE_PATIENTS: { value: 'delete patients', group: 'Patient Management' },
+    { key: 'MANAGE_PATIENTS', name: 'manage patients', group: 'Patient Management' },
+    { key: 'VIEW_PATIENTS', name: 'view patients', group: 'Patient Management' },
+    { key: 'DELETE_PATIENTS', name: 'delete patients', group: 'Patient Management' },
 
-    VIEW_SYSCONFIG: { value: 'view sysconf', group: 'System Configuration' },
-    MANAGE_SYSCONFIG: { value: 'manage sysconf', group: 'System Configuration' },
+    { key: 'VIEW_SYSCONFIG', name: 'view sysconf', group: 'System Configuration' },
+    { key: 'MANAGE_SYSCONFIG', name: 'manage sysconf', group: 'System Configuration' },
 
-    VIEW_SETTINGS: { value: 'view settings', group: 'System Configuration' },// this could be redundant, as all users need to access settings
-    MANAGE_SETTINGS: { value: 'manage settings', group: 'System Configuration' },
+    { key: 'VIEW_SETTINGS', name: 'view settings', group: 'System Configuration' },// this could be redundant, as all users need to access settings
+    { key: 'MANAGE_SETTINGS', name: 'manage settings', group: 'System Configuration' },
 
-    VIEW_QUESTIONNAIRES: { value: 'view questionnaires', group: 'Questionnaires' },
-    MANAGE_QUESTIONNAIRES: { value: 'manage questionnaires', group: 'Questionnaires' },
-    DELETE_QUESTIONNAIRES: { value: 'delete questionnaires', group: 'Questionnaires' },
+    { key: 'VIEW_QUESTIONNAIRES', name: 'view questionnaires', group: 'Questionnaires' },
+    { key: 'MANAGE_QUESTIONNAIRES', name: 'manage questionnaires', group: 'Questionnaires' },
+    { key: 'DELETE_QUESTIONNAIRES', name: 'delete questionnaires', group: 'Questionnaires' },
 
-    VIEW_ASSESSMENTS: { value: 'view assessments', group: 'Assessments' },
-    MANAGE_ASSESSMENTS: { value: 'manage assessments', group: 'Assessments' },
-    DELETE_ASSESSMENTS: { value: 'delete assessments', group: 'Assessments' },
+    { key: 'VIEW_ASSESSMENTS', name: 'view assessments', group: 'Assessments' },
+    { key: 'MANAGE_ASSESSMENTS', name: 'manage assessments', group: 'Assessments' },
+    { key: 'DELETE_ASSESSMENTS', name: 'delete assessments', group: 'Assessments' },
 
-    VIEW_REPORTING_TOOLS: { value: 'view reporting_tools', group: 'Reporting Tools' },
-    MANAGE_REPORTING_TOOLS: { value: 'manage reporting_tools', group: 'Reporting Tools' },
+    { key: 'VIEW_REPORTING_TOOLS', name: 'view reporting_tools', group: 'Reporting Tools' },
+    { key: 'MANAGE_REPORTING_TOOLS', name: 'manage reporting_tools', group: 'Reporting Tools' },
 
-    VIEW_ROLES_PERMISSIONS: { value: 'view roles_permissions', group: 'Roles and Permissions' },
-    MANAGE_ROLES_PERMISSIONS: { value: 'manage roles_permissions', group: 'Roles and Permissions' },
+    { key: 'VIEW_ROLES_PERMISSIONS', name: 'view roles_permissions', group: 'Roles and Permissions' },
+    { key: 'MANAGE_ROLES_PERMISSIONS', name: 'manage roles_permissions', group: 'Roles and Permissions' },
 
+] as const;
+
+/**
+ * Below code create PermissionEnum constant as infered type
+ * from the above permissions list, for typing and compatibility
+ * with its usage as an enum.
+ */
+type PermissionType = {
+    [key in typeof systemPermissions[number]['key']]:
+    string;
 }
 
-export enum PermissionEnum {
-
-    MANAGE_USERS = 'manage users',
-    VIEW_USERS = 'view users',
-    DELETE_USERS = 'delete users',
-
-    MANAGE_PATIENTS = 'manage patients',
-    VIEW_PATIENTS = 'view patients',
-    DELETE_PATIENTS = 'delete patients',
-
-    VIEW_SYSCONFIG = 'view sysconf',
-    MANAGE_SYSCONFIG = 'manage sysconf',
-
-    VIEW_SETTINGS = 'view settings', // this could be redundant, as all users need to access settings
-    MANAGE_SETTINGS = 'manage settings',
-
-    VIEW_QUESTIONNAIRES = 'view questionnaires',
-    MANAGE_QUESTIONNAIRES = 'manage questionnaires',
-    DELETE_QUESTIONNAIRES = 'delete questionnaires',
-
-    VIEW_ASSESSMENTS = 'view assessments',
-    MANAGE_ASSESSMENTS = 'manage assessments',
-    DELETE_ASSESSMENTS = 'delete assessments',
-
-    VIEW_REPORTING_TOOLS = 'view reporting_tools',
-    MANAGE_REPORTING_TOOLS = 'manage reporting_tools',
-
-    VIEW_ROLES_PERMISSIONS = 'view roles_permissions',
-    MANAGE_ROLES_PERMISSIONS = 'manage roles_permissions',
-
+const flattenedPermissions = {} as PermissionType;
+for (const permission of systemPermissions) {
+    flattenedPermissions[permission.key] = permission.name;
 }
+
+export const PermissionEnum = flattenedPermissions;
