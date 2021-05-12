@@ -22,10 +22,10 @@ export const cacheConfig = {
      *  - 'redis' - for staging/production environments using redis store.
      *  - 'mongo' - for staging/production environments using mongodb store.
      * 
-     * default = 'memory'
+     * default = 'mongo'
      * 
      */
-    defaultStore: process.env.CACHE_STORE || 'memory' as CacheStore,
+    defaultStore: process.env.CACHE_STORE || 'mongo' as CacheStore,
 
     stores: {
 
