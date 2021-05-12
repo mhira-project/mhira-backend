@@ -40,23 +40,8 @@ export class UserCrudResolver extends CRUDResolver(User, {
     @UsePermission(PermissionEnum.MANAGE_USERS)
     async createOneUser(@Args('input', { type: () => CreateOneUserInput }) input: CreateOneUserInput): Promise<User> {
 
-        const exists = await User.findOne({ username: input['user'].username });
-
-        if (exists) {
-            throw new BadRequestException('Username already exists');
-        }
-
-        const user = await this.service.createOne(input['user']);
-
-        // attach no-role Role
-        const noRole = await Role.findOne({ code: RoleCode.NO_ROLE });
-        if (noRole) {
-            user.roles = [noRole];
-            await user.save();
-        }
-
-
-        return user;
+        // delegate further actions to service
+        return this.service.createOne(input['user']);
     }
 
     @Mutation(() => User)
@@ -68,21 +53,8 @@ export class UserCrudResolver extends CRUDResolver(User, {
 
         const { id, update } = input;
 
-        if (!await PermissionService.compareHierarchy(currentUser.id, +id)) {
-            throw new BadRequestException('Permission denied to modify user! User has higher or equal role than current user');
-        }
-
-        if (!!update.username) {
-            const exists = await User.createQueryBuilder()
-                .where('username = :username AND id <> :id', { username: update.username, id })
-                .getOne();
-
-            if (exists) {
-                throw new BadRequestException('Username already exists');
-            }
-        }
-
-        return this.service.updateOne(id, update);
+        // Delegate further actions to service
+        return this.service.updateOneUser(Number(id), update, currentUser);
     }
 
     @Mutation(() => User)
@@ -94,11 +66,8 @@ export class UserCrudResolver extends CRUDResolver(User, {
 
         const { id } = input;
 
-        if (!await PermissionService.compareHierarchy(currentUser.id, +id)) {
-            throw new BadRequestException('Permission denied to delete user! User has higher or equal role than current user');
-        }
-
-        return this.service.deleteOne(id);
+        // Delegate further actions to service
+        return this.service.deleteOneUser(Number(id), currentUser);
     }
 
     // restore one mutation will update the `deletedAt` column to null.
