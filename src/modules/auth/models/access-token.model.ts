@@ -5,6 +5,7 @@ import {
     CreateDateColumn,
     Entity,
     ManyToOne,
+    PrimaryColumn,
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from 'typeorm';
@@ -13,7 +14,7 @@ import {
 @Entity()
 export class AccessToken extends BaseEntity {
 
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryColumn()
     id: string;
 
     @Column()

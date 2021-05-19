@@ -14,20 +14,22 @@ import { Any } from 'typeorm';
 import { Role } from '../permission/models/role.model';
 import { SettingService } from '../setting/providers/setting.service';
 import { SettingKey } from '../setting/enums/setting-name.enum';
+import { CacheService } from 'src/shared';
+import { AccessTokenService } from './providers/access-token.service';
 
 @Injectable()
 export class AuthService {
     private readonly logger = new Logger('AuthService');
 
     constructor(
-        private jwtService: JwtService,
         private readonly settingService: SettingService,
-    ) {}
+        private readonly tokenService: AccessTokenService,
+    ) { }
 
     async login(loginDto: LoginRequestDto): Promise<LoginResponseDto> {
         const user = await this.validateUserCredentials(loginDto);
 
-        const accessToken: string = await this.generateToken(user);
+        const accessToken: string = await this.tokenService.generateToken(user);
 
         return {
             accessToken: accessToken,
@@ -38,7 +40,10 @@ export class AuthService {
     private async validateUserCredentials(
         loginDto: LoginRequestDto,
     ): Promise<User> {
-        const { identifier, password } = loginDto;
+
+        //Username comparison done using lowercase
+        const identifier = loginDto.identifier?.toLocaleLowerCase();
+        const password = loginDto.password;
 
         const user = await User.findOne({
             username: identifier,
@@ -72,6 +77,10 @@ export class AuthService {
         return user;
     }
 
+    async validateAccessToken(tokenId: string): Promise<User> {
+        return this.tokenService.validateAccessToken(tokenId);
+    }
+
     private async executeInvalidLoginAttempt(user: User) {
         const maxLoginAttemptsSetting: number = await this.settingService.getKey(
             SettingKey.MAX_LOGIN_ATTEMPTS,
@@ -86,26 +95,6 @@ export class AuthService {
             : 0;
 
         return await user.save();
-    }
-
-    async validateAccessToken(tokenId: string): Promise<User> {
-        if (!tokenId)
-            throw new AuthenticationError(
-                'Authentication error! No access token provided.',
-            );
-
-        const token = await AccessToken.findOne({
-            where: {
-                id: tokenId,
-                isRevoked: false,
-            },
-            relations: ['user'],
-        });
-
-        if (!token || !token.user)
-            throw new AuthenticationError('Session expired! Please login.');
-
-        return token.user;
     }
 
     async userPermissionGrants(userInput: User): Promise<Permission[]> {
@@ -134,42 +123,6 @@ export class AuthService {
     }
 
     async logout(user: User): Promise<boolean> {
-        const result = await AccessToken.createQueryBuilder('access_token')
-            .where('userId = :userId', { userId: user.id })
-            .update({ isRevoked: true })
-            .execute();
-
-        return result.affected > 0;
-    }
-
-    private async generateToken(user: User): Promise<string> {
-        // revoke all previous tokens
-        // await this.logout(user);
-
-        // Issue new token
-        const token = new AccessToken();
-        token.userId = user.id;
-        token.expiresAt = dayjs()
-            .add(authConfig.tokenLife, 'second')
-            .toDate();
-        await token.save();
-
-        // create signed JWT
-        const payload: JwtPayload = {
-            jti: token.id,
-            sub: `${user.id}`,
-        };
-
-        const options: JwtSignOptions = {
-            expiresIn: authConfig.tokenLife,
-        };
-
-        const accessToken: string = await this.jwtService.sign(
-            payload,
-            options,
-        );
-
-        // return signed JWT
-        return accessToken;
+        return this.tokenService.revokeTokens(user);
     }
 }

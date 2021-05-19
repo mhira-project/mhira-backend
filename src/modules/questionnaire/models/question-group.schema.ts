@@ -10,7 +10,7 @@ export class QuestionGroup extends Document {
     @Field(() => String)
     _id: Types.ObjectId;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Prop()
     label: string;
 

@@ -51,7 +51,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     read: {
                         guards,
                         defaultSort: [
-                            { field: 'id', direction: SortDirection.DESC },
+                            { field: 'createdAt', direction: SortDirection.DESC },
                         ],
                         decorators: [
                             UsePermission(PermissionEnum.VIEW_ASSESSMENTS),

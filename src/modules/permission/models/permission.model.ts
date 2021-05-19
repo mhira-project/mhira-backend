@@ -27,6 +27,10 @@ export class Permission extends BaseEntity {
     name: string;
 
     @FilterableField()
+    @Column({ default: 'default' })
+    group: string;
+
+    @FilterableField()
     @CreateDateColumn()
     createdAt: Date;
 

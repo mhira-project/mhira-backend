@@ -1,34 +1,50 @@
 
 
+export const systemPermissions = [
 
-export enum PermissionEnum {
+    { key: 'MANAGE_USERS', name: 'manage users', group: 'User Management' },
+    { key: 'VIEW_USERS', name: 'view users', group: 'User Management' },
+    { key: 'DELETE_USERS', name: 'delete users', group: 'User Management' },
 
-    MANAGE_USERS = 'manage users',
-    VIEW_USERS = 'view users',
-    DELETE_USERS = 'delete users',
+    { key: 'MANAGE_PATIENTS', name: 'manage patients', group: 'Patient Management' },
+    { key: 'VIEW_PATIENTS', name: 'view patients', group: 'Patient Management' },
+    { key: 'DELETE_PATIENTS', name: 'delete patients', group: 'Patient Management' },
 
-    MANAGE_PATIENTS = 'manage patients',
-    VIEW_PATIENTS = 'view patients',
-    DELETE_PATIENTS = 'delete patients',
+    { key: 'VIEW_SYSCONFIG', name: 'view sysconf', group: 'System Configuration' },
+    { key: 'MANAGE_SYSCONFIG', name: 'manage sysconf', group: 'System Configuration' },
 
-    VIEW_SYSCONFIG = 'view sysconf',
-    MANAGE_SYSCONFIG = 'manage sysconf',
+    { key: 'VIEW_SETTINGS', name: 'view settings', group: 'System Configuration' },// this could be redundant, as all users need to access settings
+    { key: 'MANAGE_SETTINGS', name: 'manage settings', group: 'System Configuration' },
 
-    VIEW_SETTINGS = 'view settings', // this could be redundant, as all users need to access settings
-    MANAGE_SETTINGS = 'manage settings',
+    { key: 'VIEW_QUESTIONNAIRES', name: 'view questionnaires', group: 'Questionnaires' },
+    { key: 'MANAGE_QUESTIONNAIRES', name: 'manage questionnaires', group: 'Questionnaires' },
+    { key: 'DELETE_QUESTIONNAIRES', name: 'delete questionnaires', group: 'Questionnaires' },
 
-    VIEW_QUESTIONNAIRES = 'view questionnaires',
-    MANAGE_QUESTIONNAIRES = 'manage questionnaires',
-    DELETE_QUESTIONNAIRES = 'delete questionnaires',
+    { key: 'VIEW_ASSESSMENTS', name: 'view assessments', group: 'Assessments' },
+    { key: 'MANAGE_ASSESSMENTS', name: 'manage assessments', group: 'Assessments' },
+    { key: 'DELETE_ASSESSMENTS', name: 'delete assessments', group: 'Assessments' },
 
-    VIEW_ASSESSMENTS = 'view assessments',
-    MANAGE_ASSESSMENTS = 'manage assessments',
-    DELETE_ASSESSMENTS = 'delete assessments',
+    { key: 'VIEW_REPORTING_TOOLS', name: 'view reporting_tools', group: 'Reporting Tools' },
+    { key: 'MANAGE_REPORTING_TOOLS', name: 'manage reporting_tools', group: 'Reporting Tools' },
 
-    VIEW_REPORTING_TOOLS = 'view reporting_tools',
-    MANAGE_REPORTING_TOOLS = 'manage reporting_tools',
+    { key: 'VIEW_ROLES_PERMISSIONS', name: 'view roles_permissions', group: 'Roles and Permissions' },
+    { key: 'MANAGE_ROLES_PERMISSIONS', name: 'manage roles_permissions', group: 'Roles and Permissions' },
 
-    VIEW_ROLES_PERMISSIONS = 'view roles_permissions',
-    MANAGE_ROLES_PERMISSIONS = 'manage roles_permissions',
+] as const;
 
+/**
+ * Below code create PermissionEnum constant as infered type
+ * from the above permissions list, for typing and compatibility
+ * with its usage as an enum.
+ */
+type PermissionType = {
+    [key in typeof systemPermissions[number]['key']]:
+    string;
 }
+
+const flattenedPermissions = {} as PermissionType;
+for (const permission of systemPermissions) {
+    flattenedPermissions[permission.key] = permission.name;
+}
+
+export const PermissionEnum = flattenedPermissions;

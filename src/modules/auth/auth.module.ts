@@ -6,6 +6,7 @@ import { jwtConstants } from './constants';
 import { JwtStrategy } from './jwt.strategy';
 import { AuthResolver } from './auth.resolver';
 import { SettingModule } from '../setting/setting.module';
+import { AccessTokenService } from './providers/access-token.service';
 
 @Module({
     imports: [
@@ -16,7 +17,12 @@ import { SettingModule } from '../setting/setting.module';
             signOptions: { expiresIn: jwtConstants.tokenLife },
         }),
     ],
-    providers: [AuthService, AuthResolver, JwtStrategy],
+    providers: [
+        AuthService,
+        AuthResolver,
+        JwtStrategy,
+        AccessTokenService,
+    ],
     exports: [JwtStrategy, PassportModule],
 })
-export class AuthModule {}
+export class AuthModule { }

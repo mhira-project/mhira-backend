@@ -19,4 +19,11 @@ export const authConfig = {
      * Default: 180 days
      */
     refreshTokenLife: 180 * 24 * 60 * 60,
+
+    /**
+     * Expire Sessions after this period of In-activity in seconds
+     * 
+     * default = 30 minutes
+     */
+    inactivityTimeout: 30 * 60,
 }
