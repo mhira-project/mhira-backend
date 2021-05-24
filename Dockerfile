@@ -13,7 +13,7 @@ RUN npm run build
 
 
 ### Production container build #####################################
-FROM node:alpine
+FROM node:alpine AS production
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}

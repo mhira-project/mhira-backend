@@ -10,6 +10,10 @@
 # additional branches if required
 image: node:latest
 
+# enable Docker for your repository
+options:
+  docker: true
+
 definitions:
   steps:
     - step: &install
@@ -34,6 +38,20 @@ definitions:
           - npm run build
         artifacts:
           - dist/**
+    
+    - step: &build-docker
+        name: Build docker image
+        #python image with aws-cli installed
+        image: tstrohmeier/awscli:3.8.3
+        script:
+          # aws login
+          - eval $(aws ecr get-login --region ${AWS_DEFAULT_REGION} --no-include-email)
+          # docker
+          - export BUILD_ID=$BITBUCKET_BRANCH_$BITBUCKET_COMMIT_$BITBUCKET_BUILD_NUMBER
+          - docker build -t ${AWS_REGISTRY_URL}:$BUILD_ID .
+          - docker push ${AWS_REGISTRY_URL}:$BUILD_ID
+          - docker tag ${AWS_REGISTRY_URL}:$BUILD_ID ${AWS_REGISTRY_URL}:development
+          - docker push ${AWS_REGISTRY_URL}:development
 
 pipelines:
   pull-requests:
@@ -42,7 +60,14 @@ pipelines:
       - step: *lint
       - step: *build
 
-  branches:      
+  branches:
+    
+    feature/docker-build:
+      - step: *install
+      - step: *lint
+      - step: *build      
+      - step: *build-docker  
+            
     develop:
       - step: *install
       - step: *lint
