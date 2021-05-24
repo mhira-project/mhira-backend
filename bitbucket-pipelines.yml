@@ -47,7 +47,7 @@ definitions:
           # aws login
           - eval $(aws ecr get-login --region ${AWS_DEFAULT_REGION} --no-include-email)
           # docker
-          - export BUILD_ID=$BITBUCKET_BRANCH_$BITBUCKET_COMMIT_$BITBUCKET_BUILD_NUMBER
+          - export BUILD_ID=${BITBUCKET_BRANCH}_${BITBUCKET_COMMIT}_${BITBUCKET_BUILD_NUMBER}
           - docker build -t ${AWS_REGISTRY_URL}:$BUILD_ID .
           - docker push ${AWS_REGISTRY_URL}:$BUILD_ID
           - docker tag ${AWS_REGISTRY_URL}:$BUILD_ID ${AWS_REGISTRY_URL}:development
