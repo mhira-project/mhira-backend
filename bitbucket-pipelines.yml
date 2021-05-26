@@ -53,7 +53,7 @@ definitions:
         script:
           # aws login
           - if ! [[ $AWS_REGISTRY_URL == public.ecr.aws* ]]; then aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_REGISTRY_URL}; fi
-          - if [[ $AWS_REGISTRY_URL == public.ecr.aws* ]]; then aws ecr-public get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin public.ecr.aws; fi
+          - if [[ $AWS_REGISTRY_URL == public.ecr.aws* ]]; then aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws; fi
           # docker
           - export BUILD_ID=$BITBUCKET_BRANCH_$BITBUCKET_COMMIT_$BITBUCKET_BUILD_NUMBER
           - docker build -t ${AWS_REGISTRY_URL}:$BUILD_ID .
