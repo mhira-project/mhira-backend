@@ -47,7 +47,7 @@ definitions:
     - step: &build-docker
         name: Build docker image
         caches:
-        - docker
+          - docker
         #python image with aws-cli installed
         image: tstrohmeier/awscli:3.8.3
         script:
