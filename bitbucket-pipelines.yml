@@ -49,10 +49,10 @@ definitions:
         caches:
           - docker
         #python image with aws-cli installed
-        image: tstrohmeier/awscli:3.8.3
+        image: amazon/aws-cli
         script:
           # aws login
-          - eval $(aws ecr get-login --region ${AWS_DEFAULT_REGION} --no-include-email)
+          - aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_REGISTRY_URL}
           # aws login to  public ecr
           - aws ecr-public get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin public.ecr.aws
           # docker
