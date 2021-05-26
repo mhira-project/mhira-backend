@@ -53,6 +53,8 @@ definitions:
         script:
           # aws login
           - eval $(aws ecr get-login --region ${AWS_DEFAULT_REGION} --no-include-email)
+          # aws login to  public ecr
+          - aws ecr-public get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin public.ecr.aws
           # docker
           - export BUILD_ID=$BITBUCKET_BRANCH_$BITBUCKET_COMMIT_$BITBUCKET_BUILD_NUMBER
           - docker build -t ${AWS_REGISTRY_URL}:$BUILD_ID .
