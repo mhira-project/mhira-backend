@@ -27,27 +27,53 @@ import {
     QuestionnaireAssessment,
     AssessmentSchema,
 } from './models/questionnaire-assessment.schema';
+import { NestjsQueryMongooseModule } from '@nestjs-query/query-mongoose';
+import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
 
 @Module({
     imports: [
-        MongooseModule.forFeature([
-            { name: Questionnaire.name, schema: QuestionnaireSchema },
-            {
-                name: QuestionnaireVersion.name,
-                schema: QuestionnaireVersionSchema,
-            },
-            { name: Question.name, schema: QuestionSchema },
-            { name: QuestionGroup.name, schema: QuestionGroupSchema },
-            { name: Answer.name, schema: AnswerSchema },
-            { name: Choice.name, schema: ChoiceSchema },
-            { name: QuestionnaireAssessment.name, schema: AssessmentSchema },
-        ]),
+        // MongooseModule.forFeature([
+        //     { name: Questionnaire.name, schema: QuestionnaireSchema },
+        //     {
+        //         name: QuestionnaireVersion.name,
+        //         schema: QuestionnaireVersionSchema,
+        //     },
+        //     { name: Question.name, schema: QuestionSchema },
+        //     { name: QuestionGroup.name, schema: QuestionGroupSchema },
+        //     { name: Answer.name, schema: AnswerSchema },
+        //     { name: Choice.name, schema: ChoiceSchema },
+        //     { name: QuestionnaireAssessment.name, schema: AssessmentSchema },
+        // ]),
+        NestjsQueryGraphQLModule.forFeature({
+            imports: [
+                NestjsQueryMongooseModule.forFeature([
+                    {
+                        name: QuestionnaireVersion.name,
+                        schema: QuestionnaireVersionSchema,
+                        document: QuestionnaireVersion,
+                    },
+                    { name: Questionnaire.name, schema: QuestionnaireSchema, document: Questionnaire },
+                    { name: Question.name, schema: QuestionSchema, document: Question },
+                    { name: QuestionGroup.name, schema: QuestionGroupSchema, document: QuestionGroup },
+                    { name: Answer.name, schema: AnswerSchema, document: Answer },
+                    { name: Choice.name, schema: ChoiceSchema, document: Choice },
+                    { name: QuestionnaireAssessment.name, schema: AssessmentSchema, document: QuestionnaireAssessment },
+                ]),
+            ],
+            resolvers: [
+                {
+                    DTOClass: QuestionnaireVersion,
+                    EntityClass: QuestionnaireVersion,
+                    // read: { disabled: true }
+                }
+            ],
+        })
     ],
     providers: [
-        QuestionnaireService,
-        QuestionnaireResolver,
-        QuestionnaireAssessmentService,
-        AssessmentResolver,
+        // QuestionnaireService,
+        // QuestionnaireResolver,
+        // QuestionnaireAssessmentService,
+        // AssessmentResolver,
     ],
 })
 export class QuestionnaireModule { }
