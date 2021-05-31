@@ -81,19 +81,8 @@ export class PatientResolver {
         @CurrentUser() currentUser: User,
     ): Promise<Patient> {
 
-        const authorizeFilter = await PatientAuthorizer.authorizePatient(currentUser?.id);
-
-        const combinedFilter = mergeFilter({ id: { eq: patientId } }, authorizeFilter);
-
-        const patients = await this.service.query({ paging: { limit: 1 }, filter: combinedFilter });
-
-        const patient = patients?.[0];
-
-        if (!patient) {
-            throw new NotFoundException();
-        }
-
-        return patient;
+        // Get patient if authorized. Throws exception if Not Found
+        return this.service.getOnePatient(currentUser, patientId);
     }
 
     @Mutation(() => Patient)
@@ -142,17 +131,8 @@ export class PatientResolver {
 
         const { id, update } = input;
 
-        const authorizeFilter = await PatientAuthorizer.authorizePatient(currentUser?.id);
-
-        const combinedFilter = mergeFilter({ id: { eq: Number(input.id) } }, authorizeFilter);
-
-        const patients = await this.service.query({ paging: { limit: 1 }, filter: combinedFilter });
-
-        const patient = patients?.[0];
-
-        if (!patient) {
-            throw new NotFoundException();
-        }
+        // Get patient if authorized. Throws exception if Not Found
+        this.service.getOnePatient(currentUser, Number(input.id));
 
         // Check for duplicate medical record no
         if (update.medicalRecordNo === '') update.medicalRecordNo = null; // coalesce '' to NULL, as field is nullable
@@ -177,17 +157,8 @@ export class PatientResolver {
         @CurrentUser() currentUser: User,
     ): Promise<PatientDeleteResponse> {
 
-        const authorizeFilter = await PatientAuthorizer.authorizePatient(currentUser?.id);
-
-        const combinedFilter = mergeFilter({ id: { eq: Number(input.id) } }, authorizeFilter);
-
-        const patients = await this.service.query({ paging: { limit: 1 }, filter: combinedFilter });
-
-        const patient = patients?.[0];
-
-        if (!patient) {
-            throw new NotFoundException();
-        }
+        // Get patient if authorized. Throws exception if Not Found
+        this.service.getOnePatient(currentUser, Number(input.id));
 
         return this.service.deleteOne(input.id);
     }
