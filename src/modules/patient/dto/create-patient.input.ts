@@ -1,5 +1,5 @@
-import { Field, InputType } from '@nestjs/graphql';
-import { IsOptional, MaxLength } from 'class-validator';
+import { Field, InputType, Int } from '@nestjs/graphql';
+import { ArrayMinSize, IsOptional, MaxLength, MinLength } from 'class-validator';
 import { GenderEnum } from '../models/gender.enum';
 
 @InputType()
@@ -67,4 +67,8 @@ export class CreatePatientInput {
     @IsOptional()
     @MaxLength(2)
     addressCountryCode: string;
+
+    @Field(() => [Int], { nullable: true })
+    @ArrayMinSize(1, { message: 'Please select atleast 1 deparment for patient' })
+    departmentIds: number[];
 }

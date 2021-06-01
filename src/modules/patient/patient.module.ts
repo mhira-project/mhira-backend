@@ -14,6 +14,7 @@ import { PatientStatus } from './models/patient-status.model';
 import { Patient } from './models/patient.model';
 import { CaseManagerService } from './providers/case-manager.service';
 import { CaseManagerResolver } from './resolvers/case-manager.resolver';
+import { PatientResolver } from './resolvers/patient.resolver';
 
 const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
@@ -35,13 +36,10 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     CreateDTOClass: CreatePatientInput,
                     UpdateDTOClass: UpdatePatientInput,
                     guards: guards,
-                    read: {
-                        defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
-                        decorators: [UsePermission(PermissionEnum.VIEW_PATIENTS)],
-                    },
-                    create: { decorators: [UsePermission(PermissionEnum.MANAGE_PATIENTS)] },
-                    update: { decorators: [UsePermission(PermissionEnum.MANAGE_PATIENTS)] },
-                    delete: { decorators: [UsePermission(PermissionEnum.DELETE_PATIENTS)] },
+                    read: { disabled: true },
+                    create: { disabled: true },
+                    update: { disabled: true },
+                    delete: { disabled: true },
                 },
                 {
                     DTOClass: Informant,
@@ -84,6 +82,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
     providers: [
         CaseManagerService,
         CaseManagerResolver,
+        PatientResolver,
     ],
 })
 export class PatientModule { }
