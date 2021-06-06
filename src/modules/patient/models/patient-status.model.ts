@@ -1,4 +1,4 @@
-import { FilterableField, Relation } from "@nestjs-query/query-graphql";
+import { FilterableField, UnPagedRelation } from "@nestjs-query/query-graphql";
 import { Field, Int, ObjectType } from "@nestjs/graphql";
 import {
     BaseEntity,
@@ -13,7 +13,7 @@ import {
 import { Patient } from "./patient.model";
 
 @ObjectType()
-@Relation('patients', () => [Patient],
+@UnPagedRelation('patients', () => Patient,
     {
         nullable: true,
         disableUpdate: true,

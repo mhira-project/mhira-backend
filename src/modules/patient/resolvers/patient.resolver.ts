@@ -24,18 +24,16 @@ import { PatientQueryService } from '../providers/patient-query.service';
 @ArgsType()
 class PatientQuery extends QueryArgsType(Patient) { }
 
-@ObjectType()
-class PatientConnection extends ConnectionType<Patient>(Patient) { }
-
+const PatientConnection = PatientQuery.ConnectionType;
 
 @InputType()
 export class CreateOnePatientInput extends CreateOneInputType('patient', CreatePatientInput) { }
 
 @InputType()
-class UpdateOnePatientInput extends UpdateOneInputType(UpdatePatientInput) { }
+class UpdateOnePatientInput extends UpdateOneInputType(Patient, UpdatePatientInput) { }
 
 @InputType()
-class DeleteOnePatientInput extends DeleteOneInputType() { }
+class DeleteOnePatientInput extends DeleteOneInputType(Patient) { }
 
 @ObjectType()
 class PatientDeleteResponse extends PartialType(Patient) { }
@@ -53,7 +51,7 @@ export class PatientResolver {
     async patients(
         @Args({ type: () => PatientQuery }) query: PatientQuery,
         @CurrentUser() currentUser: User,
-    ): Promise<PatientConnection> {
+    ): Promise<ConnectionType<Patient>> {
 
         const authorizeFilter = await PatientAuthorizer.authorizePatient(currentUser?.id);
 

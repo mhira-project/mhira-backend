@@ -3,7 +3,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types, Document } from 'mongoose';
 import { FilterableField } from '@nestjs-query/query-graphql';
 
-@ObjectType('questionnaire')
+@ObjectType()
 @Schema({ collection: 'questionnaires', timestamps: {} })
 export class Questionnaire extends Document {
     @Field(() => String)

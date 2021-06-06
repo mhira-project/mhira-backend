@@ -1,7 +1,7 @@
 import { SortDirection } from '@nestjs-query/core';
-import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
+import { Authorizer, NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
 import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
-import { Module } from '@nestjs/common';
+import { Injectable, Module } from '@nestjs/common';
 import { GqlAuthGuard } from '../auth/auth.guard';
 import { UsePermission } from './decorators/permission.decorator';
 import { PermissionEnum } from './enums/permission.enum';
@@ -11,6 +11,17 @@ import { Role } from './models/role.model';
 import { PermissionService } from './providers/permission.service';
 import { RoleCrudService } from './providers/role-crud.service';
 import { RoleResolver } from './resolvers/role.resolver';
+
+@Injectable()
+export class RoleAuthorizer implements Authorizer<Role> {
+    async authorize() {
+        return {};
+    }
+
+    async authorizeRelation() {
+        return {};
+    }
+}
 
 @Module({
     imports: [
@@ -45,6 +56,7 @@ import { RoleResolver } from './resolvers/role.resolver';
         PermissionService,
         RoleResolver,
         RoleCrudService,
+        RoleAuthorizer,
     ],
     exports: [
         PermissionGuard,

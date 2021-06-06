@@ -22,9 +22,9 @@
         "test:e2e": "jest --config ./test/jest-e2e.json"
     },
     "dependencies": {
-        "@nestjs-query/query-graphql": "^0.20.2",
+        "@nestjs-query/query-graphql": "^0.27.0",
         "@nestjs-query/query-mongoose": "^0.27.0",
-        "@nestjs-query/query-typeorm": "^0.20.2",
+        "@nestjs-query/query-typeorm": "^0.27.0",
         "@nestjs/bull": "^0.1.2",
         "@nestjs/common": "^7.3.2",
         "@nestjs/config": "^0.4.2",
