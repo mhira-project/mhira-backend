@@ -20,6 +20,7 @@ export class QuestionnaireVersion extends Document {
     @Field(() => String)
     _id: Types.ObjectId;
 
+    @Field(() => Questionnaire)
     @Prop({ type: Types.ObjectId, ref: Questionnaire.name })
     questionnaire: Types.ObjectId | Questionnaire;
 
@@ -59,7 +60,7 @@ export class QuestionnaireVersion extends Document {
     @Prop()
     timeToComplete: number;
 
-    // @Field(() => [QuestionGroup])
+    @Field(() => [QuestionGroup])
     @Prop({ type: [QuestionGroupSchema] })
     questionGroups: QuestionGroup[];
 

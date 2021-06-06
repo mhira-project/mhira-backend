@@ -21,8 +21,3 @@ export class Questionnaire extends Document {
 export const QuestionnaireSchema = SchemaFactory.createForClass(
     Questionnaire,
 ).index({ language: 1, abbreviation: 1 }, { unique: true }); // index to ensure that translations for the same questionnaire can be uploaded
-QuestionnaireSchema.virtual('questionnaireVersions', {
-    ref: 'questionnaireversion',
-    localField: '_id',
-    foreignField: 'questionnaire',
-});

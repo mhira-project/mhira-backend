@@ -32,18 +32,6 @@ import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
 
 @Module({
     imports: [
-        // MongooseModule.forFeature([
-        //     { name: Questionnaire.name, schema: QuestionnaireSchema },
-        //     {
-        //         name: QuestionnaireVersion.name,
-        //         schema: QuestionnaireVersionSchema,
-        //     },
-        //     { name: Question.name, schema: QuestionSchema },
-        //     { name: QuestionGroup.name, schema: QuestionGroupSchema },
-        //     { name: Answer.name, schema: AnswerSchema },
-        //     { name: Choice.name, schema: ChoiceSchema },
-        //     { name: QuestionnaireAssessment.name, schema: AssessmentSchema },
-        // ]),
         NestjsQueryGraphQLModule.forFeature({
             imports: [
                 NestjsQueryMongooseModule.forFeature([
@@ -60,20 +48,14 @@ import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
                     { name: QuestionnaireAssessment.name, schema: AssessmentSchema, document: QuestionnaireAssessment },
                 ]),
             ],
-            resolvers: [
-                {
-                    DTOClass: QuestionnaireVersion,
-                    EntityClass: QuestionnaireVersion,
-                    // read: { disabled: true }
-                }
-            ],
+            resolvers: [],
         })
     ],
     providers: [
-        // QuestionnaireService,
-        // QuestionnaireResolver,
-        // QuestionnaireAssessmentService,
-        // AssessmentResolver,
+        QuestionnaireService,
+        QuestionnaireResolver,
+        QuestionnaireAssessmentService,
+        AssessmentResolver,
     ],
 })
 export class QuestionnaireModule { }
