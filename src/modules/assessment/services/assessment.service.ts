@@ -16,6 +16,10 @@ export class AssessmentService {
         @InjectRepository(Assessment) private assessmentRepository: Repository<Assessment>,
     ) { }
 
+    getQuestionnaireAssessment(id: string) {
+        return this.questionnaireAssessmentService.getById(id);
+    }
+
     async createNewAssessment(assessmentInput: CreateFullAssessmentInput) {
         let assessment: Assessment;
 

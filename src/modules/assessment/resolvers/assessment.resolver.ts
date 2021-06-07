@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import { Resolver, Query, Int, Args, Mutation } from '@nestjs/graphql';
+import { Resolver, Query, Int, Args, Mutation, ResolveField, Parent } from '@nestjs/graphql';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
 import { Assessment, FullAssessment } from '../models/assessment.model';
@@ -10,6 +10,7 @@ import {
     CreateFullAssessmentInput,
     UpdateFullAssessmentInput,
 } from '../dtos/create-assessment.input';
+import { QuestionnaireAssessment } from '../../questionnaire/models/questionnaire-assessment.schema';
 
 @Resolver(() => Assessment)
 @UseGuards(GqlAuthGuard, PermissionGuard)
@@ -17,6 +18,11 @@ export class AssessmentResolver {
     constructor(
         private readonly assessmentService: AssessmentService,
     ) { }
+
+    @ResolveField('questionnaireAssessment', () => QuestionnaireAssessment)
+    getQuestionnaireAssessment(@Parent() assessment: Assessment) {
+        return this.assessmentService.getQuestionnaireAssessment(assessment.questionnaireAssessmentId);
+    }
 
     @Query(() => FullAssessment)
     @UsePermission(PermissionEnum.VIEW_ASSESSMENTS)
