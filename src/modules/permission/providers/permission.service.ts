@@ -1,5 +1,6 @@
 import { Logger, OnModuleInit } from '@nestjs/common';
 import { User } from 'src/modules/user/models/user.model';
+import { Hash } from 'src/shared';
 import { Any } from 'typeorm';
 import { MAX_ROLE_HIERARCHY, MIN_ROLE_HIERARCHY } from '../constants';
 import { PermissionEnum, systemPermissions as PermissionsMaster } from '../enums/permission.enum';
@@ -108,7 +109,7 @@ export class PermissionService implements OnModuleInit {
             superAdminUser.firstName = 'Super';
             superAdminUser.lastName = 'Admin';
             superAdminUser.username = 'superadmin';
-            superAdminUser.password = 'superadmin';
+            superAdminUser.password = await Hash.make('superadmin');
             superAdminUser.isSuperUser = true;
             superAdminUser.roles = [superAdminRole];
 
