@@ -1,6 +1,7 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types, Document } from 'mongoose';
+import { FilterableField } from '@nestjs-query/query-graphql';
 
 @ObjectType()
 @Schema({ collection: 'questionnaires', timestamps: {} })
@@ -8,11 +9,11 @@ export class Questionnaire extends Document {
     @Field(() => String)
     _id: Types.ObjectId;
 
-    @Field(() => String)
+    @FilterableField(() => String)
     @Prop()
     language: string;
 
-    @Field(() => String)
+    @FilterableField(() => String)
     @Prop()
     abbreviation: string;
 }

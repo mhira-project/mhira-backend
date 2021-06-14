@@ -4,6 +4,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Questionnaire } from './questionnaire.schema';
+import { FilterableField, FilterableRelation } from '@nestjs-query/query-graphql';
 
 export enum QuestionnaireStatus {
     DRAFT = 'DRAFT',
@@ -13,6 +14,7 @@ export enum QuestionnaireStatus {
 }
 
 @ObjectType()
+@FilterableRelation('questionnaire', () => Questionnaire, { nullable: true, disableRemove: true })
 @Schema({ collection: 'questionnaire_versions', timestamps: {} })
 export class QuestionnaireVersion extends Document {
     @Field(() => String)
@@ -22,7 +24,7 @@ export class QuestionnaireVersion extends Document {
     @Prop({ type: Types.ObjectId, ref: Questionnaire.name })
     questionnaire: Types.ObjectId | Questionnaire;
 
-    @Field(() => String)
+    @FilterableField(() => String)
     @Prop()
     name: string;
 
@@ -34,7 +36,7 @@ export class QuestionnaireVersion extends Document {
     })
     status: QuestionnaireStatus;
 
-    @Field(() => [String], { nullable: true })
+    @FilterableField(() => [String], { nullable: true, allowedComparisons: ['iLike'] })
     @Prop({
         type: [String],
         min: 1,

@@ -118,6 +118,9 @@ export class QuestionnaireService {
                 timeToComplete: {
                     $last: '$timeToComplete',
                 },
+                questionGroups: {
+                    $last: '$questionGroups',
+                },
             })
         ).map(version => {
             version.questionnaire = version._id;

@@ -9,14 +9,14 @@ import {
     DeleteDateColumn,
     ManyToMany,
 } from 'typeorm';
-import { FilterableField, FilterableRelation, KeySet } from '@nestjs-query/query-graphql';
+import { FilterableField, FilterableUnPagedRelation, KeySet } from '@nestjs-query/query-graphql';
 import { User } from 'src/modules/user/models/user.model';
 import { Patient } from 'src/modules/patient/models/patient.model';
 
 @ObjectType()
 @KeySet(['id'])
-@FilterableRelation('users', () => [User], { disableUpdate: true, disableRemove: true })
-@FilterableRelation('patients', () => [Patient], { disableUpdate: true, disableRemove: true })
+@FilterableUnPagedRelation('users', () => User, { disableUpdate: true, disableRemove: true })
+@FilterableUnPagedRelation('patients', () => Patient, { disableUpdate: true, disableRemove: true })
 @Entity()
 export class Department extends BaseEntity {
 

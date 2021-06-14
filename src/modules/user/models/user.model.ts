@@ -20,8 +20,8 @@ import { GenderEnum } from 'src/modules/patient/models/gender.enum';
 import {
     FilterableField,
     KeySet,
-    Relation,
-    FilterableRelation,
+    FilterableUnPagedRelation,
+    UnPagedRelation,
 } from '@nestjs-query/query-graphql';
 import { Role } from 'src/modules/permission/models/role.model';
 import { UserPreviousPassword } from './user-previous-password.model';
@@ -32,9 +32,9 @@ import { Hash } from 'src/shared/helpers/hash.helper';
 
 @ObjectType()
 @KeySet(['id'])
-@FilterableRelation('roles', () => [Role])
-@Relation('permissions', () => [Permission])
-@FilterableRelation('departments', () => [Department])
+@FilterableUnPagedRelation('roles', () => Role)
+@UnPagedRelation('permissions', () => Permission)
+@FilterableUnPagedRelation('departments', () => Department)
 @Entity()
 export class User extends BaseEntity {
     static searchable = [

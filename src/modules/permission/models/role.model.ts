@@ -15,18 +15,15 @@ import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Permission } from './permission.model';
 import {
     FilterableField,
-    PagingStrategies,
-    Relation,
+    UnPagedRelation,
 } from '@nestjs-query/query-graphql';
 import { User } from 'src/modules/user/models/user.model';
 import { RoleCode } from '../enums/role-code.enum';
 import { MAX_ROLE_HIERARCHY } from '../constants';
 
 @ObjectType()
-@Relation('permissions', () => [Permission], {
-    pagingStrategy: PagingStrategies.NONE,
-})
-@Relation('users', () => [User])
+@UnPagedRelation('permissions', () => Permission)
+@UnPagedRelation('users', () => User)
 @Entity()
 export class Role extends BaseEntity {
     @FilterableField(() => Int)
