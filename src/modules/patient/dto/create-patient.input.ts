@@ -69,6 +69,6 @@ export class CreatePatientInput {
     addressCountryCode: string;
 
     @Field(() => [Int], { nullable: true })
-    @ArrayMinSize(1, { message: 'Please select atleast 1 deparment for patient' })
+    @ArrayMinSize(1, { message: 'Please select atleast one(1) Department for patient' })
     departmentIds: number[];
 }
