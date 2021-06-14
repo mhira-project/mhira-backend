@@ -1,6 +1,8 @@
 import { Filter } from '@nestjs-query/core';
 import { Patient } from "../models/patient.model";
 import { User } from "src/modules/user/models/user.model";
+import { PermissionService } from 'src/modules/permission/providers/permission.service';
+import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
 
 export class PatientAuthorizer {
 
@@ -18,6 +20,10 @@ export class PatientAuthorizer {
             where: { id: userId },
             relations: ['departments'],
         });
+
+        if (await PermissionService.userCan(currentUser.id, PermissionEnum.VIEW_ALL_PATIENTS)) {
+            return {};
+        }
 
         const deparmentIds = currentUser.departments.map((department) => department.id);
 
