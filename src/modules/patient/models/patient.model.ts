@@ -1,7 +1,7 @@
 import {
-    Authorize,
     FilterableField,
     FilterableRelation,
+    FilterableUnPagedRelation,
 } from '@nestjs-query/query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
@@ -20,22 +20,20 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
-// import { PatientAuthorizer } from '../authorizers/patient.authorizer';
 import { EmergencyContact } from './emergency-contact.model';
 import { GenderEnum } from './gender.enum';
 import { Informant } from './informant.model';
 import { PatientStatus } from './patient-status.model';
 
 @ObjectType()
-// @Authorize(PatientAuthorizer)
 @FilterableRelation('status', () => PatientStatus, {
     nullable: true,
     disableUpdate: true,
 })
-@FilterableRelation('caseManagers', () => [User], { nullable: true })
-@FilterableRelation('informants', () => [Informant], { nullable: true })
-@FilterableRelation('emergencyContacts', () => [EmergencyContact], { nullable: true })
-@FilterableRelation('departments', () => [Department], { nullable: true })
+@FilterableUnPagedRelation('caseManagers', () => User, { nullable: true })
+@FilterableUnPagedRelation('informants', () => Informant, { nullable: true })
+@FilterableUnPagedRelation('emergencyContacts', () => EmergencyContact, { nullable: true })
+@FilterableUnPagedRelation('departments', () => Department, { nullable: true })
 @Entity()
 export class Patient extends BaseEntity {
     static searchable = [
@@ -172,12 +170,14 @@ export class Patient extends BaseEntity {
     @OneToMany(
         () => Informant,
         informant => informant.patient,
+        { onDelete: 'CASCADE' },
     )
     informants: Informant[];
 
     @OneToMany(
         () => EmergencyContact,
         contact => contact.patient,
+        { onDelete: 'CASCADE' },
     )
     emergencyContacts: EmergencyContact[];
 

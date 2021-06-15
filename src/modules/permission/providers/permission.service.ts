@@ -145,6 +145,13 @@ export class PermissionService implements OnModuleInit {
         return permissions;
     }
 
+    static async userCan(userId: number, action: string) {
+
+        const userPermissions = await PermissionService.userPermissionGrants(userId);
+
+        return !!userPermissions.find(permission => permission.name === action)
+    }
+
     /**
      * Compares hierarchy of one user and another target
      * @param currentUser user to compare to target

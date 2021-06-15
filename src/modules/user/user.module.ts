@@ -1,6 +1,5 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
+import { Injectable, Module } from '@nestjs/common';
+import { Authorizer, NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
 import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { User } from './models/user.model';
 import { UserCrudService } from './providers/user-crud.service';
@@ -8,6 +7,17 @@ import { UserCrudResolver } from './resolvers/user-crud.resolver';
 import { SettingModule } from '../setting/setting.module';
 import { ChangePasswordService } from './providers/change-password.service';
 import { ChangePasswordResolver } from './resolvers/change-password.resolver';
+
+@Injectable()
+export class UserAuthorizer implements Authorizer<User> {
+    async authorize() {
+        return {};
+    }
+
+    async authorizeRelation() {
+        return {};
+    }
+}
 
 @Module({
     imports: [
@@ -25,6 +35,7 @@ import { ChangePasswordResolver } from './resolvers/change-password.resolver';
         UserCrudResolver,
         ChangePasswordService,
         ChangePasswordResolver,
+        UserAuthorizer,
     ],
 })
 export class UserModule { }

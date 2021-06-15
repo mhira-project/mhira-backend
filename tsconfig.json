@@ -5,6 +5,9 @@
         "removeComments": true,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
+        "lib": [
+            "ESNext"
+        ],
         "target": "es2017",
         "sourceMap": true,
         "outDir": "./dist",

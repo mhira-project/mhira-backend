@@ -8,6 +8,7 @@ export const systemPermissions = [
 
     { key: 'MANAGE_PATIENTS', name: 'manage patients', group: 'Patient Management' },
     { key: 'VIEW_PATIENTS', name: 'view patients', group: 'Patient Management' },
+    { key: 'VIEW_ALL_PATIENTS', name: 'view all patients', group: 'Patient Management' },
     { key: 'DELETE_PATIENTS', name: 'delete patients', group: 'Patient Management' },
 
     { key: 'VIEW_SYSCONFIG', name: 'view sysconf', group: 'System Configuration' },

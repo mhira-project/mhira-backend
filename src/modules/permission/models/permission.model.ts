@@ -10,12 +10,12 @@ import {
 } from 'typeorm';
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Role } from './role.model';
-import { FilterableField, Relation } from '@nestjs-query/query-graphql';
+import { FilterableField, UnPagedRelation } from '@nestjs-query/query-graphql';
 import { User } from 'src/modules/user/models/user.model';
 
 @ObjectType()
-@Relation('roles', () => [Role], { disableRemove: true, disableUpdate: true })
-@Relation('users', () => [User], { disableRemove: true, disableUpdate: true })
+@UnPagedRelation('roles', () => Role, { disableRemove: true, disableUpdate: true })
+@UnPagedRelation('users', () => User, { disableRemove: true, disableUpdate: true })
 @Entity()
 export class Permission extends BaseEntity {
     @FilterableField(() => Int)
