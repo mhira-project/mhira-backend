@@ -73,7 +73,7 @@ pipelines:
   branches:
     
     feature/docker-build:   
-      - step: *build-docker  
+      - step: *build-docker
             
     develop:
       - step: *install
