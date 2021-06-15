@@ -172,14 +172,4 @@ export class User extends BaseEntity {
         // Hash the password
         this.password = await Hash.make(this.password);
     }
-
-    @BeforeUpdate()
-    beforeUpdate() {
-        if (this.isSuperUser) throw new Error('Cannot update super user');
-    }
-
-    @BeforeRemove()
-    beforeDelete() {
-        if (this.isSuperUser) throw new Error('Cannot delete super user');
-    }
 }
