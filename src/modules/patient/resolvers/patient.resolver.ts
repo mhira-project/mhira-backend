@@ -6,7 +6,7 @@ import {
     QueryArgsType,
     UpdateOneInputType,
 } from '@nestjs-query/query-graphql';
-import { BadRequestException, Logger, NotFoundException, UseGuards } from '@nestjs/common';
+import { BadRequestException, UseGuards } from '@nestjs/common';
 import { Args, ArgsType, ID, InputType, Mutation, ObjectType, PartialType, Query, Resolver } from '@nestjs/graphql';
 import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
