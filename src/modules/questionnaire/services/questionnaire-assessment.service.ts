@@ -105,11 +105,11 @@ export class QuestionnaireAssessmentService {
             throw new Error('Invalid question answered');
         }
 
-        const answerExisting = foundAssessment.answers.filter(
+        const answerExisting = foundAssessment.answers.find(
             answer => answer.question === assessmentAnswerInput.question,
         );
 
-        const answer = answerExisting[0] ?? new this.answerModel();
+        const answer = answerExisting ?? new this.answerModel();
 
         answer.question = assessmentAnswerInput.question;
         answer.multipleChoiceValue = assessmentAnswerInput.multipleChoiceValue;
@@ -123,28 +123,18 @@ export class QuestionnaireAssessmentService {
         );
 
         if (validator.isValid(answer)) {
-            if (!answerExisting[0]) {
+            if (!answerExisting) {
                 foundAssessment.answers.push(answer);
             } else {
-                foundAssessment.answers[
-                    foundAssessment.answers.indexOf(answerExisting[0])
-                ] = answer;
+                foundAssessment.answers[foundAssessment.answers.indexOf(answerExisting)] = answer;
             }
 
             foundAssessment.status = assessmentAnswerInput.finishedAssessment
                 ? AssessmentStatus.COMPLETED
                 : AssessmentStatus.PARTIALLY_COMPLETED;
 
-            // this returns old model instead of updated one
-            await this.assessmentModel
-                .findByIdAndUpdate(
-                    assessmentAnswerInput.assessmentId,
-                    foundAssessment,
-                )
-                .exec();
-
             // return updated model
-            return foundAssessment;
+            return foundAssessment.save();
         }
 
         return null;
