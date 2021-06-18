@@ -4,7 +4,6 @@ import { Model, Types } from 'mongoose';
 
 import {
     CreateQuestionnaireInput,
-    ListQuestionnaireInput,
     UpdateQuestionnaireInput,
 } from '../dtos/questionnaire.input';
 import { Questionnaire } from '../models/questionnaire.schema';
@@ -19,6 +18,8 @@ import {
 import { FileData, XLSForm } from '../helpers/xlsform-reader.helper';
 import { XlsFormQuestionFactory } from '../helpers/xlsform-questions.factory';
 import { FileUpload } from 'graphql-upload';
+import { applyQuery } from '@nestjs-query/core';
+import { QuestionniareVersionQuery } from '../resolvers/questionnaire.resolver';
 
 @Injectable()
 export class QuestionnaireService {
@@ -84,10 +85,7 @@ export class QuestionnaireService {
             .exec();
     }
 
-    async list(filters: ListQuestionnaireInput) {
-        // filter questionnaires by version. order by newest and only filter after results have been found.
-        // TODO: add sorting and paging
-        // TODO: add keywords
+    async list(query: QuestionniareVersionQuery) {
         let questionnaireVersions: QuestionnaireVersion[] = (
             await this.questionnaireVersionModel.aggregate().group({
                 _id: '$questionnaire',
@@ -143,22 +141,7 @@ export class QuestionnaireService {
             },
         );
 
-        return populatedQuestionnaires.filter(version => {
-            const questionnaire = version.questionnaire as Questionnaire;
-            return (
-                (!filters.language ||
-                    questionnaire.language === filters.language) &&
-                (!filters.abbreviation ||
-                    questionnaire.abbreviation.includes(
-                        filters.abbreviation,
-                    )) &&
-                (!filters.timeToComplete ||
-                    version.timeToComplete === filters.timeToComplete) &&
-                (!filters.license ||
-                    version.license.includes(filters.license)) &&
-                (!filters.status || version.status === filters.status)
-            );
-        });
+        return applyQuery(populatedQuestionnaires, query);;
     }
 
     async deleteQuestionnaire(_id: Types.ObjectId, softDelete = true) {

@@ -1,8 +1,7 @@
-import { Args, Resolver, Query, Mutation } from '@nestjs/graphql';
+import { Args, Resolver, Query, Mutation, ArgsType } from '@nestjs/graphql';
 
 import {
     CreateQuestionnaireInput,
-    ListQuestionnaireInput,
     UpdateQuestionnaireInput,
 } from '../dtos/questionnaire.input';
 import { QuestionnaireService } from '../services/questionnaire.service';
@@ -14,11 +13,16 @@ import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
 import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
 import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
+import { QueryArgsType } from '@nestjs-query/query-graphql';
+
+@ArgsType()
+export class QuestionniareVersionQuery extends QueryArgsType(QuestionnaireVersion) { }
+const QuestionnaireVersionConnection = QuestionniareVersionQuery.ConnectionType;
 
 @Resolver(() => Questionnaire)
 @UseGuards(GqlAuthGuard, PermissionGuard)
 export class QuestionnaireResolver {
-    constructor(private questionnaireService: QuestionnaireService) {}
+    constructor(private questionnaireService: QuestionnaireService) { }
 
     @Query(() => Questionnaire)
     @UsePermission(PermissionEnum.VIEW_QUESTIONNAIRES)
@@ -40,12 +44,12 @@ export class QuestionnaireResolver {
         return this.questionnaireService.getNewestVersionById(_id);
     }
 
-    @Query(() => [QuestionnaireVersion])
+    @Query(() => QuestionnaireVersionConnection)
     @UsePermission(PermissionEnum.VIEW_QUESTIONNAIRES)
     async questionnaires(
-        @Args('filters') questionnaireFilter: ListQuestionnaireInput,
+        @Args() query: QuestionniareVersionQuery,
     ) {
-        return this.questionnaireService.list(questionnaireFilter);
+        return QuestionnaireVersionConnection.createFromPromise(q => this.questionnaireService.list(q), query);
     }
 
     @Mutation(() => QuestionnaireVersion)
