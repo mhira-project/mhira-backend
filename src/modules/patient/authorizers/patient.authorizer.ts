@@ -3,6 +3,7 @@ import { Patient } from "../models/patient.model";
 import { User } from "src/modules/user/models/user.model";
 import { PermissionService } from 'src/modules/permission/providers/permission.service';
 import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
+import { UnauthorizedException } from '@nestjs/common';
 
 export class PatientAuthorizer {
 
@@ -30,15 +31,12 @@ export class PatientAuthorizer {
         // User has no departments
         if (deparmentIds.length < 1) {
 
-            return Promise.resolve(
-                { departments: { id: { is: null } } } // include patients without a department
-            );
+            throw new UnauthorizedException(`You need to be assigned atleast one department to view patients.`)
         }
 
         return Promise.resolve({
             or: [
                 { departments: { id: { in: deparmentIds } } },
-                { departments: { id: { is: null } } }
             ]
         });
     }
