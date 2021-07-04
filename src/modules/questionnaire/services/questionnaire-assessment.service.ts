@@ -10,6 +10,7 @@ import {
 import { QuestionValidatorFactory } from '../helpers/question-validator.factory';
 import { Questionnaire } from '../models/questionnaire.schema';
 import { AssessmentStatus } from '../enums/assessment-status.enum';
+import { UserInputError } from 'apollo-server-express';
 
 export class QuestionnaireAssessmentService {
     constructor(
@@ -122,7 +123,9 @@ export class QuestionnaireAssessmentService {
             question,
         );
 
-        if (validator.isValid(answer)) {
+        try {
+            answer.valid = validator.isValid(answer);
+
             if (!answerExisting) {
                 foundAssessment.answers.push(answer);
             } else {
@@ -135,9 +138,17 @@ export class QuestionnaireAssessmentService {
 
             // return updated model
             return foundAssessment.save();
+        } catch (e) {
+            if (e instanceof UserInputError) {
+                answer.valid = false;
+                if (answerExisting) {
+                    // invalidate existing answer
+                    foundAssessment.answers[foundAssessment.answers.indexOf(answerExisting)] = answer;
+                    await foundAssessment.save();
+                }
+            }
+            throw e;
         }
-
-        return null;
     }
 
     changeAssessmentStatus(assessmentId: Types.ObjectId, status: AssessmentStatus) {
