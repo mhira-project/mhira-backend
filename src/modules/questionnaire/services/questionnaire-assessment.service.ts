@@ -132,10 +132,6 @@ export class QuestionnaireAssessmentService {
                 foundAssessment.answers[foundAssessment.answers.indexOf(answerExisting)] = answer;
             }
 
-            foundAssessment.status = assessmentAnswerInput.finishedAssessment
-                ? AssessmentStatus.COMPLETED
-                : AssessmentStatus.PARTIALLY_COMPLETED;
-
             // return updated model
             return foundAssessment.save();
         } catch (e) {
