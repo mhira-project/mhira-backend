@@ -13,6 +13,7 @@ import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
 import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
+import { PermissionService } from 'src/modules/permission/providers/permission.service';
 import { User } from 'src/modules/user/models/user.model';
 import { PatientAuthorizer } from '../authorizers/patient.authorizer';
 import { CreatePatientInput } from '../dto/create-patient.input';
@@ -99,11 +100,17 @@ export class PatientResolver {
         });
 
         // Check input deparments overlap with departments user is a member
-        const deparmentIds = currentUser.departments.map((department) => department.id);
-        const exceptionDepartments = patientInput.departmentIds.filter((inputId) => deparmentIds.indexOf(inputId) < 0);
+        // Or User has permission over patients in all departments.
 
-        if (exceptionDepartments?.length) {
-            throw new BadRequestException(`User cannot create Patients in deparments of which is not a member`);
+        const canViewAllPatients = await PermissionService.userCan(currentUser.id, PermissionEnum.VIEW_ALL_PATIENTS)
+
+        if (!canViewAllPatients) {
+            const deparmentIds = currentUser.departments.map((department) => department.id);
+            const exceptionDepartments = patientInput.departmentIds.filter((inputId) => deparmentIds.indexOf(inputId) < 0);
+
+            if (exceptionDepartments?.length) {
+                throw new BadRequestException(`User cannot create Patients in deparments of which is not a member`);
+            }
         }
 
         // Check for duplicate medical record no
