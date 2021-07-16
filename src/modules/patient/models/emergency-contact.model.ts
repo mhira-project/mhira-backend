@@ -1,4 +1,4 @@
-import { FilterableField, Relation } from "@nestjs-query/query-graphql";
+import { FilterableField, KeySet, Relation } from "@nestjs-query/query-graphql";
 import { Field, Int, ObjectType } from "@nestjs/graphql";
 import {
     BaseEntity,
@@ -13,6 +13,7 @@ import {
 import { Patient } from "./patient.model";
 
 @ObjectType()
+@KeySet(['id'])
 @Relation('patient', () => Patient,
     {
         nullable: true,
@@ -63,7 +64,7 @@ export class EmergencyContact extends BaseEntity {
     @DeleteDateColumn()
     deletedAt?: Date;
 
-    @ManyToOne(() => Patient, patient => patient.informants, { onDelete: 'CASCADE' })
+    @ManyToOne(() => Patient, patient => patient.emergencyContacts, { onDelete: 'CASCADE' })
     patient: Patient;
 
 }
