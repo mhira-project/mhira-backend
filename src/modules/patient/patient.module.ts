@@ -64,7 +64,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     guards: guards,
                     read: {
                         defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
-                        // decorators: [UsePermission(PermissionEnum.VIEW_PATIENTS)],
+                        decorators: [UsePermission(PermissionEnum.VIEW_PATIENTS)],
                     },
                     create: { disabled: true },
                     update: { decorators: [UsePermission(PermissionEnum.MANAGE_PATIENTS)] },
