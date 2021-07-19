@@ -7,6 +7,7 @@ import { UsePermission } from '../permission/decorators/permission.decorator';
 import { PermissionEnum } from '../permission/enums/permission.enum';
 import { PermissionGuard } from '../permission/guards/permission.guard';
 import { CreatePatientInput } from './dto/create-patient.input';
+import { EmergencyContactInput } from './dto/emergency-contact.input';
 import { UpdatePatientInput } from './dto/update-patient.input';
 import { EmergencyContact } from './models/emergency-contact.model';
 import { Informant } from './models/informant.model';
@@ -14,6 +15,7 @@ import { PatientStatus } from './models/patient-status.model';
 import { Patient } from './models/patient.model';
 import { CaseManagerService } from './providers/case-manager.service';
 import { CaseManagerResolver } from './resolvers/case-manager.resolver';
+import { EmergencyContactResolver } from './resolvers/emergency-contact.resolver';
 import { PatientResolver } from './resolvers/patient.resolver';
 import { PatientQueryService } from './providers/patient-query.service';
 
@@ -57,12 +59,14 @@ const guards = [GqlAuthGuard, PermissionGuard];
                 {
                     DTOClass: EmergencyContact,
                     EntityClass: EmergencyContact,
+                    CreateDTOClass: EmergencyContactInput,
+                    UpdateDTOClass: EmergencyContactInput,
                     guards: guards,
                     read: {
                         defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
                         decorators: [UsePermission(PermissionEnum.VIEW_PATIENTS)],
                     },
-                    create: { decorators: [UsePermission(PermissionEnum.MANAGE_PATIENTS)] },
+                    create: { disabled: true },
                     update: { decorators: [UsePermission(PermissionEnum.MANAGE_PATIENTS)] },
                     delete: { decorators: [UsePermission(PermissionEnum.MANAGE_PATIENTS)] },
                 },
@@ -84,6 +88,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
         CaseManagerService,
         CaseManagerResolver,
         PatientResolver,
+        EmergencyContactResolver,
         PatientQueryService,
     ],
 })
