@@ -15,6 +15,7 @@ import { Patient } from './models/patient.model';
 import { CaseManagerService } from './providers/case-manager.service';
 import { CaseManagerResolver } from './resolvers/case-manager.resolver';
 import { PatientResolver } from './resolvers/patient.resolver';
+import { PatientQueryService } from './providers/patient-query.service';
 
 const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
@@ -83,6 +84,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
         CaseManagerService,
         CaseManagerResolver,
         PatientResolver,
+        PatientQueryService,
     ],
 })
 export class PatientModule { }
