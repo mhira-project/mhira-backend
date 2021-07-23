@@ -48,17 +48,8 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     DTOClass: Assessment,
                     EntityClass: Assessment,
                     guards,
-                    read: {
-                        guards,
-                        defaultSort: [
-                            { field: 'createdAt', direction: SortDirection.DESC },
-                        ],
-                        decorators: [
-                            UsePermission(PermissionEnum.VIEW_ASSESSMENTS),
-                        ],
-                    },
-
                     // handled by assessment resolver
+                    read: { disabled: true },
                     create: { disabled: true },
                     update: { disabled: true },
                     delete: { disabled: true },

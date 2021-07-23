@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Types } from 'mongoose';
 import { getConnection, Repository } from 'typeorm';
@@ -8,16 +8,75 @@ import {
 } from '../dtos/create-assessment.input';
 import { Assessment, FullAssessment } from '../models/assessment.model';
 import { QuestionnaireAssessmentService } from '../../questionnaire/services/questionnaire-assessment.service';
+import { Filter, InjectQueryService, mergeFilter, QueryService, SortDirection } from '@nestjs-query/core';
+import { AssessmentConnection, AssessmentQuery } from '../dtos/assessment.query';
+import { PatientAuthorizer } from 'src/modules/patient/authorizers/patient.authorizer';
+import { User } from 'src/modules/user/models/user.model';
+import { ConnectionType } from '@nestjs-query/query-graphql';
 
 @Injectable()
 export class AssessmentService {
     constructor(
         private questionnaireAssessmentService: QuestionnaireAssessmentService,
-        @InjectRepository(Assessment) private assessmentRepository: Repository<Assessment>,
+        @InjectRepository(Assessment)
+        private assessmentRepository: Repository<Assessment>,
+        @InjectQueryService(Assessment)
+        private readonly queryService: QueryService<Assessment>
     ) { }
 
     getQuestionnaireAssessment(id: string) {
         return this.questionnaireAssessmentService.getById(id);
+    }
+
+    /**
+     * Get assessments filter by authorized departments.
+     * 
+     * @param query 
+     * @param currentUser 
+     * @returns 
+     */
+    async getAssessments(query: AssessmentQuery, currentUser: User): Promise<ConnectionType<Assessment>> {
+        const patientAuthorizeFilter = await PatientAuthorizer.authorizePatient(currentUser?.id);
+
+        const combinedFilter = mergeFilter(query.filter, { patient: patientAuthorizeFilter });
+
+        // Apply combined authorized filter
+        query.filter = combinedFilter;
+
+        // Apply default sort if not provided
+        query.sorting = query.sorting?.length
+            ? query.sorting
+            : [{ field: 'id', direction: SortDirection.DESC }];
+
+        return AssessmentConnection.createFromPromise(
+            (q) => this.queryService.query(q),
+            query,
+            (q) => this.queryService.count(q),
+        );
+    }
+
+    /**
+     * Get assessment if authorized. Throws exception if Not Found
+     * 
+     * @param assessmentId 
+     * @param currentUser 
+     * @returns 
+     */
+    async getAssessment(assessmentId: number, currentUser: User): Promise<Assessment> {
+
+        const patientAuthorizeFilter = await PatientAuthorizer.authorizePatient(currentUser?.id);
+
+        const combinedFilter = mergeFilter({ id: { eq: assessmentId } } as Filter<Assessment>, { patient: patientAuthorizeFilter });
+
+        const assessments = await this.queryService.query({ paging: { limit: 1 }, filter: combinedFilter });
+
+        const assessment = assessments?.[0];
+
+        if (!assessment) {
+            throw new NotFoundException();
+        }
+
+        return assessment;
     }
 
     async createNewAssessment(assessmentInput: CreateFullAssessmentInput) {
