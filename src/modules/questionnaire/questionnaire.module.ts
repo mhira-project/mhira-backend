@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { Answer, AnswerSchema } from './models/answer.schema';
 import {
     QuestionGroup,

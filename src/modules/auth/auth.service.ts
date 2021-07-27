@@ -1,20 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { User } from 'src/modules/user/models/user.model';
 import { LoginResponseDto } from './dto/login-response.dto';
-import { JwtPayload } from './jwt-payload.interface';
-import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { LoginRequestDto } from './dto/login-request.dto';
 import { Hash } from 'src/shared/helpers/hash.helper';
-import { AccessToken } from './models/access-token.model';
-import * as dayjs from 'dayjs';
-import { authConfig } from 'src/config/auth.config';
 import { AuthenticationError } from 'apollo-server-express';
 import { Permission } from '../permission/models/permission.model';
 import { Any } from 'typeorm';
 import { Role } from '../permission/models/role.model';
 import { SettingService } from '../setting/providers/setting.service';
 import { SettingKey } from '../setting/enums/setting-name.enum';
-import { CacheService } from 'src/shared';
 import { AccessTokenService } from './providers/access-token.service';
 
 @Injectable()

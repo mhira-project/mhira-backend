@@ -11,8 +11,6 @@ import {
     JoinTable,
     OneToMany,
     BeforeInsert,
-    BeforeUpdate,
-    BeforeRemove,
 } from 'typeorm';
 import { Permission } from 'src/modules/permission/models/permission.model';
 import { AccessToken } from 'src/modules/auth/models/access-token.model';

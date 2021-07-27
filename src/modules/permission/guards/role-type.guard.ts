@@ -1,4 +1,3 @@
-import { Logger } from '@nestjs/common';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
@@ -7,7 +6,7 @@ import { User } from 'src/modules/user/models/user.model';
 
 @Injectable()
 export class RoleTypeGuard implements CanActivate {
-    constructor(private readonly reflector: Reflector) {}
+    constructor(private readonly reflector: Reflector) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const ctx = GqlExecutionContext.create(context);
