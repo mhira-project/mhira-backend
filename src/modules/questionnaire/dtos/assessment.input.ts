@@ -21,9 +21,6 @@ export class AnswerAssessmentInput {
     @Field(() => String)
     questionnaireVersionId: Types.ObjectId;
 
-    @Field({ nullable: true, defaultValue: false })
-    finishedAssessment: boolean;
-
     @Field(() => String)
     question: Types.ObjectId;
 

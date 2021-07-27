@@ -1,5 +1,6 @@
 import { Answer } from '../models/answer.schema';
 import { Question, QuestionType } from '../models/question.schema';
+import { UserInputError } from 'apollo-server-express';
 
 export abstract class BasicValidator {
     constructor(protected question: Question) { }
@@ -13,7 +14,7 @@ export abstract class BasicValidator {
             ?? (this.question.type === QuestionType.NOTE ? true : undefined);
 
         if (this.question.required && (answerSet === undefined || answerSet === null)) {
-            throw new Error(
+            throw new UserInputError(
                 this.question.requiredMessage ??
                 `Question '${this.question.name}' is required.`,
             );
