@@ -1,6 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { Exclude } from 'class-transformer';
-import { IsOptional } from 'class-validator';
 import { GraphQLUpload } from 'graphql-tools';
 import { FileUpload } from 'graphql-upload';
 import { QuestionnaireStatus } from '../models/questionnaire-version.schema';
@@ -46,27 +45,4 @@ export class CreateQuestionnaireInput extends SharedQuestionnaireInput {
     @Field(() => GraphQLUpload)
     @Exclude()
     excelFile: Promise<FileUpload>;
-}
-
-@InputType()
-export class ListQuestionnaireInput {
-    @Field({ nullable: true })
-    @IsOptional()
-    language?: string;
-
-    @Field({ nullable: true })
-    @IsOptional()
-    abbreviation?: string;
-
-    @Field({ nullable: true })
-    @IsOptional()
-    license?: string;
-
-    @Field({ nullable: true })
-    @IsOptional()
-    timeToComplete?: number;
-
-    @Field({ nullable: true })
-    @IsOptional()
-    status?: string;
 }

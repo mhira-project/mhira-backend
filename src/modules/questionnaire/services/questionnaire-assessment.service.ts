@@ -10,6 +10,7 @@ import {
 import { QuestionValidatorFactory } from '../helpers/question-validator.factory';
 import { Questionnaire } from '../models/questionnaire.schema';
 import { AssessmentStatus } from '../enums/assessment-status.enum';
+import { UserInputError } from 'apollo-server-express';
 
 export class QuestionnaireAssessmentService {
     constructor(
@@ -105,11 +106,11 @@ export class QuestionnaireAssessmentService {
             throw new Error('Invalid question answered');
         }
 
-        const answerExisting = foundAssessment.answers.filter(
+        const answerExisting = foundAssessment.answers.find(
             answer => answer.question === assessmentAnswerInput.question,
         );
 
-        const answer = answerExisting[0] ?? new this.answerModel();
+        const answer = answerExisting ?? new this.answerModel();
 
         answer.question = assessmentAnswerInput.question;
         answer.multipleChoiceValue = assessmentAnswerInput.multipleChoiceValue;
@@ -122,32 +123,28 @@ export class QuestionnaireAssessmentService {
             question,
         );
 
-        if (validator.isValid(answer)) {
-            if (!answerExisting[0]) {
+        try {
+            answer.valid = validator.isValid(answer);
+
+            if (!answerExisting) {
                 foundAssessment.answers.push(answer);
             } else {
-                foundAssessment.answers[
-                    foundAssessment.answers.indexOf(answerExisting[0])
-                ] = answer;
+                foundAssessment.answers[foundAssessment.answers.indexOf(answerExisting)] = answer;
             }
 
-            foundAssessment.status = assessmentAnswerInput.finishedAssessment
-                ? AssessmentStatus.COMPLETED
-                : AssessmentStatus.PARTIALLY_COMPLETED;
-
-            // this returns old model instead of updated one
-            await this.assessmentModel
-                .findByIdAndUpdate(
-                    assessmentAnswerInput.assessmentId,
-                    foundAssessment,
-                )
-                .exec();
-
             // return updated model
-            return foundAssessment;
+            return foundAssessment.save();
+        } catch (e) {
+            if (e instanceof UserInputError) {
+                answer.valid = false;
+                if (answerExisting) {
+                    // invalidate existing answer
+                    foundAssessment.answers[foundAssessment.answers.indexOf(answerExisting)] = answer;
+                    await foundAssessment.save();
+                }
+            }
+            throw e;
         }
-
-        return null;
     }
 
     changeAssessmentStatus(assessmentId: Types.ObjectId, status: AssessmentStatus) {

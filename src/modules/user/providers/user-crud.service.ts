@@ -52,7 +52,7 @@ export class UserCrudService extends TypeOrmQueryService<User> {
 
         // Check for duplicate username
         if (!!update.username) {
-            const exists = await super
+            const [exists] = await super
                 .query({
                     filter: {
                         and: [
@@ -60,7 +60,7 @@ export class UserCrudService extends TypeOrmQueryService<User> {
                             { id: { neq: Number(id) } }, // exclude current row from duplicate check
                         ]
                     }
-                })
+                });
 
             if (exists) {
                 throw new BadRequestException('Username already exists');

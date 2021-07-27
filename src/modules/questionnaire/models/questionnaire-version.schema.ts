@@ -28,7 +28,7 @@ export class QuestionnaireVersion extends Document {
     @Prop()
     name: string;
 
-    @Field(() => String)
+    @FilterableField(() => String)
     @Prop({
         type: 'string',
         enum: Object.values(QuestionnaireStatus),
@@ -36,7 +36,8 @@ export class QuestionnaireVersion extends Document {
     })
     status: QuestionnaireStatus;
 
-    @FilterableField(() => [String], { nullable: true, allowedComparisons: ['iLike'] })
+    // to be filterable this would potentially need allowedComparisons option
+    @Field(() => [String], { nullable: true })
     @Prop({
         type: [String],
         min: 1,
