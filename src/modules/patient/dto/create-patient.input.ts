@@ -1,5 +1,5 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
-import { ArrayMinSize, IsOptional, MaxLength, MinLength } from 'class-validator';
+import { ArrayMinSize, IsOptional, MaxLength } from 'class-validator';
 import { GenderEnum } from '../models/gender.enum';
 
 @InputType()

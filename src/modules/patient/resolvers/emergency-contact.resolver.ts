@@ -3,7 +3,6 @@ import { Args, InputType, Mutation, Resolver } from '@nestjs/graphql';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
 import { EmergencyContact } from '../models/emergency-contact.model';
-import { Patient } from '../models/patient.model';
 import { QueryService, InjectQueryService } from '@nestjs-query/core';
 import { CreateOneInputType, CreateManyInputType } from '@nestjs-query/query-graphql';
 import { UseOrPermissions, UsePermission } from 'src/modules/permission/decorators/permission.decorator';
