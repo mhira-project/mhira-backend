@@ -137,14 +137,14 @@ export class PatientResolver {
         const { id, update } = input;
 
         // Get patient if authorized. Throws exception if Not Found
-        this.service.getOnePatient(currentUser, Number(input.id));
+        await this.service.getOnePatient(currentUser, Number(input.id));
 
         // Check for duplicate medical record no
         if (update.medicalRecordNo === '') update.medicalRecordNo = null; // coalesce '' to NULL, as field is nullable
 
         if (!!update.medicalRecordNo) {
-            const exists = await User.createQueryBuilder()
-                .where('medicalRecordNo = :medicalRecordNo AND id <> :id', { username: update.medicalRecordNo, id })
+            const exists = await Patient.createQueryBuilder('patient')
+                .where('patient.medicalRecordNo = :medicalRecordNo AND patient.id <> :id', { medicalRecordNo: update.medicalRecordNo, id })
                 .getOne();
 
             if (exists) {

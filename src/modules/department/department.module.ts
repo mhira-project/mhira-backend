@@ -8,6 +8,7 @@ import { PermissionGuard } from '../permission/guards/permission.guard';
 import { UsePermission } from '../permission/decorators/permission.decorator';
 import { PermissionEnum } from '../permission/enums/permission.enum';
 import { DepartmentCrudService } from './providers/deparment-crud.service';
+import { DepartmentResolver } from './resolvers/departments.resolver';
 
 @Module({
     imports: [
@@ -28,12 +29,15 @@ import { DepartmentCrudService } from './providers/deparment-crud.service';
                     guards: [GqlAuthGuard, PermissionGuard],
                     ServiceClass: DepartmentCrudService,
                     read: { defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
-                    create: { decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)] },
+                    create: { disabled: true },
                     update: { decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)] },
                     delete: { decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)] },
                 },
             ],
         }),
     ],
+    providers: [
+        DepartmentResolver,
+    ]
 })
 export class DepartmentModule { }
