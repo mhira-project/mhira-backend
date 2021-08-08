@@ -35,16 +35,18 @@ definitions:
         script:
           - npm run lint
 
-    - step: &build
-        name: Build
-        caches:
-          - node
-        script:
-          - npm run build
-        artifacts:
-          - dist/**
-    
-    - step: &build-docker
+    - parallel:      # build steps will run in parallel
+      
+      - step: &build
+          name: Build
+          caches:
+            - node
+          script:
+            - npm run build
+          artifacts:
+            - dist/**
+      
+      - step: &build-docker
         name: Build docker image
         caches:
           - docker
