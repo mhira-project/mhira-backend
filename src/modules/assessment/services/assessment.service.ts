@@ -13,6 +13,7 @@ import { AssessmentConnection, AssessmentQuery } from '../dtos/assessment.query'
 import { PatientAuthorizer } from 'src/modules/patient/authorizers/patient.authorizer';
 import { User } from 'src/modules/user/models/user.model';
 import { ConnectionType } from '@nestjs-query/query-graphql';
+import { PatientQueryService } from 'src/modules/patient/providers/patient-query.service';
 
 @Injectable()
 export class AssessmentService {
@@ -21,7 +22,8 @@ export class AssessmentService {
         @InjectRepository(Assessment)
         private assessmentRepository: Repository<Assessment>,
         @InjectQueryService(Assessment)
-        private readonly queryService: QueryService<Assessment>
+        private readonly assessmentQueryService: QueryService<Assessment>,
+        private readonly patientQueryService: PatientQueryService,
     ) { }
 
     getQuestionnaireAssessment(id: string) {
@@ -38,7 +40,22 @@ export class AssessmentService {
     async getAssessments(query: AssessmentQuery, currentUser: User): Promise<ConnectionType<Assessment>> {
         const patientAuthorizeFilter = await PatientAuthorizer.authorizePatient(currentUser?.id);
 
-        const combinedFilter = mergeFilter(query.filter, { patient: patientAuthorizeFilter });
+        /**
+         * Get Current User's patients
+         * 
+         * This is required to filter assessment by patient departments
+         * as the current filter mechanism does not support nested
+         * filter that is more than 3 relationships deep.
+         * 
+         * @TODO add caching for current users patients for performance
+         */
+        const currentUsersPatients = await this.patientQueryService.query({ filter: patientAuthorizeFilter });
+
+        const combinedFilter = mergeFilter(query.filter, {
+            patientId: {
+                in: currentUsersPatients.map(patient => patient.id)
+            },
+        });
 
         // Apply combined authorized filter
         query.filter = combinedFilter;
@@ -49,9 +66,9 @@ export class AssessmentService {
             : [{ field: 'id', direction: SortDirection.DESC }];
 
         return AssessmentConnection.createFromPromise(
-            (q) => this.queryService.query(q),
+            (q) => this.assessmentQueryService.query(q),
             query,
-            (q) => this.queryService.count(q),
+            (q) => this.assessmentQueryService.count(q),
         );
     }
 
@@ -68,7 +85,7 @@ export class AssessmentService {
 
         const combinedFilter = mergeFilter({ id: { eq: assessmentId } } as Filter<Assessment>, { patient: patientAuthorizeFilter });
 
-        const assessments = await this.queryService.query({ paging: { limit: 1 }, filter: combinedFilter });
+        const assessments = await this.assessmentQueryService.query({ paging: { limit: 1 }, filter: combinedFilter });
 
         const assessment = assessments?.[0];
 
