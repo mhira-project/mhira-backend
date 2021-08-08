@@ -108,7 +108,7 @@ export class PermissionService implements OnModuleInit {
             superAdminUser.firstName = 'Super';
             superAdminUser.lastName = 'Admin';
             superAdminUser.username = 'superadmin';
-            superAdminUser.password = 'superadmin';
+            superAdminUser.password = process.env.SUPERADMIN_PASSWORD || 'superadmin';
             superAdminUser.isSuperUser = true;
             superAdminUser.roles = [superAdminRole];
 
