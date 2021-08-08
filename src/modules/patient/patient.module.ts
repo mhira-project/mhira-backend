@@ -91,5 +91,8 @@ const guards = [GqlAuthGuard, PermissionGuard];
         EmergencyContactResolver,
         PatientQueryService,
     ],
+    exports: [
+        PatientQueryService,
+    ],
 })
 export class PatientModule { }
