@@ -1,6 +1,6 @@
 import { UpdateManyResponse, Filter, SortDirection } from '@nestjs-query/core';
 import { CRUDResolver, FilterType, UpdateManyResponseType } from '@nestjs-query/query-graphql';
-import { BadRequestException, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { Resolver, Args, Mutation, ID, ResolveField, Parent } from '@nestjs/graphql';
 import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';

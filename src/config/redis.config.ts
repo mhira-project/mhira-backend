@@ -10,23 +10,23 @@ export const redisConfig = {
         port: parseInt(process.env.REDIS_PORT, 10) || 6379,
         db: parseInt(process.env.REDIS_DB, 10) || 0,
         password: process.env.REDIS_PASSWORD,
-        keyPrefix: redisPrefix + ':default:',
+        prefix: redisPrefix + ':default:',
     },
 
     typeormCache: {
         host: process.env.REDIS_HOST || '127.0.0.1',
         port: parseInt(process.env.REDIS_PORT, 10) || 6379,
-        db: parseInt(process.env.REDIS_ORM_CACHE_DB, 10) || 1,
+        db: parseInt(process.env.REDIS_ORM_CACHE_DB, 10) || 0,
         password: process.env.REDIS_PASSWORD,
-        keyPrefix: redisPrefix + ':typeorm:',
+        prefix: redisPrefix + ':typeorm:',
     },
 
     bullQueue: {
         host: process.env.REDIS_HOST || '127.0.0.1',
         port: parseInt(process.env.REDIS_PORT, 10) || 6379,
-        db: parseInt(process.env.REDIS_QUEUE_DB, 10) || 2,
+        db: parseInt(process.env.REDIS_QUEUE_DB, 10) || 0,
         password: process.env.REDIS_PASSWORD,
-        keyPrefix: redisPrefix + ':bull:',
-    },
+        prefix: redisPrefix + ':bull',
+    } as const,
 
 };

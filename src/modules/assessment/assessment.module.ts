@@ -3,9 +3,6 @@ import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { Module } from '@nestjs/common';
 import { GqlAuthGuard } from '../auth/auth.guard';
 import { Assessment } from './models/assessment.model';
-import { SortDirection } from '@nestjs-query/core';
-import { UsePermission } from '../permission/decorators/permission.decorator';
-import { PermissionEnum } from '../permission/enums/permission.enum';
 import { PermissionGuard } from '../permission/guards/permission.guard';
 import { AssessmentService } from './services/assessment.service';
 import { AssessmentResolver } from './resolvers/assessment.resolver';
@@ -48,17 +45,8 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     DTOClass: Assessment,
                     EntityClass: Assessment,
                     guards,
-                    read: {
-                        guards,
-                        defaultSort: [
-                            { field: 'createdAt', direction: SortDirection.DESC },
-                        ],
-                        decorators: [
-                            UsePermission(PermissionEnum.VIEW_ASSESSMENTS),
-                        ],
-                    },
-
                     // handled by assessment resolver
+                    read: { disabled: true },
                     create: { disabled: true },
                     update: { disabled: true },
                     delete: { disabled: true },
