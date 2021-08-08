@@ -51,11 +51,13 @@ export class AssessmentService {
          */
         const currentUsersPatients = await this.patientQueryService.query({ filter: patientAuthorizeFilter });
 
-        const combinedFilter = mergeFilter(query.filter, {
-            patientId: {
-                in: currentUsersPatients.map(patient => patient.id)
-            },
-        });
+        const combinedFilter = currentUsersPatients.length > 0
+            ? mergeFilter(query.filter, {
+                patientId: {
+                    in: currentUsersPatients.map(patient => patient.id)
+                },
+            })
+            : query.filter;
 
         // Apply combined authorized filter
         query.filter = combinedFilter;
