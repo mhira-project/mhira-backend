@@ -108,8 +108,8 @@ export class PermissionService implements OnModuleInit {
             const configSuperAdminPassword = !!process.env.SUPERADMIN_PASSWORD ? String(process.env.SUPERADMIN_PASSWORD) : null;
             const configSuperAdminUsername = !!process.env.SUPERADMIN_USERNAME ? String(process.env.SUPERADMIN_USERNAME) : null;
 
-            const password = configSuperAdminPassword.length > 0 ? configSuperAdminPassword : 'superadmin';
-            const username = configSuperAdminUsername.length > 0 ? configSuperAdminUsername : 'superadmin';
+            const password = configSuperAdminPassword?.length ? configSuperAdminPassword : 'superadmin';
+            const username = configSuperAdminUsername?.length ? configSuperAdminUsername : 'superadmin';
 
             const superAdminUser = new User();
             superAdminUser.firstName = 'Super';
