@@ -113,7 +113,7 @@ export class PermissionService implements OnModuleInit {
             superAdminUser.firstName = 'Super';
             superAdminUser.lastName = 'Admin';
             superAdminUser.username = 'superadmin';
-            superAdminUser.password = password;
+            superAdminUser.password = await Hash.make(password);
             superAdminUser.isSuperUser = true;
             superAdminUser.roles = [superAdminRole];
 
