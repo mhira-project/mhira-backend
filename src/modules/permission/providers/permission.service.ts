@@ -105,7 +105,9 @@ export class PermissionService implements OnModuleInit {
                 'No Super Admin found in DB. System seeding a generic super admin: user: admin, first time password: admin',
             );
 
-            const password = process.env.SUPERADMIN_PASSWORD || 'superadmin';
+            const configSuperAdminPassword = String(process.env.SUPERADMIN_PASSWORD);
+
+            const password = configSuperAdminPassword.length > 0 ? configSuperAdminPassword : 'superadmin';
 
             const superAdminUser = new User();
             superAdminUser.firstName = 'Super';
