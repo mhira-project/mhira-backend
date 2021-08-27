@@ -10,6 +10,7 @@ import { Role } from '../permission/models/role.model';
 import { SettingService } from '../setting/providers/setting.service';
 import { SettingKey } from '../setting/enums/setting-name.enum';
 import { AccessTokenService } from './providers/access-token.service';
+import { CacheService } from 'src/shared';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +19,7 @@ export class AuthService {
     constructor(
         private readonly settingService: SettingService,
         private readonly tokenService: AccessTokenService,
+        private readonly cacheService: CacheService,
     ) { }
 
     async login(loginDto: LoginRequestDto): Promise<LoginResponseDto> {
@@ -57,6 +59,9 @@ export class AuthService {
             );
         }
 
+        // Check max login attempts
+        await this.checkPasswordAttemptsLock(user);
+
         // invalid password
         if (!(await Hash.compare(password, user.password))) {
             this.logger.debug(`Invalid Password for user: ${user.username}`);
@@ -75,18 +80,27 @@ export class AuthService {
         return this.tokenService.validateAccessToken(tokenId);
     }
 
-    private async executeInvalidLoginAttempt(user: User) {
+    private async checkPasswordAttemptsLock(user: User) {
         const maxLoginAttemptsSetting: number = await this.settingService.getKey(
             SettingKey.MAX_LOGIN_ATTEMPTS,
         );
 
-        if (maxLoginAttemptsSetting <= user.failedLoginAttempts + 1) {
-            user.active = false; // user gets locked out because of too many login attempts
-        }
+        const loginAttemptsKey = `login-attempts:${user.id}`;
 
-        user.failedLoginAttempts = user.active
-            ? user.failedLoginAttempts + 1
-            : 0;
+        const attempts = await this.cacheService.manager().get<number>(loginAttemptsKey);
+
+        if (attempts >= maxLoginAttemptsSetting) throw new AuthenticationError(
+            'User locked out due to failed attempts. Please wait and try again later!',
+        );
+    }
+
+    private async executeInvalidLoginAttempt(user: User) {
+
+        const loginAttemptsKey = `login-attempts:${user.id}`;
+
+        const attempts = await this.cacheService.manager().get<number>(loginAttemptsKey)
+
+        await this.cacheService.manager().set<number>(loginAttemptsKey, 1 + attempts, { ttl: 1000 * 60 * 5 })
 
         return await user.save();
     }
