@@ -41,9 +41,8 @@ export class Hash {
     }
 
     static async brcryptVerify(value: string, hashedValue: string): Promise<boolean> {
-        const result = await bcrypt.compare(value, hashedValue)
 
-        return result;
+        return await bcrypt.compare(value, hashedValue);
     }
 
 
@@ -56,13 +55,12 @@ export class Hash {
             timeCost: 2,
         };
 
-        return await argon2.hash(value, argon2Config);
+        return argon2.hash(value, argon2Config);
     }
 
     static async argon2Verify(value: string, hashedValue: string): Promise<boolean> {
-        const result = await argon2.verify(hashedValue, value);
 
-        return result;
+        return argon2.verify(hashedValue, value);
     }
 
 }
