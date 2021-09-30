@@ -25,6 +25,17 @@ jobs:
       
       - name: Lint code
         run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist-without-markdown
+          path: |
+            dist
+            !dist/**/*.md
       
       # - name: Run tests
       #   run: npm run test
