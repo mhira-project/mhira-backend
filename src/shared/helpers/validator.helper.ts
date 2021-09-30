@@ -1,11 +1,6 @@
 
 export class Validator {
 
-    static isEmail(value: string) {
-        const re = /\S+@\S+\.\S+/;
-        return re.test(value);
-    }
-
     static isPhone(value: string) {
         /**
          * Format example +15555555555.
