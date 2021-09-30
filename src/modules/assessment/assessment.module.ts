@@ -17,6 +17,7 @@ import {
     QuestionnaireVersion,
     QuestionnaireVersionSchema,
 } from '../questionnaire/models/questionnaire-version.schema';
+import { PatientModule } from '../patient/patient.module';
 
 const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
@@ -53,6 +54,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
                 },
             ],
         }),
+        PatientModule,
     ],
     providers: [
         AssessmentService,

@@ -1,5 +1,6 @@
 import { Logger, OnModuleInit } from '@nestjs/common';
 import { User } from 'src/modules/user/models/user.model';
+import { Hash } from 'src/shared';
 import { Any } from 'typeorm';
 import { MAX_ROLE_HIERARCHY, MIN_ROLE_HIERARCHY } from '../constants';
 import { PermissionEnum, systemPermissions as PermissionsMaster } from '../enums/permission.enum';
@@ -104,13 +105,21 @@ export class PermissionService implements OnModuleInit {
                 'No Super Admin found in DB. System seeding a generic super admin: user: admin, first time password: admin',
             );
 
+            const configSuperAdminPassword = !!process.env.SUPERADMIN_PASSWORD ? String(process.env.SUPERADMIN_PASSWORD) : null;
+            const configSuperAdminUsername = !!process.env.SUPERADMIN_USERNAME ? String(process.env.SUPERADMIN_USERNAME) : null;
+
+            const password = configSuperAdminPassword?.length ? configSuperAdminPassword : 'superadmin';
+            const username = configSuperAdminUsername?.length ? configSuperAdminUsername : 'superadmin';
+
             const superAdminUser = new User();
             superAdminUser.firstName = 'Super';
             superAdminUser.lastName = 'Admin';
-            superAdminUser.username = 'superadmin';
-            superAdminUser.password = 'superadmin';
+            superAdminUser.username = username;
+            superAdminUser.password = await Hash.make(password);
             superAdminUser.isSuperUser = true;
             superAdminUser.roles = [superAdminRole];
+
+            this.logger.verbose(`User ${username} created with default password=${password}`);
 
             await superAdminUser.save();
         }
