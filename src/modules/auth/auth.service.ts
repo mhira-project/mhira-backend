@@ -76,6 +76,9 @@ export class AuthService {
             throw new AuthenticationError(`Invalid Credentials!`);
         }
 
+        // Unset failed passwords key
+        await this.cacheService.manager().del(`login-attempts:${user.id}`);
+        
         return user;
     }
 
@@ -87,10 +90,16 @@ export class AuthService {
         
         const loginAttemptsKey = `login-attempts:${user.id}`;
 
-        const cacheValue = await this.cacheService.manager().get<number>(loginAttemptsKey);
+        const cacheValue = await this.cacheService.manager().get<string>(loginAttemptsKey);
 
-        const attempts = cacheValue['attempts'] ?? cacheValue;
-        const lastAttemptAt = cacheValue['lastAttemptAt'];
+        if(!cacheValue) {
+            return;
+        }
+
+        const cacheObj = JSON.parse(cacheValue);
+
+        const attempts = cacheObj?.attempts ?? cacheValue;
+        const lastAttemptAt = cacheObj?.lastAttemptAt;
 
         const userLockOutTimeInMinutes = 5
 
@@ -109,7 +118,9 @@ export class AuthService {
 
         attempts = attempts + 1;
 
-        await this.cacheService.manager().set(loginAttemptsKey, { attempts, lastAttemptAt: moment().toString() });
+        const cacheValue = JSON.stringify({ attempts, lastAttemptAt: moment().toString() });
+
+        await this.cacheService.manager().set(loginAttemptsKey, cacheValue);
 
         return attempts;
     }
