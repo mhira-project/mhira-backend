@@ -65,7 +65,7 @@ jobs:
 
       - name: Build, tag, and push image to Amazon ECR
         env:
-          ECR_REGISTRY: https://public.ecr.aws/mhira
+          ECR_REGISTRY: public.ecr.aws/mhira
           ECR_REPOSITORY: mhira-backend
           IMAGE_TAG: ${{ github.sha }}
         run: |
