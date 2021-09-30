@@ -74,7 +74,7 @@ jobs:
           # Build, tag, and push image
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$BUILD_ID $ECR_REGISTRY/$ECR_REPOSITORY:development
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:development
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:development
       
       # - name: Run tests
