@@ -132,11 +132,9 @@ export class AuthService {
 
         const rolePermissions = roles.flatMap(role => role.permissions);
 
-        const permissions = [
+        return [
             ...new Set([...directPermissions, ...rolePermissions]),
         ];
-
-        return permissions;
     }
 
     async logout(user: User): Promise<boolean> {
