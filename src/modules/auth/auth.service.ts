@@ -37,8 +37,8 @@ export class AuthService {
         loginDto: LoginRequestDto,
     ): Promise<User> {
 
-        //Username comparison done using lowercase
-        const identifier = loginDto.identifier?.toLocaleLowerCase();
+        // Username comparison done using lowercase
+        const identifier = loginDto.identifier?.toLowerCase();
         const password = loginDto.password;
 
         const user = await User.findOne({
