@@ -50,8 +50,10 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
+          context: .
+          platforms: linux/amd64,linux/arm64
           push: true
-          tags: mhiraproject/mhira-frontend:development
+          tags: mhiraproject/mhira-backend:development
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
