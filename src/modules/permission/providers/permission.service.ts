@@ -146,11 +146,9 @@ export class PermissionService implements OnModuleInit {
             rolePermissions.push(...role.permissions);
         });
 
-        const permissions = [
+        return [
             ...new Set([...directPermissions, ...rolePermissions]),
         ];
-
-        return permissions;
     }
 
     static async userCan(userId: number, action: string) {
