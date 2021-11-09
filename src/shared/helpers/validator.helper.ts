@@ -2,6 +2,12 @@
 export class Validator {
 
     static isPhone(value: string) {
+
+        // If value is `undefined` or `empty`, return `false`
+        if(!value?.length) {
+            return false;
+        }
+
         /**
          * Format example +15555555555.
          */
