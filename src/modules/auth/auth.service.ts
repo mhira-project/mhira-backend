@@ -11,6 +11,7 @@ import { SettingService } from '../setting/providers/setting.service';
 import { SettingKey } from '../setting/enums/setting-name.enum';
 import { AccessTokenService } from './providers/access-token.service';
 import { CacheService } from 'src/shared';
+import * as moment from 'moment';
 
 @Injectable()
 export class AuthService {
@@ -37,8 +38,8 @@ export class AuthService {
         loginDto: LoginRequestDto,
     ): Promise<User> {
 
-        //Username comparison done using lowercase
-        const identifier = loginDto.identifier?.toLocaleLowerCase();
+        // Username comparison done using lowercase
+        const identifier = loginDto.identifier?.toLowerCase();
         const password = loginDto.password;
 
         const user = await User.findOne({
@@ -59,20 +60,25 @@ export class AuthService {
             );
         }
 
+        const maxLoginAttempts: number = await this.settingService.getKey(
+            SettingKey.MAX_LOGIN_ATTEMPTS,
+        );
+
         // Check max login attempts
-        await this.checkPasswordAttemptsLock(user);
+        await this.checkPasswordAttemptsLock(user, maxLoginAttempts);
 
         // invalid password
         if (!(await Hash.compare(password, user.password))) {
             this.logger.debug(`Invalid Password for user: ${user.username}`);
-            if (!(await this.executeInvalidLoginAttempt(user)).active) {
-                throw new AuthenticationError(
-                    'Invalid Credentials. Deactivated because of too many login attempts. Contact your administrator for support!',
-                );
-            }
-            throw new AuthenticationError('Invalid Credentials');
+
+            await this.executeInvalidLoginAttempt(user);
+       
+            throw new AuthenticationError(`Invalid Credentials!`);
         }
 
+        // Unset failed passwords key
+        await this.cacheService.manager().del(`login-attempts:${user.id}`);
+        
         return user;
     }
 
@@ -80,29 +86,43 @@ export class AuthService {
         return this.tokenService.validateAccessToken(tokenId);
     }
 
-    private async checkPasswordAttemptsLock(user: User) {
-        const maxLoginAttemptsSetting: number = await this.settingService.getKey(
-            SettingKey.MAX_LOGIN_ATTEMPTS,
-        );
-
+    private async checkPasswordAttemptsLock(user: User, maxLoginAttempts: number) {
+        
         const loginAttemptsKey = `login-attempts:${user.id}`;
 
-        const attempts = await this.cacheService.manager().get<number>(loginAttemptsKey);
+        const cacheValue = await this.cacheService.manager().get<string>(loginAttemptsKey);
 
-        if (attempts >= maxLoginAttemptsSetting) throw new AuthenticationError(
-            'User locked out due to failed attempts. Please wait and try again later!',
-        );
+        if(!cacheValue) {
+            return;
+        }
+
+        const cacheObj = JSON.parse(cacheValue);
+
+        const attempts = cacheObj?.attempts ?? cacheValue;
+        const lastAttemptAt = cacheObj?.lastAttemptAt;
+
+        const userLockOutTimeInMinutes = 5
+
+        if (attempts >= maxLoginAttempts && lastAttemptAt 
+            && moment().diff(lastAttemptAt, 'seconds') < userLockOutTimeInMinutes) { 
+
+            throw new AuthenticationError('User locked out due to failed attempts. Please wait and try again later!');
+        }
     }
 
     private async executeInvalidLoginAttempt(user: User) {
 
         const loginAttemptsKey = `login-attempts:${user.id}`;
 
-        const attempts = await this.cacheService.manager().get<number>(loginAttemptsKey)
+        let attempts = await this.cacheService.manager().get<number>(loginAttemptsKey);
 
-        await this.cacheService.manager().set<number>(loginAttemptsKey, 1 + attempts, { ttl: 1000 * 60 * 5 })
+        attempts = attempts + 1;
 
-        return await user.save();
+        const cacheValue = JSON.stringify({ attempts, lastAttemptAt: moment().toString() });
+
+        await this.cacheService.manager().set(loginAttemptsKey, cacheValue);
+
+        return attempts;
     }
 
     async userPermissionGrants(userInput: User): Promise<Permission[]> {
@@ -123,11 +143,9 @@ export class AuthService {
 
         const rolePermissions = roles.flatMap(role => role.permissions);
 
-        const permissions = [
+        return [
             ...new Set([...directPermissions, ...rolePermissions]),
         ];
-
-        return permissions;
     }
 
     async logout(user: User): Promise<boolean> {

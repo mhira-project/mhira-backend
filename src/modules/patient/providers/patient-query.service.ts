@@ -1,4 +1,4 @@
-import { QueryService } from '@nestjs-query/core';
+import { QueryService, mergeFilter } from '@nestjs-query/core';
 import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -6,7 +6,6 @@ import { Patient } from '../models/patient.model';
 import { CreatePatientInput } from '../dto/create-patient.input';
 import { User } from 'src/modules/user/models/user.model';
 import { PatientAuthorizer } from '../authorizers/patient.authorizer';
-import { mergeFilter } from '@nestjs-query/core';
 import { NotFoundException } from '@nestjs/common';
 @QueryService(Patient)
 export class PatientQueryService extends TypeOrmQueryService<Patient> {
@@ -63,7 +62,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
             if (input[counter++].departmentIds) {
                 await super.addRelations('departments', patient.id, input[counter++].departmentIds);
             }
-        };
+        }
 
         return patients;
     }
