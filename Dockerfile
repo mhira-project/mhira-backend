@@ -20,12 +20,14 @@ RUN npm ci --only=production
 
 
 ### Production container build #####################################
-FROM node:14-alpine AS production
+FROM python3.10-nodejs14-alpine AS production
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
 WORKDIR /app
+
+RUN pip install pyxform
 
 COPY package*.json ./
 

@@ -28,6 +28,7 @@ import {
 } from './models/questionnaire-assessment.schema';
 import { NestjsQueryMongooseModule } from '@nestjs-query/query-mongoose';
 import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
+import { Xls2XformHelper } from './services/xls2xform';
 
 @Module({
     imports: [
@@ -55,6 +56,7 @@ import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
         QuestionnaireResolver,
         QuestionnaireAssessmentService,
         AssessmentResolver,
+        Xls2XformHelper,
     ],
 })
 export class QuestionnaireModule { }
