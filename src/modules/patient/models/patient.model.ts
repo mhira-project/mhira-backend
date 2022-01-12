@@ -185,5 +185,75 @@ export class Patient extends BaseEntity {
         () => Assessment,
         assessment => assessment.patient,
     )
-    assessments: Assessment;
+    assessments: Assessment[];
+}
+
+@ObjectType()
+export class QuestionnaireChoice {
+    @Field(() => String)
+    _id: string;
+    @Field(() => String)
+    label: string;
+    @Field(() => String)
+    name: string;
+}
+
+@ObjectType()
+class AnswerChoiceLabel {
+    @Field(() => String)
+    label: string;
+    @Field(() => String)
+    name: string
+
+}
+
+@ObjectType()
+class AnsweredQuestions {
+    @Field(() => String)
+    answerValue: string;
+    @Field(() => [AnswerChoiceLabel])
+    answerChoiceLabel: AnswerChoiceLabel[];
+    @Field(() => String)
+    createdAt: string;
+    @Field(() => String)
+    updatedAt: string;
+    @Field(() => String)
+    name: "string";
+    @Field(() => String)
+    label: "Little interest or pleasure in doing things?";
+    @Field(() => String)
+    type: "select_one";
+    @Field(() => String)
+    hint: "Over the last two weeks, how often have you been bothered by any of the following problems?";
+    @Field(() => Boolean)
+    required: boolean;
+}
+
+@ObjectType()
+export class AnsweredQuestionnaire {
+    @Field(() => String)
+    assessmentId: string;
+    @Field(() => String)
+    _id: string;
+    @FilterableField()
+    status: string;
+    @Field(() => Date)
+    createdAt: Date;
+    @Field(() => String)
+    copyright: string;
+    @Field(() => String)
+    language: string;
+    @Field(() => String)
+    name: string;
+    @Field(() => String)
+    questionnaireFullName: string;
+    @Field(() => [QuestionnaireChoice])
+    choices: QuestionnaireChoice[];
+    @Field(() => [AnsweredQuestions])
+    answeredQuestions: AnsweredQuestions[];
+}
+@ObjectType()
+export class PatientReport extends Patient {
+    @Field(() => AnsweredQuestionnaire)
+    answeredQuestionnaire: AnsweredQuestionnaire;
 }

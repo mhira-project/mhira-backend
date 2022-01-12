@@ -18,7 +18,7 @@ import { User } from 'src/modules/user/models/user.model';
 import { PatientAuthorizer } from '../authorizers/patient.authorizer';
 import { CreatePatientInput } from '../dto/create-patient.input';
 import { UpdatePatientInput } from '../dto/update-patient.input';
-import { Patient } from '../models/patient.model';
+import { Patient, PatientReport } from '../models/patient.model';
 import { PatientQueryService } from '../providers/patient-query.service';
 
 
@@ -166,6 +166,21 @@ export class PatientResolver {
         this.service.getOnePatient(currentUser, Number(input.id));
 
         return this.service.deleteOne(input.id);
+    }
+
+    @Query(() => PatientReport)
+    @UsePermission(PermissionEnum.VIEW_PATIENTS)
+    async generatePatientReport(
+        @Args('id', { type: () => ID }) id: number,
+        @Args('questionnaireId') questionnaireId: string,
+        @Args('assessmentStatus') assessmentStatus: string,
+    ): Promise<PatientReport> {
+        try {
+            const patientReport = await this.service.getQuestionnaireReport(id, assessmentStatus, questionnaireId)
+            return patientReport;
+        } catch (error) {
+            return error;
+        }
     }
 
 }
