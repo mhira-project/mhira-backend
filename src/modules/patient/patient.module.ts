@@ -18,7 +18,6 @@ import { CaseManagerResolver } from './resolvers/case-manager.resolver';
 import { EmergencyContactResolver } from './resolvers/emergency-contact.resolver';
 import { PatientResolver } from './resolvers/patient.resolver';
 import { PatientQueryService } from './providers/patient-query.service';
-import { QuestionnaireModule } from '../questionnaire/questionnaire.module';
 import { QuestionnaireAssessmentService } from '../questionnaire/services/questionnaire-assessment.service';
 import { AssessmentSchema, QuestionnaireAssessment } from '../questionnaire/models/questionnaire-assessment.schema';
 import { MongooseModule } from '@nestjs/mongoose';

@@ -2,7 +2,7 @@ import { QueryService } from '@nestjs-query/core';
 import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { QuestionnaireChoice, Patient, PatientReport, AnsweredQuestionnaire } from '../models/patient.model';
+import { QuestionnaireChoice, Patient, PatientReport } from '../models/patient.model';
 import { CreatePatientInput } from '../dto/create-patient.input';
 import { User } from 'src/modules/user/models/user.model';
 import { PatientAuthorizer } from '../authorizers/patient.authorizer';
