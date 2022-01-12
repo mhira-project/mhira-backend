@@ -39,7 +39,7 @@ export class QuestionnaireService {
             await xlsForm.excelFile,
         );
 
-        return await this.createQuestionnaireFromFileData(fileData, xlsForm);
+        return this.createQuestionnaireFromFileData(fileData, xlsForm);
     }
 
     public async updateOne(
@@ -141,7 +141,7 @@ export class QuestionnaireService {
             },
         );
 
-        return applyQuery(populatedQuestionnaires, query);;
+        return applyQuery(populatedQuestionnaires, query);
     }
 
     async deleteQuestionnaire(_id: Types.ObjectId, softDelete = true) {

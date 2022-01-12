@@ -123,7 +123,7 @@ export class PatientResolver {
             }
         }
 
-        return await this.service.createOne(patientInput);
+        return this.service.createOne(patientInput);
     }
 
 

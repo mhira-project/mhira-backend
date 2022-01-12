@@ -94,12 +94,12 @@ export class QuestionnaireAssessmentService {
             .filter(
                 questionGroups =>
                     questionGroups.questions.filter(
-                        question =>
-                            question._id == assessmentAnswerInput.question,
+                        item =>
+                            item._id == assessmentAnswerInput.question,
                     ).length > 0,
             )[0]
             ?.questions.filter(
-                question => question._id == assessmentAnswerInput.question,
+                item => item._id == assessmentAnswerInput.question,
             )[0];
 
         if (!question) {
@@ -107,7 +107,7 @@ export class QuestionnaireAssessmentService {
         }
 
         const answerExisting = foundAssessment.answers.find(
-            answer => answer.question === assessmentAnswerInput.question,
+            item => item.question === assessmentAnswerInput.question,
         );
 
         const answer = answerExisting ?? new this.answerModel();

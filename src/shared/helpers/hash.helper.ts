@@ -35,14 +35,13 @@ export class Hash {
     }
 
     static async brcryptHash(value: string, saltRounds = 10): Promise<string> {
-        const hash = await bcrypt.hash(value, saltRounds);
 
-        return hash;
+        return bcrypt.hash(value, saltRounds);
     }
 
     static async brcryptVerify(value: string, hashedValue: string): Promise<boolean> {
 
-        return await bcrypt.compare(value, hashedValue);
+        return bcrypt.compare(value, hashedValue);
     }
 
 
