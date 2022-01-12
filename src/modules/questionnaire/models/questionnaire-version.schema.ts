@@ -36,6 +36,12 @@ export class QuestionnaireVersion extends Document {
     })
     status: QuestionnaireStatus;
 
+    @Field(() => String, { nullable: true })
+    @Prop({
+        type: 'string',
+    })
+    xForm: string;
+
     // to be filterable this would potentially need allowedComparisons option
     @Field(() => [String], { nullable: true })
     @Prop({
