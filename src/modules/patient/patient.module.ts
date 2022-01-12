@@ -18,6 +18,13 @@ import { CaseManagerResolver } from './resolvers/case-manager.resolver';
 import { EmergencyContactResolver } from './resolvers/emergency-contact.resolver';
 import { PatientResolver } from './resolvers/patient.resolver';
 import { PatientQueryService } from './providers/patient-query.service';
+import { QuestionnaireModule } from '../questionnaire/questionnaire.module';
+import { QuestionnaireAssessmentService } from '../questionnaire/services/questionnaire-assessment.service';
+import { AssessmentSchema, QuestionnaireAssessment } from '../questionnaire/models/questionnaire-assessment.schema';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Answer, AnswerSchema } from '../questionnaire/models/answer.schema';
+import { QuestionnaireVersion, QuestionnaireVersionSchema } from '../questionnaire/models/questionnaire-version.schema';
+
 
 const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
@@ -30,7 +37,20 @@ const guards = [GqlAuthGuard, PermissionGuard];
                 Informant,
                 EmergencyContact,
                 PatientStatus,
-            ])],
+            ]),
+            MongooseModule.forFeature([
+                {
+                    name: QuestionnaireAssessment.name,
+                    schema: AssessmentSchema,
+                },
+                { name: Answer.name, schema: AnswerSchema },
+                {
+                    name: QuestionnaireVersion.name,
+                    schema: QuestionnaireVersionSchema,
+                },
+            ]),
+            ],
+
             // describe the resolvers you want to expose
             resolvers: [
                 {
@@ -90,6 +110,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
         PatientResolver,
         EmergencyContactResolver,
         PatientQueryService,
+        QuestionnaireAssessmentService,
     ],
     exports: [
         PatientQueryService,

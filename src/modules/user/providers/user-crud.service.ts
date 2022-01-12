@@ -81,8 +81,10 @@ export class UserCrudService extends TypeOrmQueryService<User> {
 
     passwordChangeRequired(user: User): boolean {
 
-        return user.passwordExpiresAt
+        const required = user.passwordExpiresAt
             ? moment().isSameOrAfter(user.passwordExpiresAt)
             : true;
+
+        return required;
     }
 }

@@ -10,12 +10,12 @@ import { Types } from 'mongoose';
 import {
     AnswerAssessmentInput,
     CreateQuestionnaireAssessmentInput,
-    ChangeAssessmentStatusInput,
 } from '../dtos/assessment.input';
 import { QuestionnaireAssessment } from '../models/questionnaire-assessment.schema';
 import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
 import { QuestionnaireAssessmentService } from '../services/questionnaire-assessment.service';
 import { Questionnaire } from '../models/questionnaire.schema';
+import { ChangeAssessmentStatusInput } from '../dtos/assessment.input';
 
 @Resolver(() => QuestionnaireAssessment)
 export class AssessmentResolver {

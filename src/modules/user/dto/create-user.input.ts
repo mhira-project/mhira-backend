@@ -1,8 +1,7 @@
 import { InputType, Field } from '@nestjs/graphql';
-import { IsDate, IsEmail, IsLowercase, MaxDate, MinDate } from 'class-validator';
-import * as moment from 'moment';
+import { IsLowercase, IsPhoneNumber } from 'class-validator';
 import { GenderEnum } from 'src/modules/patient/models/gender.enum';
-import { IsOptional, IsPhoneNumber } from 'src/shared';
+import { IsOptional } from 'src/shared';
 
 @InputType()
 export class CreateUserInput {
@@ -26,13 +25,11 @@ export class CreateUserInput {
   @Field()
   lastName: string;
 
-  @IsOptional()
-  @IsEmail()
   @Field({ nullable: true })
   email?: string;
 
   @IsOptional()
-  @IsPhoneNumber()
+  @IsPhoneNumber('TZ')
   @Field({ nullable: true })
   phone?: string;
 
@@ -45,10 +42,6 @@ export class CreateUserInput {
   @Field({ nullable: true })
   gender?: GenderEnum;
 
-  @IsOptional()
-  @IsDate()
-  @MinDate(moment('1900-01-01').toDate())
-  @MaxDate(moment().toDate())
   @Field({ nullable: true })
   birthDate?: Date;
 

@@ -69,7 +69,9 @@ export class RoleResolver extends CRUDResolver(Role, {
                 + `Please provide hierarchy number greater than ${currentUserMaxRole.hierarchy}`);
         }
 
-        return this.service.createOne(input['role']);
+        const role = await this.service.createOne(input['role']);
+
+        return role;
     }
 
     @Mutation(() => Role)

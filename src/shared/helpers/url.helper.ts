@@ -3,10 +3,10 @@ import { configService } from "src/config/config.service";
 
 export function url(path = '') {
 
-    let baseUrl = configService.getAppUrl();
+    const baseUrl = configService.getAppUrl();
 
     if (!baseUrl.endsWith('/')) {
-        baseUrl = baseUrl.concat('/');
+        baseUrl.concat('/');
     }
 
     return baseUrl.concat(path);

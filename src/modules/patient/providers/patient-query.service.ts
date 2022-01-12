@@ -1,14 +1,21 @@
-import { QueryService, mergeFilter } from '@nestjs-query/core';
+import { QueryService } from '@nestjs-query/core';
 import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Patient } from '../models/patient.model';
+import { QuestionnaireChoice, Patient, PatientReport, AnsweredQuestionnaire } from '../models/patient.model';
 import { CreatePatientInput } from '../dto/create-patient.input';
 import { User } from 'src/modules/user/models/user.model';
 import { PatientAuthorizer } from '../authorizers/patient.authorizer';
-import { NotFoundException } from '@nestjs/common';
+import { mergeFilter } from '@nestjs-query/core';
+import { Inject, NotFoundException } from '@nestjs/common';
+import { QuestionnaireAssessmentService } from 'src/modules/questionnaire/services/questionnaire-assessment.service';
+import { QuestionnaireAssessment } from 'src/modules/questionnaire/models/questionnaire-assessment.schema';
+import { Answer, IAnswerMap } from 'src/modules/questionnaire/models/answer.schema';
+import { IQuestionGroup } from 'src/modules/questionnaire/models/questionnaire.schema';
 @QueryService(Patient)
 export class PatientQueryService extends TypeOrmQueryService<Patient> {
+    @Inject(QuestionnaireAssessmentService)
+    questionnaireAssessmentService: QuestionnaireAssessmentService
     constructor(@InjectRepository(Patient) repo: Repository<Patient>) {
         // pass the use soft delete option to the service.
         super(repo, { useSoftDelete: true });
@@ -62,9 +69,104 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
             if (input[counter++].departmentIds) {
                 await super.addRelations('departments', patient.id, input[counter++].departmentIds);
             }
-        }
+        };
 
         return patients;
     }
 
+    async getQuestionnaireReport(id: number, status: string, questionnaireId: string): Promise<PatientReport> {
+        const patient = await this.repo.findOne({
+            join: { alias: 'patient', innerJoinAndSelect: { assessments: 'patient.assessments' } },
+
+            where: qb => {
+                qb.where({
+                    id
+                }).andWhere('assessments.status = :status', { status });
+            },
+        }
+        );
+        const queries = [] as Promise<QuestionnaireAssessment>[];
+        for (const assessment of patient.assessments) {
+            queries.push(this.questionnaireAssessmentService.getById(assessment.questionnaireAssessmentId))
+        }
+        const questionnaireAssessment = await Promise.all(queries);
+        let answeredQuestionnaire;
+
+        for (const assessment of questionnaireAssessment) {
+
+            assessment.questionnaires.forEach(entry => {
+                if (questionnaireId == entry._id.toString()) answeredQuestionnaire = entry;
+            })
+
+            if (answeredQuestionnaire) {
+
+                answeredQuestionnaire = JSON.parse(JSON.stringify(answeredQuestionnaire))
+                answeredQuestionnaire.assessmentId = assessment._id.toString();
+
+                answeredQuestionnaire.questionnaireFullName = answeredQuestionnaire.questionnaire.abbreviation;
+                answeredQuestionnaire.language = answeredQuestionnaire.questionnaire.language;
+                const answeredQuestionsMap = PatientQueryService.mapAnsweredQuestions(assessment.answers);
+                const [choices, questions] = PatientQueryService.flattenAnsweredQuestionnaireChoices(answeredQuestionnaire.questionGroups, answeredQuestionsMap);
+
+                answeredQuestionnaire.choices = choices;
+                answeredQuestionnaire.answeredQuestions = questions;
+                for (const question of answeredQuestionnaire.answeredQuestions) {
+                    const { _doc: { multipleChoiceValue, textValue } } = question;
+                    question.answerValue = multipleChoiceValue?.length ? multipleChoiceValue : textValue;
+                    question.answerChoiceLabel = PatientQueryService.getChoiceLabelByValue(question.answerValue, question.choices)
+
+                }
+
+                break;
+            }
+        }
+
+        const patientReport = {
+            ...patient,
+            answeredQuestionnaire: answeredQuestionnaire
+        } as PatientReport;
+        return patientReport;
+    }
+
+    private static flattenAnsweredQuestionnaireChoices(questionGroups: IQuestionGroup[], answersMap: IAnswerMap) {
+        let choices = [] as QuestionnaireChoice[];
+        let questions = []
+        for (const group of questionGroups) {
+            for (let question of group.questions) {
+                questions = []
+                choices = [...choices, ...question.choices]
+                question = { ...question, ...answersMap[(question._id).toString()] }
+                questions.push(question)
+            }
+        }
+        return [choices, questions];
+    }
+
+    private static mapAnsweredQuestions(answers: Answer[]) {
+        const map = {} as IAnswerMap
+        for (const answer of answers) {
+            map[answer.question.toString()] = answer;
+        }
+
+        return map;
+    }
+
+    private static getChoiceLabelByValue(answerValue: string | string[], choices: QuestionnaireChoice[]) {
+        const answerValueAsArray: string[] = []
+        const answerValueLabelMap = {} as { [key: string]: { [key: string]: string } | boolean };
+
+        if (typeof answerValue !== "object") answerValueAsArray.push(answerValue.toString());
+
+        for (const value of answerValueAsArray) {
+            answerValueLabelMap[value] = true;
+        }
+
+        for (const choice of choices) {
+            const { name, label } = choice
+            if (answerValueLabelMap[name]) answerValueLabelMap[name] = { name, label }
+        }
+        return (Object.values(answerValueLabelMap));
+    }
 }
+
+

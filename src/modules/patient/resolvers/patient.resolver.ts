@@ -6,7 +6,7 @@ import {
     QueryArgsType,
     UpdateOneInputType,
 } from '@nestjs-query/query-graphql';
-import { BadRequestException, UseGuards } from '@nestjs/common';
+import { BadRequestException, Inject, UseGuards } from '@nestjs/common';
 import { Args, ArgsType, ID, InputType, Mutation, ObjectType, PartialType, Query, Resolver } from '@nestjs/graphql';
 import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
@@ -18,7 +18,7 @@ import { User } from 'src/modules/user/models/user.model';
 import { PatientAuthorizer } from '../authorizers/patient.authorizer';
 import { CreatePatientInput } from '../dto/create-patient.input';
 import { UpdatePatientInput } from '../dto/update-patient.input';
-import { Patient } from '../models/patient.model';
+import { Patient, PatientReport } from '../models/patient.model';
 import { PatientQueryService } from '../providers/patient-query.service';
 
 
@@ -42,7 +42,6 @@ class PatientDeleteResponse extends PartialType(Patient) { }
 @Resolver(() => Patient)
 @UseGuards(GqlAuthGuard, PermissionGuard)
 export class PatientResolver {
-
     constructor(
         protected service: PatientQueryService,
     ) { }
@@ -123,7 +122,7 @@ export class PatientResolver {
             }
         }
 
-        return this.service.createOne(patientInput);
+        return await this.service.createOne(patientInput);
     }
 
 
@@ -166,6 +165,21 @@ export class PatientResolver {
         this.service.getOnePatient(currentUser, Number(input.id));
 
         return this.service.deleteOne(input.id);
+    }
+
+    @Query(() => PatientReport)
+    @UsePermission(PermissionEnum.VIEW_PATIENTS)
+    async generatePatientReport(
+        @Args('id', { type: () => ID }) id: number,
+        @Args('questionnaireId') questionnaireId: string,
+        @Args('assessmentStatus') assessmentStatus: string,
+    ): Promise<PatientReport> {
+        try {
+            const patientReport = await this.service.getQuestionnaireReport(id, assessmentStatus, questionnaireId)
+            return patientReport;
+        } catch (error) {
+            return error;
+        }
     }
 
 }

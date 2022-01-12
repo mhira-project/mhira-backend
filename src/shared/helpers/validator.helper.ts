@@ -1,13 +1,12 @@
 
 export class Validator {
 
+    static isEmail(value: string) {
+        const re = /\S+@\S+\.\S+/;
+        return re.test(value);
+    }
+
     static isPhone(value: string) {
-
-        // If value is `undefined` or `empty`, return `false`
-        if(!value?.length) {
-            return false;
-        }
-
         /**
          * Format example +15555555555.
          */
