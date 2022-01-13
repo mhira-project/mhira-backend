@@ -1,12 +1,12 @@
-import { QueryService } from '@nestjs-query/core';
+import { QueryService, mergeFilter } from '@nestjs-query/core';
 import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { QuestionnaireChoice, Patient, PatientReport } from '../models/patient.model';
+import { Patient, PatientReport } from '../models/patient.model';
+import { QuestionnaireChoice } from "../dto/patient-report.response";
 import { CreatePatientInput } from '../dto/create-patient.input';
 import { User } from 'src/modules/user/models/user.model';
 import { PatientAuthorizer } from '../authorizers/patient.authorizer';
-import { mergeFilter } from '@nestjs-query/core';
 import { Inject, NotFoundException } from '@nestjs/common';
 import { QuestionnaireAssessmentService } from 'src/modules/questionnaire/services/questionnaire-assessment.service';
 import { QuestionnaireAssessment } from 'src/modules/questionnaire/models/questionnaire-assessment.schema';
@@ -126,7 +126,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
             ...patient,
             answeredQuestionnaire: answeredQuestionnaire
         } as PatientReport;
-        console.log(patientReport)
+
         return patientReport;
     }
 
@@ -137,8 +137,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
             for (let question of group.questions) {
                 questions = []
                 choices = [...choices, ...question.choices]
-                question = { ...question, ...answersMap[(question._id).toString()] }
-                questions.push(question)
+                questions.push({ ...question, ...answersMap[(question._id).toString()] })
             }
         }
         return [choices, questions];

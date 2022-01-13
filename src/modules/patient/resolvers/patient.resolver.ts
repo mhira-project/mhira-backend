@@ -18,8 +18,8 @@ import { User } from 'src/modules/user/models/user.model';
 import { PatientAuthorizer } from '../authorizers/patient.authorizer';
 import { CreatePatientInput } from '../dto/create-patient.input';
 import { UpdatePatientInput } from '../dto/update-patient.input';
-import { Patient, PatientReport } from '../models/patient.model';
 import { PatientQueryService } from '../providers/patient-query.service';
+import { Patient, PatientReport } from '../models/patient.model';
 
 
 @ArgsType()
@@ -176,8 +176,7 @@ export class PatientResolver {
         @Args('assessmentStatus') assessmentStatus: string,
     ): Promise<PatientReport> {
         try {
-            const patientReport = await this.service.getQuestionnaireReport(id, assessmentStatus, questionnaireId)
-            return patientReport;
+            return await this.service.getQuestionnaireReport(id, assessmentStatus, questionnaireId)
         } catch (error) {
             return error;
         }

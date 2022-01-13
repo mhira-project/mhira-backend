@@ -2,7 +2,8 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types, Document } from 'mongoose';
 import { FilterableField } from '@nestjs-query/query-graphql';
-import { QuestionnaireChoice } from 'src/modules/patient/models/patient.model';
+import { QuestionnaireChoice } from 'src/modules/patient/dto/patient-report.response';
+
 
 @ObjectType()
 @Schema({ collection: 'questionnaires', timestamps: {} })
