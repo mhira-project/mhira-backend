@@ -122,12 +122,10 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
             }
         }
 
-        const patientReport = {
+        return {
             ...patient,
             answeredQuestionnaire: answeredQuestionnaire
         } as PatientReport;
-
-        return patientReport;
     }
 
     private static flattenAnsweredQuestionnaireChoices(questionGroups: IQuestionGroup[], answersMap: IAnswerMap) {

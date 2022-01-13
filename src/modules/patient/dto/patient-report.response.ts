@@ -1,6 +1,5 @@
 import { FilterableField } from "@nestjs-query/query-graphql";
 import { ObjectType, Field } from "@nestjs/graphql";
-import { Patient } from "../models/patient.model";
 
 @ObjectType()
 export class QuestionnaireChoice {
