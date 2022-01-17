@@ -1,5 +1,5 @@
 import {
-    FilterableField,
+    FilterableField, FilterableUnPagedRelation,
 } from '@nestjs-query/query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import {
@@ -16,12 +16,22 @@ import {
 import { PatientCaregiver } from './patient-caregiver.model';
 
 @ObjectType()
-// @FilterableRelation('status', () => PatientStatus, {
-//     nullable: true,
-//     disableUpdate: true,
-// })
+@FilterableUnPagedRelation('patientCaregivers', () => PatientCaregiver, { nullable: true })
 @Entity()
 export class Caregiver extends BaseEntity {
+    static searchable = [
+        'id',
+        'emergencyContact',
+        'firstName',
+        'middleName',
+        'lastName',
+        'email',
+        'phone',
+        'deletedAt',
+        'createdAt',
+        'updatedAt',
+        'patientCaregivers',
+    ];
 
     @FilterableField(() => Int)
     @PrimaryGeneratedColumn()
