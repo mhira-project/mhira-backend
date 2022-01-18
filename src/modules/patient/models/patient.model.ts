@@ -35,6 +35,7 @@ import { PatientStatus } from './patient-status.model';
 @FilterableUnPagedRelation('informants', () => Informant, { nullable: true })
 @FilterableUnPagedRelation('emergencyContacts', () => EmergencyContact, { nullable: true })
 @FilterableUnPagedRelation('departments', () => Department, { nullable: true })
+@FilterableUnPagedRelation('patientCaregivers', () => PatientCaregiver, { nullable: true })
 @Entity()
 export class Patient extends BaseEntity {
     static searchable = [

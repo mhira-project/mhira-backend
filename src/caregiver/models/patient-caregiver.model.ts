@@ -1,5 +1,5 @@
 import {
-    FilterableField,
+    FilterableField, FilterableRelation,
 } from '@nestjs-query/query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { Patient } from 'src/modules/patient/models/patient.model';
@@ -17,6 +17,8 @@ import { Caregiver } from './caregiver.model';
 
 
 @ObjectType()
+@FilterableRelation('patient', () => Patient)
+@FilterableRelation('caregiver', () => Caregiver)
 @Entity()
 export class PatientCaregiver extends BaseEntity {
     @FilterableField(() => Int)
