@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Types } from 'mongoose';
-import { getConnection, Repository } from 'typeorm';
+import { getConnection, IsNull, Repository } from 'typeorm';
 import {
     CreateFullAssessmentInput,
     UpdateFullAssessmentInput,
@@ -14,6 +14,7 @@ import { PatientAuthorizer } from 'src/modules/patient/authorizers/patient.autho
 import { User } from 'src/modules/user/models/user.model';
 import { ConnectionType } from '@nestjs-query/query-graphql';
 import { PatientQueryService } from 'src/modules/patient/providers/patient-query.service';
+
 
 @Injectable()
 export class AssessmentService {
@@ -136,11 +137,18 @@ export class AssessmentService {
      * @param assessmentId
      * @returns
      */
-    async getFullAssessment(assessmentId: number): Promise<FullAssessment> {
+    async getFullAssessment(assessmentId: number, uuid: string): Promise<FullAssessment> {
+        const query = {
+            id: assessmentId,
+            isActive: true,
+            uuid,
+        }
         const assessment: FullAssessment = (await this.assessmentRepository.findOne(
-            assessmentId,
-            { relations: ['clinician', 'patient'] },
+            {
+                where: [query, { ...query, uuid: IsNull() }], relations: ['clinician', 'patient']
+            },
         )) as FullAssessment;
+        // console.log(assessment)
         assessment.questionnaireAssessment = await this.questionnaireAssessmentService.getById(assessment.questionnaireAssessmentId);
         return assessment;
     }

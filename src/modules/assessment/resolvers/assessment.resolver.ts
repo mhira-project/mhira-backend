@@ -54,8 +54,9 @@ export class AssessmentResolver {
     @UsePermission(PermissionEnum.VIEW_ASSESSMENTS)
     getFullAssessment(
         @Args('id', { type: () => Int }) assessmentId: number,
+        @Args('uuid', { type: () => String, nullable: true }) uuid: string,
     ): Promise<FullAssessment> {
-        return this.assessmentService.getFullAssessment(assessmentId);
+        return this.assessmentService.getFullAssessment(assessmentId, uuid);
     }
 
     @Mutation(() => Assessment)
