@@ -67,7 +67,7 @@ export class Assessment extends BaseEntity {
 
     @Field(() => Boolean)
     @Column({ type: 'boolean', default: true })
-    isActive: Boolean
+    isActive: boolean
 
     @FilterableField(() => String, { nullable: true })
     @Column({ type: 'varchar', nullable: true })
