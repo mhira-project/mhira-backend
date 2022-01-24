@@ -21,6 +21,7 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
+import { AnsweredQuestionnaire } from '../dto/patient-report.response';
 import { EmergencyContact } from './emergency-contact.model';
 import { GenderEnum } from './gender.enum';
 import { Informant } from './informant.model';
@@ -187,8 +188,14 @@ export class Patient extends BaseEntity {
         () => Assessment,
         assessment => assessment.patient,
     )
-    assessments: Assessment;
+    assessments: Assessment[];
 
     @OneToMany(() => PatientCaregiver, patientCaregiver => patientCaregiver.patient)
     patientCaregivers: PatientCaregiver[];
+}
+
+@ObjectType()
+export class PatientReport extends Patient {
+    @Field(() => AnsweredQuestionnaire)
+    answeredQuestionnaire: AnsweredQuestionnaire;
 }
