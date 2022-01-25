@@ -2,10 +2,6 @@
 
 export const authConfig = {
 
-    // secret: this.getValue('SECRET'),
-
-    // refreshTokenSecret: this.getValue('REFRESH_TOKEN_SECRET'),
-
     /**
      * Token Lifetime in seconds
      * 

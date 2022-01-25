@@ -3,11 +3,16 @@ require('dotenv').config();
 class ConfigService {
     constructor(private env: { [k: string]: string | undefined }) {}
 
-    private getValue(key: string, throwOnMissing = true): string {
+    private getValue(key: string, throwOnMissing = true, defaultValue?: string): string {
         const value = this.env[key];
 
         if (!value && throwOnMissing) {
             // throw new Error(`config error - missing env.${key}`);
+        }
+
+        // Return default value if not found.
+        if(!value && defaultValue !== undefined) {
+            return defaultValue;
         }
 
         return value;
@@ -29,6 +34,11 @@ class ConfigService {
     public isProduction() {
         const mode = this.getValue('MODE', false);
         return mode != 'DEV';
+    }
+
+    public isGraphqlPlaygroundEnabled() {
+        const enableFlag = this.getValue('GRAPHQL_PLAYGROUND_ENABLED', false, 'false');
+        return enableFlag.toLowerCase() === 'true';
     }
 
     public getMongoConnectionString() {
@@ -57,21 +67,7 @@ class ConfigService {
             database: this.getValue('TYPEORM_DATABASE'),
             entities,
             synchronize: this.getValue('TYPEORM_SYNCHRONIZE') === 'true',
-            logging: true,
-        };
-    }
-    public getStorageConfig(): any {
-        const dateStrPrefix = new Date().toISOString().split('T')[0];
-        return {
-            accessKeyId: this.getValue('AWS_ACCESS_KEY_ID'),
-            secretAccessKey: this.getValue('AWS_SECRET_ACCESS_KEY'),
-            region: this.getValue('AWS_DEFAULT_REGION'),
-            bucket:
-                this.getValue('AWS_BUCKET') ||
-                this.getValue('AWS_S3_BUCKET_NAME'),
-            basePath: `pasha/${dateStrPrefix}`,
-            fileSize: 1000 * 1024 * 1024,
-            acl: 'private',
+            logging: this.getValue('TYPEORM_LOGGING') === 'true',
         };
     }
 }
