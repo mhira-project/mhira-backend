@@ -15,7 +15,7 @@ import { AssessmentModule } from './modules/assessment/assessment.module';
 import { SettingModule } from './modules/setting/setting.module';
 import { DepartmentModule } from './modules/department/department.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { CaregiverModule } from './caregiver/caregiver.module';
+import { CaregiverModule } from './modules/caregiver/caregiver.module';
 
 @Module({
     imports: [

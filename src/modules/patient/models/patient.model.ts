@@ -4,7 +4,7 @@ import {
     FilterableUnPagedRelation,
 } from '@nestjs-query/query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { PatientCaregiver } from 'src/caregiver/models/patient-caregiver.model';
+import { PatientCaregiver } from 'src/modules/caregiver/models/patient-caregiver.model';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
 import { Department } from 'src/modules/department/models/department.model';
 import { User } from 'src/modules/user/models/user.model';
