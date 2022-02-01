@@ -75,17 +75,18 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
     }
 
 
-    async getQuestionnaireReport(id: number, status: string, questionnaireId: string): Promise<PatientReport> {
+    async getQuestionnaireReport(id: number, status?: string, questionnaireId?: string): Promise<PatientReport> {
+        const condition = status ? `assessments.status = '${status}'` : 'true'
         const patient = await this.repo.findOne({
-            join: { alias: 'patient', innerJoinAndSelect: { assessments: 'patient.assessments' } },
-
+            join: { alias: 'patient', leftJoinAndSelect: { assessments: 'patient.assessments' } },
             where: qb => {
                 qb.where({
                     id
-                }).andWhere('assessments.status = :status', { status });
+                }).andWhere(condition);
             },
         }
         );
+
         const queries = [] as Promise<QuestionnaireAssessment>[];
         for (const assessment of patient.assessments) {
             queries.push(this.questionnaireAssessmentService.getById(assessment.questionnaireAssessmentId))

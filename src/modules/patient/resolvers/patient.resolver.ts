@@ -172,8 +172,8 @@ export class PatientResolver {
     @UsePermission(PermissionEnum.VIEW_PATIENTS)
     async generatePatientReport(
         @Args('id', { type: () => ID }) id: number,
-        @Args('questionnaireId') questionnaireId: string,
-        @Args('assessmentStatus') assessmentStatus: string,
+        @Args('questionnaireId', { nullable: true }) questionnaireId: string,
+        @Args('assessmentStatus', { nullable: true }) assessmentStatus: string,
     ): Promise<PatientReport> {
         try {
             return await this.service.getQuestionnaireReport(id, assessmentStatus, questionnaireId)
