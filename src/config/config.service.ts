@@ -65,7 +65,7 @@ class ConfigService {
                 migrationsDir,
             },
             migrationsRun: this.getValue('TYPEORM_MIGRATIONS_RUN') === 'true',
-            migrations: ["../migrations/*.{js,ts}"],
+            migrations: ["../dist/migrations/*.{js}"],
         };
     }
     public getStorageConfig(): any {
