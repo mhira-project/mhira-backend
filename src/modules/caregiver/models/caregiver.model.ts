@@ -39,23 +39,23 @@ export class Caregiver extends BaseEntity {
 
     @FilterableField(() => Boolean)
     @Column({ default: false })
-    emergencyContact: boolean;
+    emergencyContact?: boolean;
 
     @FilterableField(() => String)
     @Column({ nullable: true })
     firstName: string;
 
-    @FilterableField(() => String)
+    @FilterableField(() => String, { nullable: true })
     @Column({ nullable: true })
-    middleName: string;
+    middleName?: string;
 
     @FilterableField(() => String)
     @Column({ nullable: true })
     lastName: string;
 
-    @FilterableField(() => String)
+    @FilterableField(() => String, { nullable: true })
     @Column({ nullable: true })
-    email: string;
+    email?: string;
 
     @FilterableField(() => String)
     @Column({ nullable: false, unique: true })
@@ -72,6 +72,30 @@ export class Caregiver extends BaseEntity {
     @Field()
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @FilterableField(() => String, { nullable: true })
+    @Column({ nullable: true })
+    street?: string;
+
+    @FilterableField(() => String, { nullable: true })
+    @Column({ nullable: true })
+    country?: string;
+
+    @FilterableField(() => String, { nullable: true })
+    @Column({ nullable: true })
+    place?: string;
+
+    @FilterableField(() => String, { nullable: true })
+    @Column({ nullable: true })
+    apartment?: string;
+
+    @FilterableField(() => String, { nullable: true })
+    @Column({ nullable: true })
+    postalCode?: string;
+
+    @FilterableField(() => String, { nullable: true })
+    @Column({ nullable: true })
+    number?: string;
 
     @OneToMany(() => PatientCaregiver, patientCaregiver => patientCaregiver.caregiver)
     patientCaregivers: PatientCaregiver[];

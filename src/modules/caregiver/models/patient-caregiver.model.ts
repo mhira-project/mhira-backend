@@ -11,14 +11,16 @@ import {
     Entity,
     ManyToOne,
     PrimaryGeneratedColumn,
+    Unique,
     UpdateDateColumn,
 } from 'typeorm';
 import { Caregiver } from './caregiver.model';
 
 
 @ObjectType()
-@FilterableRelation('patient', () => Patient)
-@FilterableRelation('caregiver', () => Caregiver)
+@FilterableRelation('patient', () => Patient, { nullable: true })
+@FilterableRelation('caregiver', () => Caregiver, { nullable: true })
+@Unique(["patientId", "caregiverId"])
 @Entity()
 export class PatientCaregiver extends BaseEntity {
     @FilterableField(() => Int)
