@@ -4,8 +4,6 @@ import { Module } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
 import { SortDirection } from '@nestjs-query/core';
-import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
-import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
 import { Report } from './models/report.model';
 import { ReportRole } from './models/report-role.model';
 import { ReportService } from './services/report.service';

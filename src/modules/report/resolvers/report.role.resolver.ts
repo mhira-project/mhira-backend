@@ -1,9 +1,6 @@
 import { BadRequestException, UseGuards } from "@nestjs/common";
 import { Args, Resolver, InputType, Mutation } from "@nestjs/graphql";
 import { GqlAuthGuard } from "src/modules/auth/auth.guard";
-import { PermissionEnum } from "src/modules/permission/enums/permission.enum";
-import { UsePermission } from "src/modules/permission/decorators/permission.decorator";
-
 import { CreateOneInputType } from "@nestjs-query/query-graphql";
 import { ReportRoleInput } from "../dtos/report-role-input";
 import { ReportRole } from "../models/report-role.model";

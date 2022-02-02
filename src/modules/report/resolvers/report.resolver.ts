@@ -1,4 +1,3 @@
-// import { CreateOneInputType, QueryArgsType } from "@nestjs-query/query-graphql";
 import { UseGuards } from "@nestjs/common";
 import { Args, ArgsType, Resolver, Query, InputType, Mutation } from "@nestjs/graphql";
 import { GqlAuthGuard } from "src/modules/auth/auth.guard";
@@ -8,7 +7,6 @@ import { Report } from "../models/report.model";
 import { SortDirection } from '@nestjs-query/core';
 import { CreateOneInputType, QueryArgsType } from "@nestjs-query/query-graphql";
 import { ReportService } from "../services/report.service";
-import { Role } from "src/modules/permission/models/role.model";
 import { ReportInput } from "../dtos/report-input";
 
 

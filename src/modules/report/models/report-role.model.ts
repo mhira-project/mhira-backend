@@ -2,7 +2,6 @@ import {
     FilterableField, FilterableRelation,
 } from '@nestjs-query/query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { Patient } from 'src/modules/patient/models/patient.model';
 import { Role } from 'src/modules/permission/models/role.model';
 import {
     BaseEntity,

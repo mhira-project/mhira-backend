@@ -2,7 +2,6 @@ import { TypeOrmQueryService } from "@nestjs-query/query-typeorm";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { ReportRoleInput } from "../dtos/report-role-input";
 import { ReportRole } from "../models/report-role.model";
 
 
