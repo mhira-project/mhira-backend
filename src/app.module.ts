@@ -16,6 +16,7 @@ import { SettingModule } from './modules/setting/setting.module';
 import { DepartmentModule } from './modules/department/department.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CaregiverModule } from './modules/caregiver/caregiver.module';
+import { ReportModule } from './modules/report/report.module';
 
 @Module({
     imports: [
@@ -63,6 +64,7 @@ import { CaregiverModule } from './modules/caregiver/caregiver.module';
         DepartmentModule,
         QuestionnaireModule,
         CaregiverModule,
+        ReportModule,
     ],
     controllers: [],
     providers: [],
