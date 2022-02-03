@@ -21,7 +21,6 @@ import { PatientCaregiver } from './patient-caregiver.model';
 export class Caregiver extends BaseEntity {
     static searchable = [
         'id',
-        'emergencyContact',
         'firstName',
         'middleName',
         'lastName',
@@ -31,15 +30,18 @@ export class Caregiver extends BaseEntity {
         'createdAt',
         'updatedAt',
         'patientCaregivers',
+        'country',
+        'number',
+        'postalCode',
+        'apartment',
+        'place',
+        'country',
+        'street'
     ];
 
     @FilterableField(() => Int)
     @PrimaryGeneratedColumn()
     id: number;
-
-    @FilterableField(() => Boolean)
-    @Column({ default: false })
-    emergencyContact?: boolean;
 
     @FilterableField(() => String)
     @Column({ nullable: true })
