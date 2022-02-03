@@ -45,7 +45,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     },
                     create: { disabled: true },
                     update: { disabled: false },
-                    delete: { disabled: true },
+                    delete: { disabled: false },
                 },
             ],
         }),
