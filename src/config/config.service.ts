@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 class ConfigService {
-    constructor(private env: { [k: string]: string | undefined }) {}
+    constructor(private env: { [k: string]: string | undefined }) { }
 
     private getValue(key: string, throwOnMissing = true): string {
         const value = this.env[key];
@@ -48,6 +48,9 @@ class ConfigService {
         const entities: any = [
             __dirname + this.getValue('TYPEORM_ENTITIES_DIR'),
         ];
+        const migrationsDir: string[] = [
+            __dirname + this.getValue('TYPEORM_MIGRATIONS_DIR')
+        ]
         return {
             type: this.getValue('TYPEORM_CONNECTION') as 'postgres',
             host: this.getValue('TYPEORM_HOST'),
@@ -57,7 +60,12 @@ class ConfigService {
             database: this.getValue('TYPEORM_DATABASE'),
             entities,
             synchronize: this.getValue('TYPEORM_SYNCHRONIZE') === 'true',
-            logging: true,
+            logging: this.getValue('TYPEORM_LOGGING') === 'true',
+            cli: {
+                migrationsDir,
+            },
+            migrationsRun: this.getValue('TYPEORM_MIGRATIONS_RUN') === 'true',
+            migrations: ["../dist/migrations/*.{js}"],
         };
     }
     public getStorageConfig(): any {

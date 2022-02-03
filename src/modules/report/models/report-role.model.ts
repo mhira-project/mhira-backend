@@ -2,7 +2,7 @@ import {
     FilterableField, FilterableRelation,
 } from '@nestjs-query/query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { Patient } from 'src/modules/patient/models/patient.model';
+import { Role } from 'src/modules/permission/models/role.model';
 import {
     BaseEntity,
     Column,
@@ -14,16 +14,17 @@ import {
     Unique,
     UpdateDateColumn,
 } from 'typeorm';
-import { Caregiver } from './caregiver.model';
+import { Report } from './report.model';
+
 
 
 @ObjectType()
-@FilterableRelation('patient', () => Patient, { nullable: true })
-@FilterableRelation('caregiver', () => Caregiver, { nullable: true })
-@Unique(["patientId", "caregiverId"])
+@FilterableRelation('role', () => Role, { nullable: true })
+@FilterableRelation('report', () => Report, { nullable: true })
+@Unique(["roleId", "reportId"])
 @Entity()
-export class PatientCaregiver extends BaseEntity {
-    @FilterableField(() => Int)
+export class ReportRole extends BaseEntity {
+    @FilterableField(() => Int, { nullable: true })
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -41,16 +42,16 @@ export class PatientCaregiver extends BaseEntity {
 
     @FilterableField()
     @Column({ type: "int" })
-    patientId: number;
+    roleId: number;
 
     @FilterableField()
     @Column({ type: "int" })
-    caregiverId: number;
+    reportId: number;
 
-    @ManyToOne(() => Caregiver, caregiver => caregiver.patientCaregivers)
-    caregiver: Caregiver;
+    @ManyToOne(() => Role, role => role.reportRoles)
+    Role: Role;
 
-    @ManyToOne(() => Patient, patient => patient.patientCaregivers)
-    patient: Patient;
+    @ManyToOne(() => Report, report => report.reportRoles)
+    report: Report;
 
 }

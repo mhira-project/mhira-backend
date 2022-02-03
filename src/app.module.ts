@@ -16,6 +16,7 @@ import { SettingModule } from './modules/setting/setting.module';
 import { DepartmentModule } from './modules/department/department.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CaregiverModule } from './modules/caregiver/caregiver.module';
+import { ReportModule } from './modules/report/report.module';
 
 @Module({
     imports: [
@@ -25,6 +26,8 @@ import { CaregiverModule } from './modules/caregiver/caregiver.module';
         TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
         GraphQLModule.forRoot({
             autoSchemaFile: join(process.cwd(), 'src/schema/schema.gql'),
+            introspection: true,
+            playground: true,
             context: ({ req }) => ({ req }),
             debug: false, // disables stack trace
             uploads: false,
@@ -61,6 +64,7 @@ import { CaregiverModule } from './modules/caregiver/caregiver.module';
         DepartmentModule,
         QuestionnaireModule,
         CaregiverModule,
+        ReportModule,
     ],
     controllers: [],
     providers: [],

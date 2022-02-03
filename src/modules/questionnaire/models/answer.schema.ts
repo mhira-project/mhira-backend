@@ -42,3 +42,7 @@ export class Answer extends Document {
 }
 
 export const AnswerSchema = SchemaFactory.createForClass(Answer);
+
+export interface IAnswerMap {
+    [key: string]: Answer
+}

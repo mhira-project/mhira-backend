@@ -18,7 +18,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 @ObjectType()
 @FilterableRelation('patient', () => Patient)
-@FilterableRelation('clinician', () => User)
+@FilterableRelation('clinician', () => User, { nullable: true })
 @Entity()
 export class Assessment extends BaseEntity {
     @FilterableField(() => Int)
