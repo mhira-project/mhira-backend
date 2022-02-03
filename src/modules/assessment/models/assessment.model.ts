@@ -5,6 +5,7 @@ import { User } from 'src/modules/user/models/user.model';
 import { QuestionnaireAssessment } from '../../questionnaire/models/questionnaire-assessment.schema';
 import {
     BaseEntity,
+    BeforeInsert,
     Column,
     CreateDateColumn,
     DeleteDateColumn,
@@ -13,6 +14,7 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 
 @ObjectType()
 @FilterableRelation('patient', () => Patient)
@@ -62,6 +64,19 @@ export class Assessment extends BaseEntity {
     @Field(() => GraphQLISODateTime, { nullable: true })
     @DeleteDateColumn()
     deletedAt?: Date;
+
+    @Field(() => Boolean)
+    @Column({ type: 'boolean', default: true })
+    isActive: boolean
+
+    @FilterableField(() => String, { nullable: true })
+    @Column({ type: 'varchar', nullable: true })
+    uuid: string
+
+    @BeforeInsert()
+    private generateUuid() {
+        this.uuid = uuidv4();
+    }
 
     @ManyToOne(
         () => Patient,
