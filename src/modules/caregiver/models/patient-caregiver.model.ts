@@ -47,6 +47,19 @@ export class PatientCaregiver extends BaseEntity {
     @Column({ type: "int" })
     caregiverId: number;
 
+    @FilterableField(() => String, { nullable: true })
+    @Column({ nullable: true })
+    relation: string;
+
+    @FilterableField(() => String, { nullable: true })
+    @Column({ nullable: true, type: "text" })
+    note?: string;
+
+    @FilterableField(() => Boolean, { nullable: true })
+    @Column({ default: false, nullable: true })
+    emergency?: boolean;
+
+
     @ManyToOne(() => Caregiver, caregiver => caregiver.patientCaregivers)
     caregiver: Caregiver;
 
