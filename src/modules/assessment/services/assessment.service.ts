@@ -147,7 +147,6 @@ export class AssessmentService {
                 }, relations: ['clinician', 'patient']
             },
         )) as FullAssessment;
-        // console.log(assessment)
         assessment.questionnaireAssessment = await this.questionnaireAssessmentService.getById(assessment.questionnaireAssessmentId);
         return assessment;
     }
