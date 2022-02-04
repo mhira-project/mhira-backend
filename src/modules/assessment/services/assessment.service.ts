@@ -138,17 +138,15 @@ export class AssessmentService {
      * @returns
      */
     async getFullAssessment(assessmentId: number, uuid: string): Promise<FullAssessment> {
-        const query = {
-            id: assessmentId,
-            isActive: true,
-            uuid,
-        }
         const assessment: FullAssessment = (await this.assessmentRepository.findOne(
             {
-                where: [query, { ...query, uuid: IsNull() }], relations: ['clinician', 'patient']
+                where: {
+                    id: assessmentId,
+                    isActive: true,
+                    ...(uuid && { uuid })
+                }, relations: ['clinician', 'patient']
             },
         )) as FullAssessment;
-        // console.log(assessment)
         assessment.questionnaireAssessment = await this.questionnaireAssessmentService.getById(assessment.questionnaireAssessmentId);
         return assessment;
     }
