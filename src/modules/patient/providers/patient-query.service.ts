@@ -88,56 +88,58 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         );
 
         const queries = [] as Promise<QuestionnaireAssessment>[];
+        let answeredQuestionnaires = [];
+        const answers = [];
+
         for (const assessment of patient.assessments) {
             queries.push(this.questionnaireAssessmentService.getById(assessment.questionnaireAssessmentId))
         }
         const questionnaireAssessment = await Promise.all(queries);
-        let answeredQuestionnaire;
-
         for (const assessment of questionnaireAssessment) {
 
             assessment.questionnaires.forEach(entry => {
-                if (questionnaireId == entry._id.toString()) answeredQuestionnaire = entry;
+                if (questionnaireId == entry._id.toString()) {
+                    answeredQuestionnaires.push({ ...entry, assessmentId: assessment._id.toString(), ...entry._doc })
+                    answers.push(assessment.answers)
+                }
             })
 
-            if (answeredQuestionnaire) {
-
-                answeredQuestionnaire = JSON.parse(JSON.stringify(answeredQuestionnaire))
-                answeredQuestionnaire.assessmentId = assessment._id.toString();
-
-                answeredQuestionnaire.questionnaireFullName = answeredQuestionnaire.questionnaire.abbreviation;
-                answeredQuestionnaire.language = answeredQuestionnaire.questionnaire.language;
-                const answeredQuestionsMap = PatientQueryService.mapAnsweredQuestions(assessment.answers);
-                const [choices, questions] = PatientQueryService.flattenAnsweredQuestionnaireChoices(answeredQuestionnaire.questionGroups, answeredQuestionsMap);
-
-                answeredQuestionnaire.choices = choices;
-                answeredQuestionnaire.answeredQuestions = questions;
-                for (const question of answeredQuestionnaire.answeredQuestions) {
-                    const { _doc: { multipleChoiceValue, textValue } } = question;
-                    question.answerValue = multipleChoiceValue?.length ? multipleChoiceValue : textValue;
-                    question.answerChoiceLabel = PatientQueryService.getChoiceLabelByValue(question.answerValue, question.choices)
-
-                }
-
-                break;
-            }
         }
+
+        answeredQuestionnaires.forEach((answeredQuestionnaire, _index) => {
+
+            answeredQuestionnaire.questionnaireFullName = answeredQuestionnaire?._doc?.questionnaire?.abbreviation;
+            answeredQuestionnaire.language = answeredQuestionnaire._doc.questionnaire?.language;
+            const answeredQuestionsMap = PatientQueryService.mapAnsweredQuestions(answers[_index]);
+            const [questionChoices, questions] = PatientQueryService.flattenAnsweredQuestionnaireChoices(answeredQuestionnaire.questionGroups ?? [], answeredQuestionsMap);
+
+
+            answeredQuestionnaire.choices = questionChoices;
+            answeredQuestionnaire.answeredQuestions = questions;
+            for (const question of answeredQuestionnaire.answeredQuestions.flat()) {
+
+                const { _doc: { multipleChoiceValue, textValue } } = question;
+                question.answerValue = multipleChoiceValue?.length ? multipleChoiceValue : textValue;
+                question.answerChoiceLabel = PatientQueryService.getChoiceLabelByValue(question.answerValue, answeredQuestionnaire.choices)
+            }
+        })
 
         return {
             ...patient,
-            answeredQuestionnaire: answeredQuestionnaire
+            answeredQuestionnaires,
         } as PatientReport;
+
     }
 
     private static flattenAnsweredQuestionnaireChoices(questionGroups: IQuestionGroup[], answersMap: IAnswerMap) {
+
         let choices = [] as QuestionnaireChoice[];
         let questions = []
-        for (const group of questionGroups) {
-            for (let question of group.questions) {
-                questions = []
-                choices = [...choices, ...question.choices]
-                questions.push({ ...question, ...answersMap[(question._id).toString()] })
-            }
+
+        for (let question of questionGroups[0].questions) {
+            const { _id, type, name, label, required, choices: questionChoices } = question;
+            choices = choices.concat(questionChoices);
+            questions.push({ _id, type, name, label, required, questionChoices, ...answersMap[(question._id).toString()] })
         }
         return [choices, questions];
     }

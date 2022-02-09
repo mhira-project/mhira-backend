@@ -176,7 +176,7 @@ export class PatientResolver {
         @Args('assessmentStatus', { nullable: true }) assessmentStatus: string,
     ): Promise<PatientReport> {
         try {
-            return await this.service.getQuestionnaireReport(id, assessmentStatus, questionnaireId)
+            return this.service.getQuestionnaireReport(id, assessmentStatus, questionnaireId)
         } catch (error) {
             return error;
         }
