@@ -1,5 +1,5 @@
 import { TypeOrmQueryService } from "@nestjs-query/query-typeorm";
-import { Injectable } from "@nestjs/common";
+import { ConflictException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { PatientCaregiverInput } from "../dtos/patient.caregiver.input";
@@ -11,7 +11,10 @@ export class PatientCaregiverService extends TypeOrmQueryService<PatientCaregive
         super(repo, { useSoftDelete: true });
     }
 
-    insert(patientCaregiver: PatientCaregiverInput) {
+    async insert(patientCaregiver: PatientCaregiverInput) {
+        const isExisting = await this.repo.findOne({ where: { ...patientCaregiver } });
+        if (isExisting) throw new ConflictException();
+
         let newPatientCaregiver = this.repo.create();
         newPatientCaregiver = this.repo.merge(newPatientCaregiver, patientCaregiver);
         return this.repo.save(newPatientCaregiver)

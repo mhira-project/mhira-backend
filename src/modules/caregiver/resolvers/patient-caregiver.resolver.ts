@@ -9,7 +9,6 @@ import { PatientCaregiverService } from "../services/patient.caregiver.service";
 import { CreateOneInputType } from "@nestjs-query/query-graphql";
 import { PatientCaregiverInput } from "../dtos/patient.caregiver.input";
 
-
 @InputType()
 export class CreateOnePatientCaregiverInput extends CreateOneInputType('patientCaregiver', PatientCaregiverInput) { }
 
@@ -30,7 +29,7 @@ export class PatientCaregiverResolver {
             const caregiverInput = input['patientCaregiver'] as PatientCaregiverInput;
             return this.patinetCaregiverService.insert(caregiverInput)
         } catch (error) {
-            return error
+            return error;
         }
     }
 }

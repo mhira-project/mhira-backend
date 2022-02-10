@@ -37,6 +37,8 @@ import { PatientStatus } from './patient-status.model';
 @FilterableUnPagedRelation('emergencyContacts', () => EmergencyContact, { nullable: true })
 @FilterableUnPagedRelation('departments', () => Department, { nullable: true })
 @FilterableUnPagedRelation('patientCaregivers', () => PatientCaregiver, { nullable: true })
+@FilterableRelation('assessments', () => Assessment, { nullable: true })
+
 @Entity()
 export class Patient extends BaseEntity {
     static searchable = [
@@ -196,6 +198,9 @@ export class Patient extends BaseEntity {
 
 @ObjectType()
 export class PatientReport extends Patient {
-    @Field(() => AnsweredQuestionnaire)
-    answeredQuestionnaire: AnsweredQuestionnaire;
+    @Field(() => [AnsweredQuestionnaire], { nullable: true })
+    answeredQuestionnaires: AnsweredQuestionnaire[];
+
+    @Field(() => [Assessment], { nullable: true })
+    assessments: Assessment[];
 }

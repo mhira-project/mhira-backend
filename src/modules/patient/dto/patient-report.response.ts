@@ -24,64 +24,64 @@ class AnswerChoiceLabel {
 
 @ObjectType()
 class AnsweredQuestions {
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     answerValue: string;
 
-    @Field(() => [AnswerChoiceLabel])
+    @Field(() => [AnswerChoiceLabel], { nullable: true })
     answerChoiceLabel: AnswerChoiceLabel[];
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     createdAt: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     updatedAt: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     name: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     label: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     type: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     hint: string;
 
-    @Field(() => Boolean)
+    @Field(() => Boolean, { nullable: true })
     required: boolean;
 }
 
 @ObjectType()
 export class AnsweredQuestionnaire {
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     assessmentId: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     _id: string;
 
-    @FilterableField()
+    @FilterableField(() => String, { nullable: true })
     status: string;
 
-    @Field(() => Date)
+    @Field(() => Date, { nullable: true })
     createdAt: Date;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     copyright: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     language: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     name: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     questionnaireFullName: string;
 
-    @Field(() => [QuestionnaireChoice])
+    @Field(() => [QuestionnaireChoice], { nullable: true })
     choices: QuestionnaireChoice[];
 
-    @Field(() => [AnsweredQuestions])
+    @Field(() => [AnsweredQuestions], { nullable: true })
     answeredQuestions: AnsweredQuestions[];
 }
 
