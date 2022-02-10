@@ -11,7 +11,6 @@ export class PublicAssessmentResolver {
         private readonly assessmentService: AssessmentService,
     ) { }
     @Query(() => FullAssessment)
-    @UsePermission(PermissionEnum.VIEW_ASSESSMENTS)
     getFullPublicAssessment(
         @Args('uuid', { type: () => String, nullable: true }) uuid: string,
     ): Promise<FullAssessment> {
