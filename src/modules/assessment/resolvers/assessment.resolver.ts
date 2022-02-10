@@ -15,7 +15,6 @@ import { ConnectionType } from '@nestjs-query/query-graphql';
 import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
 import { User } from 'src/modules/user/models/user.model';
 import { AssessmentQuery, AssessmentConnection } from '../dtos/assessment.query';
-import { isPublic } from 'src/shared/decorators/is-public';
 
 @Resolver(() => Assessment)
 @UseGuards(GqlAuthGuard, PermissionGuard)
