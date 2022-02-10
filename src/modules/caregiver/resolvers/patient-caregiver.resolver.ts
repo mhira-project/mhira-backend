@@ -8,8 +8,6 @@ import { PatientCaregiver } from "../models/patient-caregiver.model";
 import { PatientCaregiverService } from "../services/patient.caregiver.service";
 import { CreateOneInputType } from "@nestjs-query/query-graphql";
 import { PatientCaregiverInput } from "../dtos/patient.caregiver.input";
-import { isUnique } from "src/shared/decorators/is-unique";
-
 
 @InputType()
 export class CreateOnePatientCaregiverInput extends CreateOneInputType('patientCaregiver', PatientCaregiverInput) { }
@@ -24,7 +22,6 @@ export class PatientCaregiverResolver {
 
     @Mutation(() => PatientCaregiver)
     @UsePermission(PermissionEnum.MANAGE_CAREGIVERS)
-    // @isUnique(PatientCaregiver) input: CreateOnePatientCaregiverInput)
     async createOnePatientCaregiver(
         @Args('input', { type: () => CreateOnePatientCaregiverInput }) input: CreateOnePatientCaregiverInput,
     ): Promise<PatientCaregiver> {
