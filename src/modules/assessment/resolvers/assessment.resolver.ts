@@ -49,7 +49,6 @@ export class AssessmentResolver {
         return this.assessmentService.getQuestionnaireAssessment(assessment.questionnaireAssessmentId);
     }
 
-    @isPublic(true)
     @Query(() => FullAssessment)
     @UsePermission(PermissionEnum.VIEW_ASSESSMENTS)
     getFullAssessment(

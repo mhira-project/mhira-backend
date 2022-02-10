@@ -18,6 +18,7 @@ import {
     QuestionnaireVersionSchema,
 } from '../questionnaire/models/questionnaire-version.schema';
 import { PatientModule } from '../patient/patient.module';
+import { PublicAssessmentResolver } from './resolvers/public.assessment.resolver';
 
 const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
@@ -60,6 +61,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
         AssessmentService,
         AssessmentResolver,
         QuestionnaireAssessmentService,
+        PublicAssessmentResolver,
     ],
 })
 export class AssessmentModule { }

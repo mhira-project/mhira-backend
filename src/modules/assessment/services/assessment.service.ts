@@ -200,4 +200,17 @@ export class AssessmentService {
             await queryRunner.release();
         }
     }
+
+    async getFullPublicAssessment(uuid: string): Promise<FullAssessment> {
+        const assessment: FullAssessment = (await this.assessmentRepository.findOne(
+            {
+                where: {
+                    isActive: true,
+                    uuid,
+                }, relations: ['clinician', 'patient']
+            },
+        )) as FullAssessment;
+        assessment.questionnaireAssessment = await this.questionnaireAssessmentService.getById(assessment.questionnaireAssessmentId);
+        return assessment;
+    }
 }
