@@ -7,11 +7,9 @@ import {
     BaseEntity,
     Column,
     CreateDateColumn,
-    DeleteDateColumn,
     Entity,
     ManyToOne,
     PrimaryGeneratedColumn,
-    Unique,
     UpdateDateColumn,
 } from 'typeorm';
 import { Report } from './report.model';
@@ -21,16 +19,11 @@ import { Report } from './report.model';
 @ObjectType()
 @FilterableRelation('role', () => Role, { nullable: true })
 @FilterableRelation('report', () => Report, { nullable: true })
-@Unique(["roleId", "reportId"])
 @Entity()
 export class ReportRole extends BaseEntity {
     @FilterableField(() => Int, { nullable: true })
     @PrimaryGeneratedColumn()
     id: number;
-
-    @Field({ nullable: true })
-    @DeleteDateColumn()
-    deletedAt?: Date;
 
     @FilterableField()
     @CreateDateColumn()

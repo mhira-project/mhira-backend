@@ -6,6 +6,8 @@ import { ReportRoleInput } from "../dtos/report-role-input";
 import { ReportRole } from "../models/report-role.model";
 import { ReportRoleService } from "../services/report.role.service";
 import { ReportService } from "../services/report.service";
+import { Report } from "../models/report.model";
+import { Role } from "src/modules/permission/models/role.model";
 
 
 
@@ -29,11 +31,11 @@ export class ReportRoleResolver {
             const { reportId, roleIds } = input['reportRole']
             const existingReport = await this.reportService.findById(reportId);
             if (!existingReport) throw new BadRequestException('Invalid report');
+            await this.reportRoleService.delete(reportId);
             const insertQueries = [];
             for (const roleId of roleIds) {
                 insertQueries.push(this.reportRoleService.insert(roleId, reportId))
             }
-
             return await Promise.allSettled(insertQueries);
         } catch (error) {
             return error
