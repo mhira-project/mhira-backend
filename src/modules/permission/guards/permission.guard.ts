@@ -14,8 +14,6 @@ export class PermissionGuard implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
 
         const userId = GqlExecutionContext.create(context)?.getContext()?.req?.user?.id;
-        const isPublic = this.reflector.get<boolean>('isPublic', context.getHandler());
-        if (isPublic) return isPublic;
         // Return failure if un-authenticated request
         if (!userId) return false;
 
