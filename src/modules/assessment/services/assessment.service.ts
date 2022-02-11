@@ -137,13 +137,12 @@ export class AssessmentService {
      * @param assessmentId
      * @returns
      */
-    async getFullAssessment(assessmentId: number, uuid: string): Promise<FullAssessment> {
+    async getFullAssessment(assessmentId: number): Promise<FullAssessment> {
         const assessment: FullAssessment = (await this.assessmentRepository.findOne(
             {
                 where: {
                     id: assessmentId,
                     isActive: true,
-                    ...(uuid && { uuid })
                 }, relations: ['clinician', 'patient']
             },
         )) as FullAssessment;
@@ -199,5 +198,18 @@ export class AssessmentService {
         } finally {
             await queryRunner.release();
         }
+    }
+
+    async getFullPublicAssessment(uuid: string): Promise<FullAssessment> {
+        const assessment: FullAssessment = (await this.assessmentRepository.findOne(
+            {
+                where: {
+                    isActive: true,
+                    uuid,
+                }, relations: ['clinician', 'patient']
+            },
+        )) as FullAssessment;
+        assessment.questionnaireAssessment = await this.questionnaireAssessmentService.getById(assessment.questionnaireAssessmentId);
+        return assessment;
     }
 }
