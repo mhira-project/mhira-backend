@@ -17,4 +17,8 @@ export class ReportRoleService extends TypeOrmQueryService<ReportRole> {
         newRoleReport = this.repo.merge(newRoleReport, { roleId, reportId });
         return this.repo.save(newRoleReport)
     }
+
+    delete(reportId: number) {
+        return this.repo.delete({ reportId });
+    }
 }
