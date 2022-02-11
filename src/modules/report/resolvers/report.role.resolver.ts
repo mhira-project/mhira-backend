@@ -6,10 +6,6 @@ import { ReportRoleInput } from "../dtos/report-role-input";
 import { ReportRole } from "../models/report-role.model";
 import { ReportRoleService } from "../services/report.role.service";
 import { ReportService } from "../services/report.service";
-import { Report } from "../models/report.model";
-import { Role } from "src/modules/permission/models/role.model";
-
-
 
 @InputType()
 export class CreateOneReportRoleInput extends CreateOneInputType('reportRole', ReportRoleInput) { }
