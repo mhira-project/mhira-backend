@@ -27,8 +27,9 @@ export class PatientCaregiverResolver {
     ): Promise<PatientCaregiver> {
         try {
             const caregiverInput = input['patientCaregiver'] as PatientCaregiverInput;
-            return this.patinetCaregiverService.insert(caregiverInput)
+            return await this.patinetCaregiverService.insert(caregiverInput)
         } catch (error) {
+            error.message = error.message === 'Conflict' ? 'This caregiver number has already been assigned!' : error.message;
             return error;
         }
     }
