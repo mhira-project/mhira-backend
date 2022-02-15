@@ -98,7 +98,10 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         for (const assessment of questionnaireAssessment) {
 
             assessment.questionnaires.forEach(entry => {
-                if (questionnaireId == entry._id.toString()) {
+                if (questionnaireId && questionnaireId == entry._id.toString()) {
+                    answeredQuestionnaires.push({ ...entry, assessmentId: assessment._id.toString(), ...entry._doc })
+                    answers.push(assessment.answers)
+                } else if (!questionnaireId) {
                     answeredQuestionnaires.push({ ...entry, assessmentId: assessment._id.toString(), ...entry._doc })
                     answers.push(assessment.answers)
                 }
@@ -111,16 +114,20 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
             answeredQuestionnaire.questionnaireFullName = answeredQuestionnaire?._doc?.questionnaire?.abbreviation;
             answeredQuestionnaire.language = answeredQuestionnaire._doc.questionnaire?.language;
             const answeredQuestionsMap = PatientQueryService.mapAnsweredQuestions(answers[_index]);
+            // console.log(answeredQuestionsMap)
             const [questionChoices, questions] = PatientQueryService.flattenAnsweredQuestionnaireChoices(answeredQuestionnaire.questionGroups ?? [], answeredQuestionsMap);
 
 
             answeredQuestionnaire.choices = questionChoices;
             answeredQuestionnaire.answeredQuestions = questions;
-            for (const question of answeredQuestionnaire.answeredQuestions.flat()) {
 
-                const { _doc: { multipleChoiceValue, textValue } } = question;
-                question.answerValue = multipleChoiceValue?.length ? multipleChoiceValue : textValue;
-                question.answerChoiceLabel = PatientQueryService.getChoiceLabelByValue(question.answerValue, answeredQuestionnaire.choices)
+            // console.table(answeredQuestionnaire.answeredQuestions)
+            console.log({ answeredQuestionsMap })
+            for (const question of answeredQuestionnaire.answeredQuestions.flat()) {
+                console.log({ a: question._id, b: question._doc })
+                // const { _doc: { multipleChoiceValue, textValue } } = question;
+                // question.answerValue = multipleChoiceValue?.length ? multipleChoiceValue : textValue;
+                // question.answerChoiceLabel = PatientQueryService.getChoiceLabelByValue(question.answerValue, answeredQuestionnaire.choices)
             }
         })
 
