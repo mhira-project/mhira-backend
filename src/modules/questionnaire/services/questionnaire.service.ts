@@ -32,7 +32,7 @@ export class QuestionnaireService {
         private questionGroupModel: Model<QuestionGroup>,
         @InjectModel(Question.name)
         private questionModel: Model<Question>,
-    ) { }
+    ) {}
 
     public async create(xlsForm: CreateQuestionnaireInput) {
         const fileData: FileData[] = await this.readFileUpload(
@@ -57,7 +57,7 @@ export class QuestionnaireService {
         await this.questionnaireModel.updateOne(
             { _id: version.questionnaire },
             {
-                language: xlsForm.language
+                language: xlsForm.language,
             },
         );
 
@@ -175,7 +175,7 @@ export class QuestionnaireService {
     private async createNewVersion(version: QuestionnaireVersion) {
         const newestVersionByQuestionnaire = await this.getNewestVersionById(
             (version.questionnaire as Questionnaire)._id ??
-            (version.questionnaire as Types.ObjectId),
+                (version.questionnaire as Types.ObjectId),
         );
 
         if (!version || !newestVersionByQuestionnaire._id.equals(version._id)) {
@@ -224,6 +224,8 @@ export class QuestionnaireService {
             );
         }
 
+        console.log(questionnaireInput);
+
         const createdQuestionnaireVersion = new this.questionnaireVersionModel();
         const createdQuestionnaire = new this.questionnaireModel();
         createdQuestionnaire.abbreviation = settings.form_id;
@@ -242,6 +244,9 @@ export class QuestionnaireService {
             questionnaireInput.status ?? QuestionnaireStatus.DRAFT;
 
         createdQuestionnaireVersion.keywords = questionnaireInput.keywords;
+
+        createdQuestionnaireVersion.language = questionnaireInput.language;
+        createdQuestionnaireVersion.abbreviation = settings.form_id;
 
         let currentGroup: QuestionGroup = null;
 
