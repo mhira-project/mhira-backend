@@ -99,3 +99,9 @@ export class FullAssessment extends Assessment {
     @Field(() => Patient)
     patient: Patient;
 }
+
+@ObjectType()
+export class AssessmentResponse extends Assessment {
+    @Field(() => String)
+    assessmentId: string;
+}

@@ -3,15 +3,15 @@ import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Patient, PatientReport } from '../models/patient.model';
-import { QuestionnaireChoice } from "../dto/patient-report.response";
 import { CreatePatientInput } from '../dto/create-patient.input';
 import { User } from 'src/modules/user/models/user.model';
 import { PatientAuthorizer } from '../authorizers/patient.authorizer';
 import { Inject, NotFoundException } from '@nestjs/common';
 import { QuestionnaireAssessmentService } from 'src/modules/questionnaire/services/questionnaire-assessment.service';
 import { QuestionnaireAssessment } from 'src/modules/questionnaire/models/questionnaire-assessment.schema';
-import { Answer, IAnswerMap } from 'src/modules/questionnaire/models/answer.schema';
-import { IQuestionGroup } from 'src/modules/questionnaire/models/questionnaire.schema';
+import { IAnswerMap } from 'src/modules/questionnaire/models/answer.schema';
+import { AnsweredQuestions, IQuestionGroup } from 'src/modules/questionnaire/models/questionnaire.schema';
+import { AssessmentResponse } from 'src/modules/assessment/models/assessment.model';
 @QueryService(Patient)
 export class PatientQueryService extends TypeOrmQueryService<Patient> {
     @Inject(QuestionnaireAssessmentService)
@@ -87,6 +87,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         }
         );
 
+
         const queries = [] as Promise<QuestionnaireAssessment>[];
         let answeredQuestionnaires = [];
         const answers = [];
@@ -98,7 +99,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         for (const assessment of questionnaireAssessment) {
 
             assessment.questionnaires.forEach(entry => {
-                if (questionnaireId == entry._id.toString()) {
+                if ((questionnaireId && questionnaireId == entry._id.toString()) || !questionnaireId) {
                     answeredQuestionnaires.push({ ...entry, assessmentId: assessment._id.toString(), ...entry._doc })
                     answers.push(assessment.answers)
                 }
@@ -108,65 +109,65 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
 
         answeredQuestionnaires.forEach((answeredQuestionnaire, _index) => {
 
-            answeredQuestionnaire.questionnaireFullName = answeredQuestionnaire?._doc?.questionnaire?.abbreviation;
+            answeredQuestionnaire.abbreviation = answeredQuestionnaire?._doc?.questionnaire?.abbreviation;
+            answeredQuestionnaire.questionnaireFullName = answeredQuestionnaire?._doc?.name;
             answeredQuestionnaire.language = answeredQuestionnaire._doc.questionnaire?.language;
+
             const answeredQuestionsMap = PatientQueryService.mapAnsweredQuestions(answers[_index]);
-            const [questionChoices, questions] = PatientQueryService.flattenAnsweredQuestionnaireChoices(answeredQuestionnaire.questionGroups ?? [], answeredQuestionsMap);
+            const questionGroups = answeredQuestionnaire._doc?.questionGroups?.flat();
+            const questions = PatientQueryService.matchQuestionsToAnswers(questionGroups ?? [], answeredQuestionsMap);
+            answeredQuestionnaire.questions = questions;
+        });
 
+        const assessmentResponse = [] as AssessmentResponse[];
 
-            answeredQuestionnaire.choices = questionChoices;
-            answeredQuestionnaire.answeredQuestions = questions;
-            for (const question of answeredQuestionnaire.answeredQuestions.flat()) {
+        for (const assessment of patient.assessments) {
+            assessmentResponse.push({ ...assessment, assessmentId: assessment.questionnaireAssessmentId } as AssessmentResponse)
 
-                const { _doc: { multipleChoiceValue, textValue } } = question;
-                question.answerValue = multipleChoiceValue?.length ? multipleChoiceValue : textValue;
-                question.answerChoiceLabel = PatientQueryService.getChoiceLabelByValue(question.answerValue, answeredQuestionnaire.choices)
-            }
-        })
+        }
 
         return {
-            ...patient,
+            patient,
             answeredQuestionnaires,
+            assessments: assessmentResponse,
         } as PatientReport;
 
     }
 
-    private static flattenAnsweredQuestionnaireChoices(questionGroups: IQuestionGroup[], answersMap: IAnswerMap) {
-
-        let choices = [] as QuestionnaireChoice[];
-        let questions = []
-
-        for (let question of questionGroups[0].questions) {
-            const { _id, type, name, label, required, choices: questionChoices } = question;
-            choices = choices.concat(questionChoices);
-            questions.push({ _id, type, name, label, required, questionChoices, ...answersMap[(question._id).toString()] })
-        }
-        return [choices, questions];
-    }
-
-    private static mapAnsweredQuestions(answers: Answer[]) {
+    private static mapAnsweredQuestions(answers: AnsweredQuestions[]) {
         const map = {} as IAnswerMap
         for (const answer of answers) {
-            map[answer.question.toString()] = answer;
+            answer.combinedDate = null;
+            map[answer.question.toString()] = { ...answer['_doc'] };
+            map[answer.question.toString()]['questionId'] = answer.question.toString();
+            if (answer.dateValue && answer.textValue) {
+                const [hours, minutes] = answer.textValue.split(":")
+                map[answer.question.toString()]['combinedDate'] = new Date(answer.dateValue.setUTCHours(+hours, +minutes, 0, 0));
+            }
         }
-
         return map;
     }
 
-    private static getChoiceLabelByValue(answerValue: string | string[], choices: QuestionnaireChoice[]) {
-        const answerValueAsArray: string[] = []
-        const answerValueLabelMap = {} as { [key: string]: { [key: string]: string } | boolean };
+    private static matchQuestionsToAnswers(questionGroups: IQuestionGroup[], answeredQuestionsMap: IAnswerMap) {
+        let results = [];
 
-        if (typeof answerValue !== "object") answerValueAsArray.push(answerValue.toString());
+        for (const questionGroup of questionGroups) {
+            const questions = questionGroup.questions.map(question => {
+                const { type, name, label, required, choices, hint } = question;
+                return {
+                    type,
+                    variable: name,
+                    label,
+                    required,
+                    choices,
+                    hint,
+                    questionGrouplabel: questionGroup.label,
+                    answer: answeredQuestionsMap[question._id.toString()]
+                }
+            })
 
-        for (const value of answerValueAsArray) {
-            answerValueLabelMap[value] = true;
+            results = results.concat(questions)
         }
-
-        for (const choice of choices) {
-            const { name, label } = choice
-            if (answerValueLabelMap[name]) answerValueLabelMap[name] = { name, label }
-        }
-        return (Object.values(answerValueLabelMap));
+        return results;
     }
 }
