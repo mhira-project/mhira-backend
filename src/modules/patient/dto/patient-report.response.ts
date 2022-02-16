@@ -14,28 +14,35 @@ export class QuestionnaireChoice {
 }
 
 @ObjectType()
-class AnswerChoiceLabel {
-    @Field(() => String)
-    label: string;
+class AnswerResult {
+    @Field(() => [String], { nullable: true })
+    multipleChoiceValue: string[];
 
-    @Field(() => String)
-    name: string
+    @Field(() => String, { nullable: true })
+    question: string;
+
+    @Field(() => Date, { nullable: true })
+    dateValue: Date;
+
+    @Field(() => Boolean, { nullable: true })
+    valid: boolean;
+
+    @Field(() => Date, { nullable: true })
+    createdAt: Date;
+
+    @Field(() => Date, { nullable: true })
+    updatedAt: Date;
+
+    @Field(() => String, { nullable: true })
+    textValue: string;
+
+    @Field(() => Date, { nullable: true })
+    combinedDate: Date;
 }
+
 
 @ObjectType()
 class AnsweredQuestions {
-    @Field(() => String, { nullable: true })
-    answerValue: string;
-
-    @Field(() => [AnswerChoiceLabel], { nullable: true })
-    answerChoiceLabel: AnswerChoiceLabel[];
-
-    @Field(() => String, { nullable: true })
-    createdAt: string;
-
-    @Field(() => String, { nullable: true })
-    updatedAt: string;
-
     @Field(() => String, { nullable: true })
     name: string;
 
@@ -50,6 +57,15 @@ class AnsweredQuestions {
 
     @Field(() => Boolean, { nullable: true })
     required: boolean;
+
+    @Field(() => AnswerResult, { nullable: true })
+    answer: AnswerResult;
+
+    @Field(() => String, { nullable: true })
+    questionGrouplabel: string;
+
+    @Field(() => [QuestionnaireChoice], { nullable: true })
+    choices: QuestionnaireChoice[];
 }
 
 @ObjectType()
@@ -66,6 +82,9 @@ export class AnsweredQuestionnaire {
     @Field(() => Date, { nullable: true })
     createdAt: Date;
 
+    @Field(() => Date, { nullable: true })
+    updatedAt: Date;
+
     @Field(() => String, { nullable: true })
     copyright: string;
 
@@ -78,10 +97,7 @@ export class AnsweredQuestionnaire {
     @Field(() => String, { nullable: true })
     questionnaireFullName: string;
 
-    @Field(() => [QuestionnaireChoice], { nullable: true })
-    choices: QuestionnaireChoice[];
-
     @Field(() => [AnsweredQuestions], { nullable: true })
-    answeredQuestions: AnsweredQuestions[];
+    questions: AnsweredQuestions[];
 }
 

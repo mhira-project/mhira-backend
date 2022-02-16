@@ -197,10 +197,13 @@ export class Patient extends BaseEntity {
 }
 
 @ObjectType()
-export class PatientReport extends Patient {
+export class PatientReport {
     @Field(() => [AnsweredQuestionnaire], { nullable: true })
     answeredQuestionnaires: AnsweredQuestionnaire[];
 
     @Field(() => [Assessment], { nullable: true })
     assessments: Assessment[];
+
+    @Field(() => Patient, { nullable: true })
+    patient: Patient;
 }

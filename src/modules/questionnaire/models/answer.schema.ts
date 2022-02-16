@@ -1,6 +1,7 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { AnsweredQuestions } from './questionnaire.schema';
 
 @ObjectType()
 @Schema({ timestamps: true })
@@ -44,5 +45,5 @@ export class Answer extends Document {
 export const AnswerSchema = SchemaFactory.createForClass(Answer);
 
 export interface IAnswerMap {
-    [key: string]: Answer
+    [key: string]: AnsweredQuestions;
 }

@@ -39,3 +39,14 @@ export interface IQuestionGroup {
     _id: Types.ObjectId;
     label: string;
 }
+
+export interface AnsweredQuestions {
+    multipleChoiceValue: string[];
+    question: string;
+    dateValue: Date;
+    valid: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    textValue: string;
+    combinedDate: Date | null;
+}
