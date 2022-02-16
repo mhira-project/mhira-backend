@@ -19,7 +19,7 @@ class AnswerResult {
     multipleChoiceValue: string[];
 
     @Field(() => String, { nullable: true })
-    question: string;
+    questionId: string;
 
     @Field(() => Date, { nullable: true })
     dateValue: Date;
@@ -38,13 +38,16 @@ class AnswerResult {
 
     @Field(() => Date, { nullable: true })
     combinedDate: Date;
+
+    @Field(() => Number, { nullable: true })
+    numberValue: number;
 }
 
 
 @ObjectType()
 class AnsweredQuestions {
     @Field(() => String, { nullable: true })
-    name: string;
+    variable: string;
 
     @Field(() => String, { nullable: true })
     label: string;
@@ -72,6 +75,9 @@ class AnsweredQuestions {
 export class AnsweredQuestionnaire {
     @Field(() => String, { nullable: true })
     assessmentId: string;
+
+    @Field(() => String, { nullable: true })
+    abbreviation: string;
 
     @Field(() => String, { nullable: true })
     _id: string;

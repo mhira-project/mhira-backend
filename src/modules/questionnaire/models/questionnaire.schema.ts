@@ -49,4 +49,6 @@ export interface AnsweredQuestions {
     updatedAt: Date;
     textValue: string;
     combinedDate: Date | null;
+    numberValue: number;
+    questionId: string;
 }

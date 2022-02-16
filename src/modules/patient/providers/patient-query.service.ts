@@ -97,10 +97,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         for (const assessment of questionnaireAssessment) {
 
             assessment.questionnaires.forEach(entry => {
-                if (questionnaireId && questionnaireId == entry._id.toString()) {
-                    answeredQuestionnaires.push({ ...entry, assessmentId: assessment._id.toString(), ...entry._doc })
-                    answers.push(assessment.answers)
-                } else if (!questionnaireId) {
+                if ((questionnaireId && questionnaireId == entry._id.toString()) || !questionnaireId) {
                     answeredQuestionnaires.push({ ...entry, assessmentId: assessment._id.toString(), ...entry._doc })
                     answers.push(assessment.answers)
                 }
@@ -110,7 +107,8 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
 
         answeredQuestionnaires.forEach((answeredQuestionnaire, _index) => {
 
-            answeredQuestionnaire.questionnaireFullName = answeredQuestionnaire?._doc?.questionnaire?.abbreviation;
+            answeredQuestionnaire.abbreviation = answeredQuestionnaire?._doc?.questionnaire?.abbreviation;
+            answeredQuestionnaire.questionnaireFullName = answeredQuestionnaire?._doc?.name;
             answeredQuestionnaire.language = answeredQuestionnaire._doc.questionnaire?.language;
 
             const answeredQuestionsMap = PatientQueryService.mapAnsweredQuestions(answers[_index]);
@@ -122,6 +120,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         return {
             patient,
             answeredQuestionnaires,
+            assessments: patient.assessments,
         } as PatientReport;
 
     }
@@ -131,6 +130,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         for (const answer of answers) {
             answer.combinedDate = null;
             map[answer.question.toString()] = { ...answer['_doc'] };
+            map[answer.question.toString()]['questionId'] = answer.question.toString();
             if (answer.dateValue && answer.textValue) {
                 const [hours, minutes] = answer.textValue.split(":")
                 map[answer.question.toString()]['combinedDate'] = new Date(answer.dateValue.setUTCHours(+hours, +minutes, 0, 0));
@@ -147,7 +147,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
                 const { type, name, label, required, choices, hint } = question;
                 return {
                     type,
-                    name,
+                    variable: name,
                     label,
                     required,
                     choices,
