@@ -11,6 +11,7 @@ import { QuestionnaireAssessmentService } from 'src/modules/questionnaire/servic
 import { QuestionnaireAssessment } from 'src/modules/questionnaire/models/questionnaire-assessment.schema';
 import { IAnswerMap } from 'src/modules/questionnaire/models/answer.schema';
 import { AnsweredQuestions, IQuestionGroup } from 'src/modules/questionnaire/models/questionnaire.schema';
+import { AssessmentResponse } from 'src/modules/assessment/models/assessment.model';
 @QueryService(Patient)
 export class PatientQueryService extends TypeOrmQueryService<Patient> {
     @Inject(QuestionnaireAssessmentService)
@@ -86,6 +87,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         }
         );
 
+
         const queries = [] as Promise<QuestionnaireAssessment>[];
         let answeredQuestionnaires = [];
         const answers = [];
@@ -117,10 +119,17 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
             answeredQuestionnaire.questions = questions;
         });
 
+        const assessmentResponse = [] as AssessmentResponse[];
+
+        for (const assessment of patient.assessments) {
+            assessmentResponse.push({ ...assessment, assessmentId: assessment.questionnaireAssessmentId } as AssessmentResponse)
+
+        }
+
         return {
             patient,
             answeredQuestionnaires,
-            assessments: patient.assessments,
+            assessments: assessmentResponse,
         } as PatientReport;
 
     }
