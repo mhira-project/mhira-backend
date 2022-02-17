@@ -7,17 +7,17 @@ import { configService } from './config/config.service';
 import { GqlUnauthorizedHandler } from './shared/exception/gql-unauthorized.handler';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule);
 
-    const port = configService.getPort();
-    const logger = new Logger('bootstrap');
+  const port = configService.getPort();
+  const logger = new Logger('bootstrap');
 
-    app.enableCors(corsConfig);
-    app.useGlobalFilters(new GqlBadRequestHandler());
-    app.useGlobalFilters(new GqlUnauthorizedHandler());
-    app.useGlobalPipes(new ValidationPipe());
+  app.enableCors(corsConfig);
+  app.useGlobalFilters(new GqlBadRequestHandler());
+  app.useGlobalFilters(new GqlUnauthorizedHandler());
+  app.useGlobalPipes(new ValidationPipe());
 
-    await app.listen(port);
-    logger.log(`Application started on port ${port}`);
+  await app.listen(port);
+  logger.log(`Application started on port ${port}`);
 }
 bootstrap();
