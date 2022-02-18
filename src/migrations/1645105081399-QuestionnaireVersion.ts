@@ -17,14 +17,40 @@ export class QuestionnaireVersion1645105081399 implements MigrationInterface {
 
             const db = client.db();
 
-            await db.collection('questionnaire_versions').updateMany(
-                { language: { $exists: false } }, // Check if field exists
-                { $set: { language: 'en' } }, // Update field with a value
-            );
-            await db.collection('questionnaire_versions').updateMany(
-                { abbreviation: { $exists: false } }, // Check if field exists
-                { $set: { abbreviation: 'PHQ-9' } }, // Update field with a value
-            );
+            const questionnaires = await db
+                .collection('questionnaires')
+                .find()
+                .toArray();
+
+            for (let i = 0; i < questionnaires.length; i++) {
+                await db.collection('questionnaire_versions').updateMany(
+                    {
+                        questionnaire: {
+                            $in: [questionnaires[i]._id],
+                        },
+                        language: { $exists: false }, // Check if field exists
+                    },
+                    {
+                        $set: {
+                            language: questionnaires[i].language, // Update field with a value
+                        },
+                    },
+                );
+
+                await db.collection('questionnaire_versions').updateMany(
+                    {
+                        questionnaire: {
+                            $in: [questionnaires[i]._id],
+                        },
+                        abbreviation: { $exists: false }, // Check if field exists
+                    },
+                    {
+                        $set: {
+                            abbreviation: questionnaires[i].abbreviation, // Update field with a value
+                        },
+                    },
+                );
+            }
         } catch (error) {
             console.log(error);
         } finally {
