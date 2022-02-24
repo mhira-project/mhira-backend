@@ -21,10 +21,10 @@ export class ReportRoleResolver {
 
     @Mutation(() => ReportRole)
     async addRolesToReport(
-        @Args('input', { type: () => CreateOneReportRoleInput }) input: CreateOneReportRoleInput,
+        @Args('input', { type: () => ReportRoleInput }) input: ReportRoleInput,
     ): Promise<PromiseSettledResult<ReportRole>[]> {
         try {
-            const { reportId, roleIds } = input['reportRole']
+            const { reportId, roleIds } = input;
             const existingReport = await this.reportService.findById(reportId);
             if (!existingReport) throw new BadRequestException('Invalid report');
             await this.reportRoleService.delete(reportId);
