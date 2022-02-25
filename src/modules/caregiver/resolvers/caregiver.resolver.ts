@@ -49,7 +49,7 @@ export class CaregiverResolver {
             const caregiverInput = input['caregiver'] as CaregiverInput;
             return await this.caregiverService.insert(caregiverInput)
         } catch (error) {
-            error.message = error.message === 'Conflict' ? 'This caregiver number has already been registered! Please try a unique one.' : error.message;
+            error.message = error.message === 'Conflict' ? 'This caregiver number has already been registered!' : error.message;
             return error
         }
 

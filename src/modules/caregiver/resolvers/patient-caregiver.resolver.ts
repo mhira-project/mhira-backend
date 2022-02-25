@@ -29,7 +29,7 @@ export class PatientCaregiverResolver {
             const caregiverInput = input['patientCaregiver'] as PatientCaregiverInput;
             return await this.patinetCaregiverService.insert(caregiverInput)
         } catch (error) {
-            error.message = error.message === 'Conflict' ? 'This caregiver number has already been assigned!' : error.message;
+            error.message = error.message === 'Conflict' ? 'Caregiver with this number already exists. Use the previous menu to add an existing caregiver or update number to create new one.' : error.message;
             return error;
         }
     }
