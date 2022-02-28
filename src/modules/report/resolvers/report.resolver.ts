@@ -43,8 +43,17 @@ export class ReportResolver {
 
     @Mutation(() => Report)
     async createOneReport(@Args('input', { type: () => CreateOneReportInput }) input: CreateOneReportInput): Promise<Report> {
-        const caregiverInput = input['report'] as ReportInput;
-        return this.reportService.insert(caregiverInput)
+        const reportInput = input['report'] as ReportInput;
+        return this.reportService.insert(reportInput)
+    }
+
+    @Query(() => [Report])
+    async getReportsByResource(@Args('resource', { type: () => String }) resource: string): Promise<Report[]> {
+        try {
+            return await this.reportService.getReportsByResource(resource)
+        } catch (error) {
+            return error;
+        }
     }
 }
 

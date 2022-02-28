@@ -17,4 +17,8 @@ export class ReportService extends TypeOrmQueryService<Report> {
         newReport = this.repo.merge(newReport, report);
         return this.repo.save(newReport);
     }
+
+    getReportsByResource(resource: string) {
+        return this.repo.find({ where: { resources: resource, status: true } })
+    }
 }

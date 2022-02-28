@@ -42,7 +42,7 @@ export class ReportRole extends BaseEntity {
     reportId: number;
 
     @ManyToOne(() => Role, role => role.reportRoles)
-    Role: Role;
+    role: Role;
 
     @ManyToOne(() => Report, report => report.reportRoles)
     report: Report;
