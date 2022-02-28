@@ -47,7 +47,7 @@ export class ReportResolver {
         return this.reportService.insert(reportInput)
     }
 
-    @Query(() => [Report])
+    @Query(() => Report)
     async getReportsByResource(@Args('resource', { type: () => String }) resource: string): Promise<Report[]> {
         try {
             return await this.reportService.getReportsByResource(resource)
