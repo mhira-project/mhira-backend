@@ -28,6 +28,12 @@ import {
 } from './models/questionnaire-assessment.schema';
 import { NestjsQueryMongooseModule } from '@nestjs-query/query-mongoose';
 import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
+import {
+    QuestionnaireScripts,
+    QuestionnaireScriptsSchema,
+} from './models/questionnaire-scripts.schema';
+import { QuestionnaireScriptsResolver } from './resolvers/questionnaire-scripts.resolver';
+import { QuestionnaireScriptsService } from './services/questionnaire-scripts.service';
 
 @Module({
     imports: [
@@ -39,22 +45,53 @@ import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
                         schema: QuestionnaireVersionSchema,
                         document: QuestionnaireVersion,
                     },
-                    { name: Questionnaire.name, schema: QuestionnaireSchema, document: Questionnaire },
-                    { name: Question.name, schema: QuestionSchema, document: Question },
-                    { name: QuestionGroup.name, schema: QuestionGroupSchema, document: QuestionGroup },
-                    { name: Answer.name, schema: AnswerSchema, document: Answer },
-                    { name: Choice.name, schema: ChoiceSchema, document: Choice },
-                    { name: QuestionnaireAssessment.name, schema: AssessmentSchema, document: QuestionnaireAssessment },
+                    {
+                        name: QuestionnaireScripts.name,
+                        schema: QuestionnaireScriptsSchema,
+                        document: QuestionnaireScripts,
+                    },
+                    {
+                        name: Questionnaire.name,
+                        schema: QuestionnaireSchema,
+                        document: Questionnaire,
+                    },
+                    {
+                        name: Question.name,
+                        schema: QuestionSchema,
+                        document: Question,
+                    },
+                    {
+                        name: QuestionGroup.name,
+                        schema: QuestionGroupSchema,
+                        document: QuestionGroup,
+                    },
+                    {
+                        name: Answer.name,
+                        schema: AnswerSchema,
+                        document: Answer,
+                    },
+                    {
+                        name: Choice.name,
+                        schema: ChoiceSchema,
+                        document: Choice,
+                    },
+                    {
+                        name: QuestionnaireAssessment.name,
+                        schema: AssessmentSchema,
+                        document: QuestionnaireAssessment,
+                    },
                 ]),
             ],
             resolvers: [],
-        })
+        }),
     ],
     providers: [
         QuestionnaireService,
+        QuestionnaireScriptsResolver,
+        QuestionnaireScriptsService,
         QuestionnaireResolver,
         QuestionnaireAssessmentService,
         AssessmentResolver,
     ],
 })
-export class QuestionnaireModule { }
+export class QuestionnaireModule {}

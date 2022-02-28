@@ -1,7 +1,6 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { Exclude } from 'class-transformer';
-import { GraphQLUpload } from 'graphql-tools';
-import { FileUpload } from 'graphql-upload';
+import { GraphQLUpload, FileUpload } from 'graphql-upload';
 import { QuestionnaireStatus } from '../models/questionnaire-version.schema';
 
 @InputType()
