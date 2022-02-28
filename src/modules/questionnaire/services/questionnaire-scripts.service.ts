@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { createReadStream, readFileSync } from 'fs';
 import { isValidObjectId, Model, Types } from 'mongoose';
+import { QuestionnaireScriptsInput } from '../dtos/questionnaire-scripts.input';
 import { QuestionnaireScripts } from '../models/questionnaire-scripts.schema';
 
 @Injectable()
@@ -10,8 +11,17 @@ export class QuestionnaireScriptsService {
         @InjectModel(QuestionnaireScripts.name)
         private questionnaireScriptsModel: Model<QuestionnaireScripts>,
     ) {}
-    createNewScript(input: any) {
-        this.readFileUpload(input.scriptText);
+    async createNewScript(input: QuestionnaireScriptsInput) {
+        const { scriptText, ...rest } = input;
+
+        const scriptTexts = await this.readFileUpload(scriptText);
+
+        const dif = await this.questionnaireScriptsModel.create({
+            ...rest,
+            scriptText: scriptTexts,
+        });
+
+        return dif;
     }
 
     private async readFileUpload(fileData): Promise<any> {
@@ -24,22 +34,8 @@ export class QuestionnaireScriptsService {
             stream.on('data', (chunk: Buffer) => chunks.push(chunk));
 
             stream.on('end', () =>
-                console.log(Buffer.concat(chunks).toString('utf-8')),
+                resolve(Buffer.concat(chunks).toString('utf-8')),
             );
         });
     }
-
-    // return new Promise(resolve => {
-    //     const stream = file.createReadStream();
-    //     const chunks = [];
-
-    //     stream.on('data', (chunk: Buffer) => chunks.push(chunk));
-    //     console.log(chunks);
-    //     stream.on('end', () => {
-    //         const fileData = file.parse(Buffer.concat(chunks), {
-    //             type: 'buffer',
-    //         });
-    //         resolve(fileData);
-    //     });
-    // });
 }
