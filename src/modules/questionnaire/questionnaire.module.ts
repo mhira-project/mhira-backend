@@ -28,27 +28,21 @@ import {
 } from './models/questionnaire-assessment.schema';
 import { NestjsQueryMongooseModule } from '@nestjs-query/query-mongoose';
 import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
-import {
-    QuestionnaireScripts,
-    QuestionnaireScriptsSchema,
-} from './models/questionnaire-scripts.schema';
-import { QuestionnaireScriptsResolver } from './resolvers/questionnaire-scripts.resolver';
-import { QuestionnaireScriptsService } from './services/questionnaire-scripts.service';
+import { QuestionnaireScript } from './models/questionnaire-script.model';
+import { QuestionnaireScriptsResolver } from './resolvers/questionnaire-script.resolver';
+import { QuestionnaireScriptService } from './services/questionnaire-script.service';
+import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 
 @Module({
     imports: [
         NestjsQueryGraphQLModule.forFeature({
             imports: [
+                NestjsQueryTypeOrmModule.forFeature([QuestionnaireScript]),
                 NestjsQueryMongooseModule.forFeature([
                     {
                         name: QuestionnaireVersion.name,
                         schema: QuestionnaireVersionSchema,
                         document: QuestionnaireVersion,
-                    },
-                    {
-                        name: QuestionnaireScripts.name,
-                        schema: QuestionnaireScriptsSchema,
-                        document: QuestionnaireScripts,
                     },
                     {
                         name: Questionnaire.name,
@@ -88,7 +82,7 @@ import { QuestionnaireScriptsService } from './services/questionnaire-scripts.se
     providers: [
         QuestionnaireService,
         QuestionnaireScriptsResolver,
-        QuestionnaireScriptsService,
+        QuestionnaireScriptService,
         QuestionnaireResolver,
         QuestionnaireAssessmentService,
         AssessmentResolver,

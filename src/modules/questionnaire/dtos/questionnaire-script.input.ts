@@ -3,7 +3,7 @@ import { Exclude } from 'class-transformer';
 import { GraphQLUpload, FileUpload } from 'graphql-upload';
 
 @InputType()
-export class QuestionnaireScriptsInput {
+export class QuestionnaireScriptInput {
     @Field(() => String)
     name: string;
 
