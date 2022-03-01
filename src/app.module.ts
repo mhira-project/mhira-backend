@@ -28,8 +28,6 @@ import { ReportModule } from './modules/report/report.module';
             introspection: configService.isGraphqlPlaygroundEnabled(),
             playground: configService.isGraphqlPlaygroundEnabled(),
             autoSchemaFile: join(process.cwd(), 'src/schema/schema.gql'),
-            introspection: true,
-            playground: true,
             context: ({ req }) => ({ req }),
             debug: false, // disables stack trace
             uploads: false,
