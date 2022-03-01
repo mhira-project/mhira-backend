@@ -1,0 +1,48 @@
+import { MigrationInterface, QueryRunner } from "typeorm";
+
+export class Reports1644501851916 implements MigrationInterface {
+
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`
+       create table report
+    (
+        id               serial
+        constraint "PK_99e4d0bea58cba73c57f935a546"
+            primary key,
+        anonymus         boolean,
+        name             varchar                 not null,
+        description      varchar                 not null,
+        status           boolean,
+        "repositoryLink" varchar,
+        "appName"        varchar,
+        url              varchar,
+        "deletedAt"      timestamp,
+        "createdAt"      timestamp default now() not null,
+        "updatedAt"      timestamp default now() not null,
+        resources        varchar                 not null
+    );
+        `)
+        await queryRunner.query(`
+    create table report_role
+    (
+        id          serial
+        constraint "PK_80392fd76ad3d4b016d276afbf9"
+            primary key,
+    "createdAt" timestamp default now() not null,
+    "updatedAt" timestamp default now() not null,
+    "roleId"    integer                 not null
+        constraint "FK_e9df64b680b9a489f3b5b924992"
+            references role,
+    "reportId"  integer                 not null
+        constraint "FK_dfe51bc94484e59713aa9f35bba"
+            references report
+    );
+
+        `)
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        console.log("success")
+    }
+
+}

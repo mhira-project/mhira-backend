@@ -4,7 +4,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Questionnaire } from './questionnaire.schema';
-import { FilterableField, FilterableRelation } from '@nestjs-query/query-graphql';
+import {
+    FilterableField,
+    FilterableRelation,
+} from '@nestjs-query/query-graphql';
 
 export enum QuestionnaireStatus {
     DRAFT = 'DRAFT',
@@ -14,13 +17,16 @@ export enum QuestionnaireStatus {
 }
 
 @ObjectType()
-@FilterableRelation('questionnaire', () => Questionnaire, { nullable: true, disableRemove: true })
+@FilterableRelation('questionnaire', () => Questionnaire, {
+    nullable: true,
+    disableRemove: true,
+})
 @Schema({ collection: 'questionnaire_versions', timestamps: {} })
 export class QuestionnaireVersion extends Document {
     @Field(() => String)
     _id: Types.ObjectId;
 
-    @Field(() => Questionnaire)
+    @Field(() => Questionnaire, { nullable: true })
     @Prop({ type: Types.ObjectId, ref: Questionnaire.name })
     questionnaire: Types.ObjectId | Questionnaire;
 
@@ -35,6 +41,12 @@ export class QuestionnaireVersion extends Document {
         default: QuestionnaireStatus.DRAFT,
     })
     status: QuestionnaireStatus;
+
+    @Field(() => String, { nullable: true })
+    @Prop({
+        type: 'string',
+    })
+    xForm: string;
 
     // to be filterable this would potentially need allowedComparisons option
     @Field(() => [String], { nullable: true })
@@ -64,6 +76,14 @@ export class QuestionnaireVersion extends Document {
     @Field(() => [QuestionGroup])
     @Prop({ type: [QuestionGroupSchema] })
     questionGroups: QuestionGroup[];
+
+    @Field(() => String)
+    @Prop()
+    language: string;
+
+    @Field(() => String)
+    @Prop()
+    abbreviation: string;
 
     @Field(() => Date)
     @Prop()

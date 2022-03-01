@@ -4,7 +4,8 @@ import {
     FilterableUnPagedRelation,
 } from '@nestjs-query/query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { Assessment } from 'src/modules/assessment/models/assessment.model';
+import { PatientCaregiver } from 'src/modules/caregiver/models/patient-caregiver.model';
+import { Assessment, AssessmentResponse } from 'src/modules/assessment/models/assessment.model';
 import { Department } from 'src/modules/department/models/department.model';
 import { User } from 'src/modules/user/models/user.model';
 import {
@@ -20,6 +21,7 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
+import { AnsweredQuestionnaire } from '../dto/patient-report.response';
 import { EmergencyContact } from './emergency-contact.model';
 import { GenderEnum } from './gender.enum';
 import { Informant } from './informant.model';
@@ -34,6 +36,9 @@ import { PatientStatus } from './patient-status.model';
 @FilterableUnPagedRelation('informants', () => Informant, { nullable: true })
 @FilterableUnPagedRelation('emergencyContacts', () => EmergencyContact, { nullable: true })
 @FilterableUnPagedRelation('departments', () => Department, { nullable: true })
+@FilterableUnPagedRelation('patientCaregivers', () => PatientCaregiver, { nullable: true })
+@FilterableRelation('assessments', () => Assessment, { nullable: true })
+
 @Entity()
 export class Patient extends BaseEntity {
     static searchable = [
@@ -185,5 +190,20 @@ export class Patient extends BaseEntity {
         () => Assessment,
         assessment => assessment.patient,
     )
-    assessments: Assessment;
+    assessments: Assessment[];
+
+    @OneToMany(() => PatientCaregiver, patientCaregiver => patientCaregiver.patient)
+    patientCaregivers: PatientCaregiver[];
+}
+
+@ObjectType()
+export class PatientReport {
+    @Field(() => [AnsweredQuestionnaire], { nullable: true })
+    answeredQuestionnaires: AnsweredQuestionnaire[];
+
+    @Field(() => [AssessmentResponse], { nullable: true })
+    assessments: AssessmentResponse[];
+
+    @Field(() => Patient, { nullable: true })
+    patient: Patient;
 }

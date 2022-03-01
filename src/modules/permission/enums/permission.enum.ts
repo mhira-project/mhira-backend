@@ -31,6 +31,11 @@ export const systemPermissions = [
     { key: 'VIEW_ROLES_PERMISSIONS', name: 'view roles_permissions', group: 'Roles and Permissions' },
     { key: 'MANAGE_ROLES_PERMISSIONS', name: 'manage roles_permissions', group: 'Roles and Permissions' },
 
+    { key: 'MANAGE_CAREGIVERS', name: 'manage caregivers', group: 'Caregiver Management' },
+    { key: 'VIEW_CAREGIVERS', name: 'view caregivers', group: 'Caregiver Management' },
+    { key: 'VIEW_ALL_CAREGIVERS', name: 'view all caregivers', group: 'Caregiver Management' },
+    { key: 'DELETE_CAREGIVERS', name: 'delete caregivers', group: 'Caregiver Management' },
+
 ] as const;
 
 /**
