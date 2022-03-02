@@ -30,6 +30,7 @@ export class Report extends BaseEntity {
         'url',
         'createdAt',
         'updatedAt',
+        'reportRoles'
     ];
 
     @FilterableField(() => Int)
