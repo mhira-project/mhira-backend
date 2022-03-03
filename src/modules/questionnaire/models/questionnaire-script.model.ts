@@ -8,8 +8,12 @@ import {
     UpdateDateColumn,
     DeleteDateColumn,
     ManyToMany,
+    JoinColumn,
+    JoinTable,
 } from 'typeorm';
 import { FilterableField, KeySet } from '@nestjs-query/query-graphql';
+import { Report } from 'src/modules/report/models/report.model';
+// import { QuestionnaireScriptReport } from './questionnaire-script-report.model';
 
 @ObjectType()
 @Entity()
@@ -30,12 +34,12 @@ export class QuestionnaireScript extends BaseEntity {
     @Column({ nullable: true })
     version: string;
 
-    @Field()
-    @Column()
+    @Field({ nullable: true })
+    @Column({ nullable: true })
     creator: string;
 
-    @Field()
-    @Column()
+    @Field({ nullable: true })
+    @Column({ nullable: true })
     repositoryLink: string;
 
     @Field(() => GraphQLISODateTime)
@@ -49,4 +53,12 @@ export class QuestionnaireScript extends BaseEntity {
     @Field(() => GraphQLISODateTime, { nullable: true })
     @DeleteDateColumn()
     deletedAt: Date;
+
+    @Field(() => [Report])
+    @ManyToMany(
+        () => Report,
+        report => report.id,
+    )
+    @JoinTable()
+    reports: Report[];
 }

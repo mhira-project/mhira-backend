@@ -1,7 +1,7 @@
-import { ArgsType, Field } from '@nestjs/graphql';
+import { ArgsType, Field, InputType, Int } from '@nestjs/graphql';
 
 @ArgsType()
 export class QuestionnaireScriptsArgs {
-    @Field(() => String)
-    id: string;
+    @Field(() => Int)
+    questionnaireId: number;
 }

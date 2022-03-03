@@ -1,19 +1,23 @@
 import {
-    FilterableField, FilterableUnPagedRelation,
+    FilterableField,
+    FilterableUnPagedRelation,
 } from '@nestjs-query/query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
+// import { QuestionnaireScriptReport } from 'src/modules/questionnaire/models/questionnaire-script-report.model';
+import { QuestionnaireScript } from 'src/modules/questionnaire/models/questionnaire-script.model';
 import {
     BaseEntity,
     Column,
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
+    JoinTable,
+    ManyToMany,
     OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
 import { ReportRole } from './report-role.model';
-
 
 @ObjectType()
 @FilterableUnPagedRelation('reportRoles', () => ReportRole, { nullable: true })
@@ -80,6 +84,9 @@ export class Report extends BaseEntity {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @OneToMany(() => ReportRole, reportRole => reportRole.report)
+    @OneToMany(
+        () => ReportRole,
+        reportRole => reportRole.report,
+    )
     reportRoles: ReportRole[];
 }

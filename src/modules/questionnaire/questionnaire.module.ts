@@ -32,12 +32,16 @@ import { QuestionnaireScript } from './models/questionnaire-script.model';
 import { QuestionnaireScriptsResolver } from './resolvers/questionnaire-script.resolver';
 import { QuestionnaireScriptService } from './services/questionnaire-script.service';
 import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
+// import { QuestionnaireScriptReport } from './models/questionnaire-script-report.model';
 
 @Module({
     imports: [
         NestjsQueryGraphQLModule.forFeature({
             imports: [
-                NestjsQueryTypeOrmModule.forFeature([QuestionnaireScript]),
+                NestjsQueryTypeOrmModule.forFeature([
+                    QuestionnaireScript,
+                    // QuestionnaireScriptReport,
+                ]),
                 NestjsQueryMongooseModule.forFeature([
                     {
                         name: QuestionnaireVersion.name,

@@ -1,9 +1,9 @@
-import { Field, InputType } from '@nestjs/graphql';
+import { Field, InputType, Int, PartialType } from '@nestjs/graphql';
 import { Exclude } from 'class-transformer';
 import { GraphQLUpload, FileUpload } from 'graphql-upload';
 
 @InputType()
-export class QuestionnaireScriptInput {
+export class CreateQuestionnaireScriptInput {
     @Field(() => String)
     name: string;
 
@@ -11,9 +11,20 @@ export class QuestionnaireScriptInput {
     @Exclude()
     scriptText: Promise<FileUpload>;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     creator: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     repositoryLink: string;
+
+    @Field(() => [Int])
+    reportIds: number[];
+}
+
+@InputType()
+export class UpdateQuestionnaireScriptInput extends PartialType(
+    CreateQuestionnaireScriptInput,
+) {
+    @Field(() => Int)
+    id: number;
 }
