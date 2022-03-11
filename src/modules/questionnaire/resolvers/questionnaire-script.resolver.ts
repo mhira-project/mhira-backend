@@ -1,4 +1,7 @@
-import { CreateOneInputType } from '@nestjs-query/query-graphql';
+import {
+    ConnectionType,
+    CreateOneInputType,
+} from '@nestjs-query/query-graphql';
 import {
     Args,
     Mutation,
@@ -10,18 +13,18 @@ import {
     Int,
     PartialType,
 } from '@nestjs/graphql';
+import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
+import { User } from 'src/modules/user/models/user.model';
 import {
     CreateQuestionnaireScriptInput,
     UpdateQuestionnaireScriptInput,
 } from '../dtos/questionnaire-script.input';
-import { QuestionnaireScriptsArgs } from '../dtos/questionnaire-scripts.args';
+import {
+    QuestionnaireScriptConnection,
+    QuestionnaireScriptQuery,
+} from '../dtos/questionnaire-scripts.args';
 import { QuestionnaireScript } from '../models/questionnaire-script.model';
 import { QuestionnaireScriptService } from '../services/questionnaire-script.service';
-
-// @InputType()
-// export class UpdateQuestionnaireScriptInput extends PartialType(
-//     QuestionnaireScript,
-// ) {}
 
 @Resolver(() => QuestionnaireScript)
 export class QuestionnaireScriptsResolver {
@@ -29,11 +32,16 @@ export class QuestionnaireScriptsResolver {
         private questionnaireScriptService: QuestionnaireScriptService,
     ) {}
 
-    @Query(() => [QuestionnaireScript])
-    getQuestionnaireScripts(
-        @Args() questionnaireId: QuestionnaireScriptsArgs,
-    ): Promise<QuestionnaireScript[]> {
-        return this.questionnaireScriptService.findQuestionnaireScripts(1);
+    @Query(() => QuestionnaireScriptConnection)
+    scripts(
+        @Args({ type: () => QuestionnaireScriptQuery })
+        query: QuestionnaireScriptQuery,
+        @CurrentUser() currentUser: User,
+    ): Promise<ConnectionType<QuestionnaireScript>> {
+        return this.questionnaireScriptService.getQuestionnaireScripts(
+            query,
+            currentUser,
+        );
     }
 
     @Mutation(() => QuestionnaireScript)

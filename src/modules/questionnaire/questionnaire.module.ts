@@ -38,10 +38,7 @@ import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
     imports: [
         NestjsQueryGraphQLModule.forFeature({
             imports: [
-                NestjsQueryTypeOrmModule.forFeature([
-                    QuestionnaireScript,
-                    // QuestionnaireScriptReport,
-                ]),
+                NestjsQueryTypeOrmModule.forFeature([QuestionnaireScript]),
                 NestjsQueryMongooseModule.forFeature([
                     {
                         name: QuestionnaireVersion.name,
@@ -80,7 +77,12 @@ import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
                     },
                 ]),
             ],
-            resolvers: [],
+            resolvers: [
+                {
+                    DTOClass: QuestionnaireScript,
+                    EntityClass: QuestionnaireScript,
+                },
+            ],
         }),
     ],
     providers: [

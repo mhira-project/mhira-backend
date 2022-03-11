@@ -11,12 +11,19 @@ import {
     JoinColumn,
     JoinTable,
 } from 'typeorm';
-import { FilterableField, KeySet } from '@nestjs-query/query-graphql';
+import {
+    FilterableField,
+    FilterableRelation,
+    KeySet,
+    Relation,
+    UnPagedRelation,
+} from '@nestjs-query/query-graphql';
 import { Report } from 'src/modules/report/models/report.model';
-// import { QuestionnaireScriptReport } from './questionnaire-script-report.model';
+import { Types } from 'mongoose';
 
 @ObjectType()
 @Entity()
+@UnPagedRelation('reports', () => Report, { nullable: false })
 export class QuestionnaireScript extends BaseEntity {
     @FilterableField(() => Int)
     @PrimaryGeneratedColumn()
@@ -42,6 +49,10 @@ export class QuestionnaireScript extends BaseEntity {
     @Column({ nullable: true })
     repositoryLink: string;
 
+    @Field(() => String)
+    @Column()
+    questionnaireId: string;
+
     @Field(() => GraphQLISODateTime)
     @CreateDateColumn()
     createdAt: Date;
@@ -54,7 +65,6 @@ export class QuestionnaireScript extends BaseEntity {
     @DeleteDateColumn()
     deletedAt: Date;
 
-    @Field(() => [Report])
     @ManyToMany(
         () => Report,
         report => report.id,

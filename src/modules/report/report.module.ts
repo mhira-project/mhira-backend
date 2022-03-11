@@ -5,22 +5,18 @@ import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
 import { SortDirection } from '@nestjs-query/core';
 import { Report } from './models/report.model';
-import { ReportRole } from './models/report-role.model';
 import { ReportService } from './services/report.service';
 import { ReportResolver } from './resolvers/report.resolver';
 import { ReportInput } from './dtos/report-input';
 import { ReportRoleInput } from './dtos/report-role-input';
-import { ReportRoleResolver } from './resolvers/report.role.resolver';
-import { ReportRoleService } from './services/report.role.service';
+// import { ReportRoleService } from './services/report.role.service';
+import { Role } from '../permission/models/role.model';
 
 const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
     imports: [
         NestjsQueryGraphQLModule.forFeature({
-            imports: [NestjsQueryTypeOrmModule.forFeature([
-                Report,
-                ReportRole,
-            ])],
+            imports: [NestjsQueryTypeOrmModule.forFeature([Report, Role])],
             resolvers: [
                 {
                     DTOClass: Report,
@@ -34,32 +30,10 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     update: { disabled: false },
                     delete: { disabled: true },
                 },
-                {
-                    DTOClass: ReportRole,
-                    EntityClass: ReportRole,
-                    CreateDTOClass: ReportRoleInput,
-                    guards: guards,
-                    read: {
-                        defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
-                        disabled: false,
-                    },
-                    create: { disabled: true },
-                    update: { disabled: false },
-                    delete: { disabled: false },
-                },
             ],
         }),
     ],
-    providers: [
-        ReportService,
-        ReportResolver,
-        ReportRoleResolver,
-        ReportRoleService,
-    ],
-    exports: [
-        ReportService,
-        ReportRoleService,
-    ],
+    providers: [ReportService, ReportResolver],
+    exports: [ReportService],
 })
-
-export class ReportModule { }
+export class ReportModule {}

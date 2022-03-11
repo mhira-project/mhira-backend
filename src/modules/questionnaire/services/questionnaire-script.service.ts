@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import {
@@ -8,17 +8,41 @@ import {
 // import { QuestionnaireScriptReport } from '../models/questionnaire-script-report.model';
 import { QuestionnaireScript } from '../models/questionnaire-script.model';
 import { Report } from 'src/modules/report/models/report.model';
-// import { UpdateQuestionnaireScriptInput } from '../resolvers/questionnaire-script.resolver';
+import { ConnectionType } from '@nestjs-query/query-graphql';
+import {
+    InjectQueryService,
+    QueryService,
+    mergeFilter,
+} from '@nestjs-query/core';
+
+import { QuestionnaireScriptConnection } from '../dtos/questionnaire-scripts.args';
+import { Questionnaire } from '../models/questionnaire.schema';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
 
 @Injectable()
 export class QuestionnaireScriptService {
     constructor(
         @InjectRepository(QuestionnaireScript)
-        private questionnaireScriptRepository: Repository<QuestionnaireScript>, // @InjectRepository(QuestionnaireScriptReport) // private questionnaireScriptReportRepository: Repository< //     QuestionnaireScriptReport // >,
+        private questionnaireScriptRepository: Repository<QuestionnaireScript>,
+        @InjectQueryService(QuestionnaireScript)
+        private readonly questionnaireScriptQueryService: QueryService<
+            QuestionnaireScript
+        >,
+        @InjectModel(QuestionnaireVersion.name)
+        private questionnaireVersionModel: Model<QuestionnaireVersion>,
     ) {}
     async createNewScript(input: CreateQuestionnaireScriptInput) {
-        const { scriptText, reportIds, ...rest } = input;
+        const { scriptText, reportIds, questionnaireId, ...rest } = input;
         const scriptTexts = await this.readFileUpload(scriptText);
+
+        const questionnaireVersion = await this.questionnaireVersionModel
+            .findById(questionnaireId)
+            .exec();
+
+        if (!questionnaireVersion)
+            throw new NotFoundException('Questionnaire not found!');
 
         const reports = await Report.find({
             where: { id: In(reportIds) },
@@ -32,23 +56,33 @@ export class QuestionnaireScriptService {
         );
 
         newQuestionnaireScript.reports = reports;
+        newQuestionnaireScript.questionnaireId = questionnaireId;
 
         await newQuestionnaireScript.save();
 
         return newQuestionnaireScript;
     }
 
-    async findQuestionnaireScripts(
-        questionnaireId: number,
-    ): Promise<QuestionnaireScript[]> {
-        // const questionnaireScripts = await this.questionnaireScriptRepository.find();
-        const questionnaireScripts = await this.questionnaireScriptRepository.find(
-            {
-                relations: ['reports'],
+    async getQuestionnaireScripts(
+        query,
+        currentUser,
+    ): Promise<ConnectionType<QuestionnaireScript>> {
+        const combinedFilter = mergeFilter(query.filter, {
+            questionnaireId: {
+                eq: query.questionnaireId,
             },
+        });
+
+        // Apply combined authorized filter
+        query.filter = combinedFilter;
+
+        const result = await QuestionnaireScriptConnection.createFromPromise(
+            q => this.questionnaireScriptQueryService.query(q),
+            query,
+            q => this.questionnaireScriptQueryService.count(q),
         );
 
-        return questionnaireScripts;
+        return result;
     }
 
     async updateQuestionnaireScripts(

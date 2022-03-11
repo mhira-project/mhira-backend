@@ -1,4 +1,4 @@
-import { Field, InputType } from "@nestjs/graphql";
+import { Field, InputType, Int } from '@nestjs/graphql';
 
 @InputType()
 export class ReportInput {
@@ -25,4 +25,7 @@ export class ReportInput {
 
     @Field(() => String)
     resources: string;
+
+    @Field(() => [Int])
+    roles: number[];
 }

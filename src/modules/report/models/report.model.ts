@@ -1,10 +1,10 @@
 import {
     FilterableField,
-    FilterableUnPagedRelation,
+    QueryOptions,
+    UnPagedRelation,
 } from '@nestjs-query/query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-// import { QuestionnaireScriptReport } from 'src/modules/questionnaire/models/questionnaire-script-report.model';
-import { QuestionnaireScript } from 'src/modules/questionnaire/models/questionnaire-script.model';
+import { Role } from 'src/modules/permission/models/role.model';
 import {
     BaseEntity,
     Column,
@@ -13,15 +13,17 @@ import {
     Entity,
     JoinTable,
     ManyToMany,
-    OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
-import { ReportRole } from './report-role.model';
+import { SortDirection } from '@nestjs-query/core';
 
 @ObjectType()
-@FilterableUnPagedRelation('reportRoles', () => ReportRole, { nullable: true })
+@UnPagedRelation('roles', () => Role)
 @Entity()
+@QueryOptions({
+    defaultSort: [{ field: 'createdAt', direction: SortDirection.DESC }],
+})
 export class Report extends BaseEntity {
     static searchable = [
         'id',
@@ -84,9 +86,10 @@ export class Report extends BaseEntity {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @OneToMany(
-        () => ReportRole,
-        reportRole => reportRole.report,
+    @ManyToMany(
+        () => Role,
+        role => role.reports,
     )
-    reportRoles: ReportRole[];
+    @JoinTable({ name: 'report_roles' })
+    roles: Role[];
 }
