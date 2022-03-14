@@ -1,21 +1,20 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { JwtService, JwtSignOptions } from "@nestjs/jwt";
-import { AuthenticationError } from "apollo-server-express";
+import { Injectable, Logger } from '@nestjs/common';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
+import { AuthenticationError } from 'apollo-server-express';
 import * as moment from 'moment';
-import { authConfig } from "src/config/auth.config";
-import { User } from "src/modules/user/models/user.model";
-import { CacheService } from "src/shared";
-import { Str } from "src/shared/helpers/string.helper";
-import { JwtPayload } from "../jwt-payload.interface";
-import { AccessToken } from "../models/access-token.model"
+import { authConfig } from 'src/config/auth.config';
+import { User } from 'src/modules/user/models/user.model';
+import { CacheService } from 'src/shared';
+import { Str } from 'src/shared/helpers/string.helper';
+import { JwtPayload } from '../jwt-payload.interface';
+import { AccessToken } from '../models/access-token.model';
 
 @Injectable()
 export class AccessTokenService {
-
     constructor(
         private jwtService: JwtService,
         private cacheService: CacheService,
-    ) { }
+    ) {}
 
     async validateAccessToken(tokenId: string): Promise<User> {
         if (!tokenId)
@@ -44,7 +43,6 @@ export class AccessTokenService {
     }
 
     async revokeTokens(user: User): Promise<boolean> {
-
         Logger.debug('logging out!');
         const tokens = await AccessToken.find({ where: { userId: user.id } });
 
@@ -59,12 +57,13 @@ export class AccessTokenService {
     }
 
     async generateToken(user: User): Promise<string> {
-
         // Issue new token
 
         const tokenId = Str.uuid();
         const expiresIn = authConfig.tokenLife;
-        const expiresAt = moment().add(expiresIn, 'second').toDate();
+        const expiresAt = moment()
+            .add(expiresIn, 'second')
+            .toDate();
 
         const token = AccessToken.create({
             id: tokenId,
@@ -74,7 +73,7 @@ export class AccessTokenService {
 
         await token.save();
 
-        // Cache token 
+        // Cache token
         await this.setTokenActivity(tokenId);
 
         // create signed JWT
@@ -98,7 +97,9 @@ export class AccessTokenService {
         const cacheKey = this.getTokenActivityCacheKey(tokenId);
         const inactivityTimeout = authConfig.inactivityTimeout;
 
-        return this.cacheService.manager().set(cacheKey, 1, { ttl: inactivityTimeout });
+        return this.cacheService
+            .manager()
+            .set(cacheKey, 1, { ttl: inactivityTimeout });
     }
 
     protected async revokeTokenActivity(tokenId: string): Promise<number> {

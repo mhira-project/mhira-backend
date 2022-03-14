@@ -11,15 +11,8 @@ import {
     JoinColumn,
     JoinTable,
 } from 'typeorm';
-import {
-    FilterableField,
-    FilterableRelation,
-    KeySet,
-    Relation,
-    UnPagedRelation,
-} from '@nestjs-query/query-graphql';
+import { FilterableField, UnPagedRelation } from '@nestjs-query/query-graphql';
 import { Report } from 'src/modules/report/models/report.model';
-import { Types } from 'mongoose';
 
 @ObjectType()
 @Entity()
@@ -29,7 +22,7 @@ export class QuestionnaireScript extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Field()
+    @FilterableField(() => String)
     @Column()
     name: string;
 
