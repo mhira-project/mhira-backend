@@ -5,7 +5,6 @@ import {
     CreateQuestionnaireScriptInput,
     UpdateQuestionnaireScriptInput,
 } from '../dtos/questionnaire-script.input';
-// import { QuestionnaireScriptReport } from '../models/questionnaire-script-report.model';
 import { QuestionnaireScript } from '../models/questionnaire-script.model';
 import { Report } from 'src/modules/report/models/report.model';
 import { ConnectionType } from '@nestjs-query/query-graphql';
@@ -16,7 +15,6 @@ import {
 } from '@nestjs-query/core';
 
 import { QuestionnaireScriptConnection } from '../dtos/questionnaire-scripts.args';
-import { Questionnaire } from '../models/questionnaire.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
@@ -41,12 +39,21 @@ export class QuestionnaireScriptService {
             .findById(questionnaireId)
             .exec();
 
-        if (!questionnaireVersion)
+        if (!questionnaireVersion) {
             throw new NotFoundException('Questionnaire not found!');
+        }
+
+        const cleanedReportIds = [...new Set(reportIds)];
 
         const reports = await Report.find({
-            where: { id: In(reportIds) },
+            where: { id: In(cleanedReportIds) },
         });
+
+        if (reports.length !== cleanedReportIds.length) {
+            throw new NotFoundException(
+                'Report for questionnaire script not found!',
+            );
+        }
 
         const newQuestionnaireScript = await this.questionnaireScriptRepository.create(
             {
@@ -90,25 +97,44 @@ export class QuestionnaireScriptService {
     async updateQuestionnaireScripts(
         input: UpdateQuestionnaireScriptInput,
     ): Promise<QuestionnaireScript> {
-        const { id, ...rest } = input;
+        const { id, update } = input;
+        const { reportIds, scriptText, ...rest } = update;
 
         const questionnaireScript = await this.questionnaireScriptRepository.findOne(
             {
                 relations: ['reports'],
-                where: { id: 8 },
+                where: { id },
             },
         );
-        //   const test = this.questionnaireScriptRepository.update({id}, {...rest}).then(response => response.raw[0]);
 
-        const reports = await Report.find({ id: 7 });
+        if (!questionnaireScript)
+            throw new NotFoundException('Questionnaire script not found!');
 
-        console.log(reports);
+        const cleanedReportIds = [...new Set(reportIds)];
+
+        const reports = await Report.find({ id: In(cleanedReportIds) });
+
+        if (reports.length !== cleanedReportIds.length)
+            throw new NotFoundException(
+                'Report for questionnaire script not found!',
+            );
 
         questionnaireScript.reports = reports;
 
-        await questionnaireScript.save();
+        if (scriptText) {
+            const scriptTexts = await this.readFileUpload(scriptText);
+            questionnaireScript.scriptText = scriptTexts;
+        }
 
-        return questionnaireScript;
+        return await this.questionnaireScriptRepository.save({
+            id,
+            ...questionnaireScript,
+            ...rest,
+        });
+    }
+
+    delete(input: any) {
+        return this.questionnaireScriptRepository.softDelete({ id: input.id });
     }
 
     private async readFileUpload(fileData): Promise<any> {

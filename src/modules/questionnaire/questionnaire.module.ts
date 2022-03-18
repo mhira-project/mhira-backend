@@ -32,7 +32,10 @@ import { QuestionnaireScript } from './models/questionnaire-script.model';
 import { QuestionnaireScriptsResolver } from './resolvers/questionnaire-script.resolver';
 import { QuestionnaireScriptService } from './services/questionnaire-script.service';
 import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
-// import { QuestionnaireScriptReport } from './models/questionnaire-script-report.model';
+import { PermissionGuard } from '../permission/guards/permission.guard';
+import { GqlAuthGuard } from '../auth/auth.guard';
+
+const guards = [GqlAuthGuard, PermissionGuard];
 
 @Module({
     imports: [
@@ -81,6 +84,13 @@ import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
                 {
                     DTOClass: QuestionnaireScript,
                     EntityClass: QuestionnaireScript,
+                    // guards,
+                    read: {
+                        disabled: true,
+                    },
+                    create: { disabled: true },
+                    update: { disabled: true },
+                    delete: { disabled: true },
                 },
             ],
         }),

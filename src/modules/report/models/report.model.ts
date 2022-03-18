@@ -89,7 +89,8 @@ export class Report extends BaseEntity {
     @ManyToMany(
         () => Role,
         role => role.reports,
+        { onDelete: 'CASCADE', cascade: true },
     )
-    @JoinTable({ name: 'report_roles' })
+    @JoinTable({ name: 'report_role' })
     roles: Role[];
 }

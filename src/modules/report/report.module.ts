@@ -8,8 +8,6 @@ import { Report } from './models/report.model';
 import { ReportService } from './services/report.service';
 import { ReportResolver } from './resolvers/report.resolver';
 import { ReportInput } from './dtos/report-input';
-import { ReportRoleInput } from './dtos/report-role-input';
-// import { ReportRoleService } from './services/report.role.service';
 import { Role } from '../permission/models/role.model';
 
 const guards = [GqlAuthGuard, PermissionGuard];
@@ -27,7 +25,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
                         disabled: true,
                     },
                     create: { disabled: true },
-                    update: { disabled: false },
+                    update: { disabled: true },
                     delete: { disabled: true },
                 },
             ],

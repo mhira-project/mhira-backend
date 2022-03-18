@@ -1,14 +1,9 @@
-import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from 'src/modules/permission/models/role.model';
 import { In, Repository } from 'typeorm';
-import { ReportInput } from '../dtos/report-input';
-import {
-    InjectQueryService,
-    QueryService,
-    SortDirection,
-} from '@nestjs-query/core';
+import { ReportInput, UpdateOneReportInput } from '../dtos/report-input';
+import { InjectQueryService, QueryService } from '@nestjs-query/core';
 import { ConnectionType } from '@nestjs-query/query-graphql';
 
 import { Report } from '../models/report.model';
@@ -47,33 +42,56 @@ export class ReportService {
         return newReport;
     }
 
-    delete(reportId: number) {
-        return this.reportRepository.delete({ id: reportId });
+    async update(input: UpdateOneReportInput): Promise<any> {
+        const { id, update } = input;
+        const { roles, ...rest } = update;
+        const report = await this.reportRepository.findOne({
+            relations: ['roles'],
+            where: { id },
+        });
+
+        const findRoles = await this.roleRepository.find({
+            id: In(roles),
+        });
+
+        console.log(findRoles);
+
+        if (findRoles.length !== roles.length)
+            throw new NotFoundException('Role not found!');
+
+        report.roles = findRoles;
+
+        return await this.reportRepository.save({
+            id,
+            ...report,
+            ...rest,
+        });
+    }
+
+    delete(input: any) {
+        return this.reportRepository.softDelete({ id: input.id });
     }
 
     async getReportsByResource(
         resource: string,
         currentUser: User,
     ): Promise<Report[]> {
-        // const user = await User.findOne({
-        //     relations: ['roles'],
-        //     where: { id: currentUser.id },
-        // });
+        const user = await User.findOne({
+            relations: ['roles'],
+            where: { id: currentUser.id },
+        });
 
-        console.log(currentUser);
+        const userRoleIds = user.roles.map(role => role.id);
 
-        // const userRoleIds = user.roles.map(role => role.id);
-
-        const reports = [];
-        //  await this.reportRepository
-        //     .createQueryBuilder('report')
-        //     .innerJoin(Role, 'roles')
-        //     .where('report.resources = :resources', { resources: resource })
-        //     .andWhere('report.status = :status', { status: true })
-        //     .andWhere('roles.id IN (:...roleId)', {
-        //         roleId: userRoleIds,
-        //     })
-        //     .getMany();
+        const reports = await this.reportRepository
+            .createQueryBuilder('report')
+            .innerJoin(Role, 'roles')
+            .where('report.resources = :resources', { resources: resource })
+            .andWhere('report.status = :status', { status: true })
+            .andWhere('roles.id IN (:...roleId)', {
+                roleId: userRoleIds,
+            })
+            .getMany();
 
         return reports;
     }

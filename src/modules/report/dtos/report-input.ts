@@ -1,4 +1,10 @@
+import {
+    CreateOneInputType,
+    DeleteOneInputType,
+    UpdateOneInputType,
+} from '@nestjs-query/query-graphql';
 import { Field, InputType, Int } from '@nestjs/graphql';
+import { Report } from '../models/report.model';
 
 @InputType()
 export class ReportInput {
@@ -29,3 +35,18 @@ export class ReportInput {
     @Field(() => [Int])
     roles: number[];
 }
+
+@InputType()
+export class CreateOneReportInput extends CreateOneInputType(
+    'report',
+    ReportInput,
+) {}
+
+@InputType()
+export class UpdateOneReportInput extends UpdateOneInputType(
+    Report,
+    ReportInput,
+) {}
+
+@InputType()
+export class DeleteOneReportInput extends DeleteOneInputType(Report) {}

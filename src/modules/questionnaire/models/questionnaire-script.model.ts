@@ -62,6 +62,6 @@ export class QuestionnaireScript extends BaseEntity {
         () => Report,
         report => report.id,
     )
-    @JoinTable()
+    @JoinTable({ name: 'questionnaire_script_report' })
     reports: Report[];
 }

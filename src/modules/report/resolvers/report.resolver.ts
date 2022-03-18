@@ -1,30 +1,29 @@
 import { UseGuards } from '@nestjs/common';
 import {
     Args,
-    ArgsType,
     Resolver,
     Query,
-    InputType,
     Mutation,
-    Int,
+    ObjectType,
+    PartialType,
 } from '@nestjs/graphql';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 
 import { Report } from '../models/report.model';
 
-import { SortDirection } from '@nestjs-query/core';
-import { CreateOneInputType, QueryArgsType } from '@nestjs-query/query-graphql';
 import { ReportService } from '../services/report.service';
-import { ReportInput } from '../dtos/report-input';
+import {
+    CreateOneReportInput,
+    DeleteOneReportInput,
+    ReportInput,
+    UpdateOneReportInput,
+} from '../dtos/report-input';
 import { ReportQuery, ReportQueryConnection } from '../dtos/report-args';
 import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
 import { User } from 'src/modules/user/models/user.model';
 
-@InputType()
-export class CreateOneReportInput extends CreateOneInputType(
-    'report',
-    ReportInput,
-) {}
+@ObjectType()
+class ReportDeleteResponse extends PartialType(Report) {}
 
 @Resolver(() => Report)
 @UseGuards(GqlAuthGuard)
@@ -40,14 +39,10 @@ export class ReportResolver {
         @Args('resource', { type: () => String }) resource: string,
         @CurrentUser() currentUser: User,
     ): Promise<any> {
-        try {
-            return await this.reportService.getReportsByResource(
-                resource,
-                currentUser,
-            );
-        } catch (error) {
-            return error;
-        }
+        return await this.reportService.getReportsByResource(
+            resource,
+            currentUser,
+        );
     }
 
     @Mutation(() => Report)
@@ -59,10 +54,18 @@ export class ReportResolver {
         return this.reportService.insert(caregiverInput);
     }
 
-    @Mutation(() => Int)
+    @Mutation(() => Report)
+    async updateOneReport(
+        @Args('input', { type: () => UpdateOneReportInput })
+        input: UpdateOneReportInput,
+    ): Promise<any> {
+        return this.reportService.update(input);
+    }
+
+    @Mutation(() => ReportDeleteResponse)
     async deleteReport(
-        @Args('input', { type: () => Int })
-        input: number,
+        @Args('input', { type: () => DeleteOneReportInput })
+        input: DeleteOneReportInput,
     ): Promise<any> {
         return this.reportService.delete(input);
     }
