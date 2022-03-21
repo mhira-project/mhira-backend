@@ -2,16 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { SettingDto } from '../dtos/setting.dto';
 import { UpdateSettingInput } from '../dtos/update-setting.input';
 import { Setting } from '../models/setting.model';
+import { defaultConfig } from '../config/default-config';
 
 @Injectable()
 export class SettingService {
-    async get(): Promise<SettingDto> {
-        const settingsFromDatabase = await Setting.find();
-        const settingDto = new SettingDto();
+    async get<K extends keyof SettingDto>(): Promise<SettingDto> {
+        const storedSettings = await Setting.find();
 
-        for (const index in settingsFromDatabase) {
-            const key = settingsFromDatabase[index].key;
-            const value = settingsFromDatabase[index].value;
+        const settingDto = new SettingDto();
+        for (const key in defaultConfig) {
+            const storedSetting = storedSettings.find(row => row.key === key);
+
+            const value = storedSetting
+                ? (storedSetting.value as SettingDto[K])
+                : defaultConfig[key];
 
             settingDto[key] = value;
         }
@@ -22,7 +26,9 @@ export class SettingService {
     async getKey<K extends keyof SettingDto>(key?: K): Promise<SettingDto[K]> {
         const storedSetting = await Setting.findOne({ key });
 
-        const value: SettingDto[K] = storedSetting.value as SettingDto[K];
+        const value: SettingDto[K] = storedSetting
+            ? (storedSetting.value as SettingDto[K])
+            : defaultConfig[key];
 
         return value;
     }
