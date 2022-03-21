@@ -29,9 +29,12 @@ WORKDIR /app
 
 COPY package*.json ./
 
+COPY docker-entrypoint.sh ./
+
 COPY --from=builder /app/node_modules ./node_modules
 
 COPY --from=builder /app/dist ./dist
 
 CMD ["node", "dist/main"]
 
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
