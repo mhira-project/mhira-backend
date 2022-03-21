@@ -5,7 +5,7 @@ import {
 } from '@nestjs-query/query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { PatientCaregiver } from 'src/modules/caregiver/models/patient-caregiver.model';
-import { Assessment } from 'src/modules/assessment/models/assessment.model';
+import { Assessment, AssessmentResponse } from 'src/modules/assessment/models/assessment.model';
 import { Department } from 'src/modules/department/models/department.model';
 import { User } from 'src/modules/user/models/user.model';
 import {
@@ -197,10 +197,13 @@ export class Patient extends BaseEntity {
 }
 
 @ObjectType()
-export class PatientReport extends Patient {
+export class PatientReport {
     @Field(() => [AnsweredQuestionnaire], { nullable: true })
     answeredQuestionnaires: AnsweredQuestionnaire[];
 
-    @Field(() => [Assessment], { nullable: true })
-    assessments: Assessment[];
+    @Field(() => [AssessmentResponse], { nullable: true })
+    assessments: AssessmentResponse[];
+
+    @Field(() => Patient, { nullable: true })
+    patient: Patient;
 }
