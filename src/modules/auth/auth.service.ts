@@ -21,7 +21,7 @@ export class AuthService {
         private readonly settingService: SettingService,
         private readonly tokenService: AccessTokenService,
         private readonly cacheService: CacheService,
-    ) { }
+    ) {}
 
     async login(loginDto: LoginRequestDto): Promise<LoginResponseDto> {
         const user = await this.validateUserCredentials(loginDto);
@@ -37,13 +37,15 @@ export class AuthService {
     private async validateUserCredentials(
         loginDto: LoginRequestDto,
     ): Promise<User> {
-
         // Username comparison done using lowercase
         const identifier = loginDto.identifier?.toLowerCase();
         const password = loginDto.password;
 
         const user = await User.findOne({
-            username: identifier,
+            relations: ['roles'],
+            where: {
+                username: identifier,
+            },
         });
 
         // invalid username
@@ -72,13 +74,13 @@ export class AuthService {
             this.logger.debug(`Invalid Password for user: ${user.username}`);
 
             await this.executeInvalidLoginAttempt(user);
-       
+
             throw new AuthenticationError(`Invalid Credentials!`);
         }
 
         // Unset failed passwords key
         await this.cacheService.manager().del(`login-attempts:${user.id}`);
-        
+
         return user;
     }
 
@@ -86,13 +88,17 @@ export class AuthService {
         return this.tokenService.validateAccessToken(tokenId);
     }
 
-    private async checkPasswordAttemptsLock(user: User, maxLoginAttempts: number) {
-        
+    private async checkPasswordAttemptsLock(
+        user: User,
+        maxLoginAttempts: number,
+    ) {
         const loginAttemptsKey = `login-attempts:${user.id}`;
 
-        const cacheValue = await this.cacheService.manager().get<string>(loginAttemptsKey);
+        const cacheValue = await this.cacheService
+            .manager()
+            .get<string>(loginAttemptsKey);
 
-        if(!cacheValue) {
+        if (!cacheValue) {
             return;
         }
 
@@ -101,24 +107,32 @@ export class AuthService {
         const attempts = cacheObj?.attempts ?? cacheValue;
         const lastAttemptAt = cacheObj?.lastAttemptAt;
 
-        const userLockOutTimeInMinutes = 5
+        const userLockOutTimeInMinutes = 5;
 
-        if (attempts >= maxLoginAttempts && lastAttemptAt 
-            && moment().diff(lastAttemptAt, 'seconds') < userLockOutTimeInMinutes) { 
-
-            throw new AuthenticationError('User locked out due to failed attempts. Please wait and try again later!');
+        if (
+            attempts >= maxLoginAttempts &&
+            lastAttemptAt &&
+            moment().diff(lastAttemptAt, 'seconds') < userLockOutTimeInMinutes
+        ) {
+            throw new AuthenticationError(
+                'User locked out due to failed attempts. Please wait and try again later!',
+            );
         }
     }
 
     private async executeInvalidLoginAttempt(user: User) {
-
         const loginAttemptsKey = `login-attempts:${user.id}`;
 
-        let attempts = await this.cacheService.manager().get<number>(loginAttemptsKey);
+        let attempts = await this.cacheService
+            .manager()
+            .get<number>(loginAttemptsKey);
 
         attempts = attempts + 1;
 
-        const cacheValue = JSON.stringify({ attempts, lastAttemptAt: moment().toString() });
+        const cacheValue = JSON.stringify({
+            attempts,
+            lastAttemptAt: moment().toString(),
+        });
 
         await this.cacheService.manager().set(loginAttemptsKey, cacheValue);
 
@@ -143,9 +157,7 @@ export class AuthService {
 
         const rolePermissions = roles.flatMap(role => role.permissions);
 
-        return [
-            ...new Set([...directPermissions, ...rolePermissions]),
-        ];
+        return [...new Set([...directPermissions, ...rolePermissions])];
     }
 
     async logout(user: User): Promise<boolean> {

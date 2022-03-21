@@ -1,23 +1,29 @@
 import {
-    FilterableField, FilterableUnPagedRelation,
+    FilterableField,
+    QueryOptions,
+    UnPagedRelation,
 } from '@nestjs-query/query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Role } from 'src/modules/permission/models/role.model';
 import {
     BaseEntity,
     Column,
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
-    OneToMany,
+    JoinTable,
+    ManyToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
-import { ReportRole } from './report-role.model';
-
+import { SortDirection } from '@nestjs-query/core';
 
 @ObjectType()
-@FilterableUnPagedRelation('reportRoles', () => ReportRole, { nullable: true })
+@UnPagedRelation('roles', () => Role)
 @Entity()
+@QueryOptions({
+    defaultSort: [{ field: 'createdAt', direction: SortDirection.DESC }],
+})
 export class Report extends BaseEntity {
     static searchable = [
         'id',
@@ -81,6 +87,11 @@ export class Report extends BaseEntity {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @OneToMany(() => ReportRole, reportRole => reportRole.report)
-    reportRoles: ReportRole[];
+    @ManyToMany(
+        () => Role,
+        role => role.reports,
+        { onDelete: 'CASCADE', cascade: true },
+    )
+    @JoinTable({ name: 'report_role' })
+    roles: Role[];
 }

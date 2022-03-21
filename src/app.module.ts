@@ -25,8 +25,6 @@ import { ReportModule } from './modules/report/report.module';
         }),
         TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
         GraphQLModule.forRoot({
-            introspection: configService.isGraphqlPlaygroundEnabled(),
-            playground: configService.isGraphqlPlaygroundEnabled(),
             autoSchemaFile: join(process.cwd(), 'src/schema/schema.gql'),
             context: ({ req }) => ({ req }),
             debug: false, // disables stack trace

@@ -20,7 +20,7 @@ export class QuestionnaireAssessmentService {
         private answerModel: Model<Answer>,
         @InjectModel(QuestionnaireVersion.name)
         private questionnaireVersionModel: Model<QuestionnaireVersion>,
-    ) { }
+    ) {}
 
     async createNewAssessment(questionnaires: Types.ObjectId[]) {
         await Promise.all(
@@ -94,8 +94,7 @@ export class QuestionnaireAssessmentService {
             .filter(
                 questionGroups =>
                     questionGroups.questions.filter(
-                        item =>
-                            item._id == assessmentAnswerInput.question,
+                        item => item._id == assessmentAnswerInput.question,
                     ).length > 0,
             )[0]
             ?.questions.filter(
@@ -129,7 +128,9 @@ export class QuestionnaireAssessmentService {
             if (!answerExisting) {
                 foundAssessment.answers.push(answer);
             } else {
-                foundAssessment.answers[foundAssessment.answers.indexOf(answerExisting)] = answer;
+                foundAssessment.answers[
+                    foundAssessment.answers.indexOf(answerExisting)
+                ] = answer;
             }
 
             // return updated model
@@ -139,7 +140,9 @@ export class QuestionnaireAssessmentService {
                 answer.valid = false;
                 if (answerExisting) {
                     // invalidate existing answer
-                    foundAssessment.answers[foundAssessment.answers.indexOf(answerExisting)] = answer;
+                    foundAssessment.answers[
+                        foundAssessment.answers.indexOf(answerExisting)
+                    ] = answer;
                     await foundAssessment.save();
                 }
             }
@@ -147,20 +150,24 @@ export class QuestionnaireAssessmentService {
         }
     }
 
-    changeAssessmentStatus(assessmentId: Types.ObjectId, status: AssessmentStatus) {
-        return this.assessmentModel.findByIdAndUpdate(
-            assessmentId,
-            { status }
-        ).exec();
+    changeAssessmentStatus(
+        assessmentId: Types.ObjectId,
+        status: AssessmentStatus,
+    ) {
+        return this.assessmentModel
+            .findByIdAndUpdate(assessmentId, { status })
+            .exec();
     }
 
     deleteAssessment(_id: Types.ObjectId, archive = true) {
         return (archive
             ? this.assessmentModel.findByIdAndUpdate(_id, {
-                status: AssessmentStatus.ARCHIVED,
-            })
+                  status: AssessmentStatus.ARCHIVED,
+              })
             : this.assessmentModel.findByIdAndDelete(_id)
-        ).orFail().exec();
+        )
+            .orFail()
+            .exec();
     }
 
     getById(_id: Types.ObjectId | string, populate = true) {
@@ -170,15 +177,17 @@ export class QuestionnaireAssessmentService {
 
         return (populate
             ? this.assessmentModel.findById(_id).populate({
-                path: 'questionnaires',
-                model: QuestionnaireVersion.name,
-                populate: {
-                    path: 'questionnaire',
-                    model: Questionnaire.name,
-                },
-            })
+                  path: 'questionnaires',
+                  model: QuestionnaireVersion.name,
+                  populate: {
+                      path: 'questionnaire',
+                      model: Questionnaire.name,
+                  },
+              })
             : this.assessmentModel.findById(_id)
-        ).orFail().exec();
+        )
+            .orFail()
+            .exec();
     }
 
     async updateAssessment(
