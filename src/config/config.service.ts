@@ -3,11 +3,16 @@ require('dotenv').config();
 class ConfigService {
     constructor(private env: { [k: string]: string | undefined }) {}
 
-    private getValue(key: string, throwOnMissing = true): string {
+    private getValue(key: string, throwOnMissing = true, defaultValue?: string): string {
         const value = this.env[key];
 
         if (!value && throwOnMissing) {
             // throw new Error(`config error - missing env.${key}`);
+        }
+
+        // Return default value if not found.
+        if(!value && defaultValue !== undefined) {
+            return defaultValue;
         }
 
         return value;
@@ -29,6 +34,11 @@ class ConfigService {
     public isProduction() {
         const mode = this.getValue('MODE', false);
         return mode != 'DEV';
+    }
+
+    public isGraphqlPlaygroundEnabled() {
+        const enableFlag = this.getValue('GRAPHQL_PLAYGROUND_ENABLED', false, 'false');
+        return enableFlag.toLowerCase() === 'true';
     }
 
     public getMongoConnectionString() {
