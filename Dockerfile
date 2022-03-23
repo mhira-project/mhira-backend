@@ -39,4 +39,4 @@ CMD ["node", "dist/main"]
 
 RUN ["chmod", "+x", "/app/docker-entrypoint.sh"]
 
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
+ENTRYPOINT ["sh", "/app/docker-entrypoint.sh"]
