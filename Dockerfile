@@ -37,4 +37,6 @@ COPY --from=builder /app/dist ./dist
 
 CMD ["node", "dist/main"]
 
+RUN ["chmod", "+x", "/app/docker-entrypoint.sh"]
+
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
