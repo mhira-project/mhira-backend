@@ -3,9 +3,13 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthGuard } from '@nestjs/passport';
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
 import { AuthenticationError } from 'apollo-server-express';
+import { Reflector } from '@nestjs/core';
 
 @Injectable()
 export class GqlAuthGuard extends AuthGuard('jwt') {
+  constructor(private reflector: Reflector) {
+    super();
+  }
 
   protected readonly logger = new Logger(GqlAuthGuard.name);
 

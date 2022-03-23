@@ -5,6 +5,7 @@ import { User } from 'src/modules/user/models/user.model';
 import { QuestionnaireAssessment } from '../../questionnaire/models/questionnaire-assessment.schema';
 import {
     BaseEntity,
+    BeforeInsert,
     Column,
     CreateDateColumn,
     DeleteDateColumn,
@@ -13,10 +14,11 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 
 @ObjectType()
 @FilterableRelation('patient', () => Patient)
-@FilterableRelation('clinician', () => User)
+@FilterableRelation('clinician', () => User, { nullable: true })
 @Entity()
 export class Assessment extends BaseEntity {
     @FilterableField(() => Int)
@@ -63,6 +65,19 @@ export class Assessment extends BaseEntity {
     @DeleteDateColumn()
     deletedAt?: Date;
 
+    @Field(() => Boolean)
+    @Column({ type: 'boolean', default: true })
+    isActive: boolean
+
+    @FilterableField(() => String, { nullable: true })
+    @Column({ type: 'varchar', nullable: true })
+    uuid: string
+
+    @BeforeInsert()
+    private generateUuid() {
+        this.uuid = uuidv4();
+    }
+
     @ManyToOne(
         () => Patient,
         patient => patient.assessments,
@@ -83,4 +98,10 @@ export class FullAssessment extends Assessment {
 
     @Field(() => Patient)
     patient: Patient;
+}
+
+@ObjectType()
+export class AssessmentResponse extends Assessment {
+    @Field(() => String)
+    assessmentId: string;
 }

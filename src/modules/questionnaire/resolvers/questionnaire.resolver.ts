@@ -16,13 +16,15 @@ import { UsePermission } from 'src/modules/permission/decorators/permission.deco
 import { QueryArgsType } from '@nestjs-query/query-graphql';
 
 @ArgsType()
-export class QuestionniareVersionQuery extends QueryArgsType(QuestionnaireVersion) { }
+export class QuestionniareVersionQuery extends QueryArgsType(
+    QuestionnaireVersion,
+) {}
 const QuestionnaireVersionConnection = QuestionniareVersionQuery.ConnectionType;
 
 @Resolver(() => Questionnaire)
 @UseGuards(GqlAuthGuard, PermissionGuard)
 export class QuestionnaireResolver {
-    constructor(private questionnaireService: QuestionnaireService) { }
+    constructor(private questionnaireService: QuestionnaireService) {}
 
     @Query(() => Questionnaire)
     @UsePermission(PermissionEnum.VIEW_QUESTIONNAIRES)
@@ -46,10 +48,12 @@ export class QuestionnaireResolver {
 
     @Query(() => QuestionnaireVersionConnection)
     @UsePermission(PermissionEnum.VIEW_QUESTIONNAIRES)
-    async questionnaires(
-        @Args() query: QuestionniareVersionQuery,
-    ) {
-        return QuestionnaireVersionConnection.createFromPromise(q => this.questionnaireService.list(q), query);
+    async questionnaires(@Args() query: QuestionniareVersionQuery) {
+        const result = await QuestionnaireVersionConnection.createFromPromise(
+            q => this.questionnaireService.list(q),
+            query,
+        );
+        return result;
     }
 
     @Mutation(() => QuestionnaireVersion)

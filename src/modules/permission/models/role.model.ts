@@ -10,16 +10,15 @@ import {
     Column,
     BeforeUpdate,
     BeforeRemove,
+    OneToMany,
 } from 'typeorm';
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Permission } from './permission.model';
-import {
-    FilterableField,
-    UnPagedRelation,
-} from '@nestjs-query/query-graphql';
+import { FilterableField, UnPagedRelation } from '@nestjs-query/query-graphql';
 import { User } from 'src/modules/user/models/user.model';
 import { RoleCode } from '../enums/role-code.enum';
 import { MAX_ROLE_HIERARCHY } from '../constants';
+import { Report } from 'src/modules/report/models/report.model';
 
 @ObjectType()
 @UnPagedRelation('permissions', () => Permission)
@@ -88,4 +87,10 @@ export class Role extends BaseEntity {
         if (this.isSuperAdmin)
             throw new Error('Cannot delete super admin role');
     }
+
+    @ManyToMany(
+        () => Report,
+        report => report.roles,
+    )
+    reports: Report[];
 }

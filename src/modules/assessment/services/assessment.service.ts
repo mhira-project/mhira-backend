@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Types } from 'mongoose';
-import { getConnection, Repository } from 'typeorm';
+import { getConnection, IsNull, Repository } from 'typeorm';
 import {
     CreateFullAssessmentInput,
     UpdateFullAssessmentInput,
@@ -14,6 +14,7 @@ import { PatientAuthorizer } from 'src/modules/patient/authorizers/patient.autho
 import { User } from 'src/modules/user/models/user.model';
 import { ConnectionType } from '@nestjs-query/query-graphql';
 import { PatientQueryService } from 'src/modules/patient/providers/patient-query.service';
+
 
 @Injectable()
 export class AssessmentService {
@@ -138,8 +139,12 @@ export class AssessmentService {
      */
     async getFullAssessment(assessmentId: number): Promise<FullAssessment> {
         const assessment: FullAssessment = (await this.assessmentRepository.findOne(
-            assessmentId,
-            { relations: ['clinician', 'patient'] },
+            {
+                where: {
+                    id: assessmentId,
+                    isActive: true,
+                }, relations: ['clinician', 'patient']
+            },
         )) as FullAssessment;
         assessment.questionnaireAssessment = await this.questionnaireAssessmentService.getById(assessment.questionnaireAssessmentId);
         return assessment;
@@ -193,5 +198,18 @@ export class AssessmentService {
         } finally {
             await queryRunner.release();
         }
+    }
+
+    async getFullPublicAssessment(uuid: string): Promise<FullAssessment> {
+        const assessment: FullAssessment = (await this.assessmentRepository.findOne(
+            {
+                where: {
+                    isActive: true,
+                    uuid,
+                }, relations: ['clinician', 'patient']
+            },
+        )) as FullAssessment;
+        assessment.questionnaireAssessment = await this.questionnaireAssessmentService.getById(assessment.questionnaireAssessmentId);
+        return assessment;
     }
 }

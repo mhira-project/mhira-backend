@@ -15,6 +15,8 @@ import { AssessmentModule } from './modules/assessment/assessment.module';
 import { SettingModule } from './modules/setting/setting.module';
 import { DepartmentModule } from './modules/department/department.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CaregiverModule } from './modules/caregiver/caregiver.module';
+import { ReportModule } from './modules/report/report.module';
 
 @Module({
     imports: [
@@ -23,8 +25,6 @@ import { MongooseModule } from '@nestjs/mongoose';
         }),
         TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
         GraphQLModule.forRoot({
-            introspection: configService.isGraphqlPlaygroundEnabled(),
-            playground: configService.isGraphqlPlaygroundEnabled(),
             autoSchemaFile: join(process.cwd(), 'src/schema/schema.gql'),
             context: ({ req }) => ({ req }),
             debug: false, // disables stack trace
@@ -45,6 +45,8 @@ import { MongooseModule } from '@nestjs/mongoose';
         SettingModule,
         DepartmentModule,
         QuestionnaireModule,
+        CaregiverModule,
+        ReportModule,
     ],
     controllers: [],
     providers: [],

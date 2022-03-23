@@ -18,7 +18,7 @@ export class CreateManyDepartmentsInput extends CreateManyInputType('departments
 
 @Resolver(() => Department)
 @UseGuards(GqlAuthGuard, PermissionGuard)
-@UseOrPermissions([PermissionEnum.VIEW_PATIENTS, PermissionEnum.VIEW_PATIENTS])
+@UseOrPermissions([PermissionEnum.VIEW_PATIENTS, PermissionEnum.MANAGE_PATIENTS])
 export class DepartmentResolver {
 
     constructor(

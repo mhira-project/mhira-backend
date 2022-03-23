@@ -58,6 +58,9 @@ class ConfigService {
         const entities: any = [
             __dirname + this.getValue('TYPEORM_ENTITIES_DIR'),
         ];
+        const migrationsDir: string[] = [
+            __dirname + this.getValue('TYPEORM_MIGRATIONS_DIR'),
+        ];
         return {
             type: this.getValue('TYPEORM_CONNECTION') as 'postgres',
             host: this.getValue('TYPEORM_HOST'),
@@ -68,6 +71,25 @@ class ConfigService {
             entities,
             synchronize: this.getValue('TYPEORM_SYNCHRONIZE') === 'true',
             logging: this.getValue('TYPEORM_LOGGING') === 'true',
+            cli: {
+                migrationsDir,
+            },
+            migrationsRun: this.getValue('TYPEORM_MIGRATIONS_RUN') === 'true',
+            migrations: ['../dist/migrations/*.{js}'],
+        };
+    }
+    public getStorageConfig(): any {
+        const dateStrPrefix = new Date().toISOString().split('T')[0];
+        return {
+            accessKeyId: this.getValue('AWS_ACCESS_KEY_ID'),
+            secretAccessKey: this.getValue('AWS_SECRET_ACCESS_KEY'),
+            region: this.getValue('AWS_DEFAULT_REGION'),
+            bucket:
+                this.getValue('AWS_BUCKET') ||
+                this.getValue('AWS_S3_BUCKET_NAME'),
+            basePath: `pasha/${dateStrPrefix}`,
+            fileSize: 1000 * 1024 * 1024,
+            acl: 'private',
         };
     }
 }
