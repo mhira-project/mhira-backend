@@ -19,34 +19,45 @@ import { EmergencyContactResolver } from './resolvers/emergency-contact.resolver
 import { PatientResolver } from './resolvers/patient.resolver';
 import { PatientQueryService } from './providers/patient-query.service';
 import { QuestionnaireAssessmentService } from '../questionnaire/services/questionnaire-assessment.service';
-import { AssessmentSchema, QuestionnaireAssessment } from '../questionnaire/models/questionnaire-assessment.schema';
+import {
+    AssessmentSchema,
+    QuestionnaireAssessment,
+} from '../questionnaire/models/questionnaire-assessment.schema';
+import { QuestionnaireScriptService } from '../questionnaire/services/questionnaire-script.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Answer, AnswerSchema } from '../questionnaire/models/answer.schema';
-import { QuestionnaireVersion, QuestionnaireVersionSchema } from '../questionnaire/models/questionnaire-version.schema';
+import {
+    QuestionnaireVersion,
+    QuestionnaireVersionSchema,
+} from '../questionnaire/models/questionnaire-version.schema';
+import { QuestionnaireScript } from '../questionnaire/models/questionnaire-script.model';
+import { QuestionnaireModule } from '../questionnaire/questionnaire.module';
 
 const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
     imports: [
+        QuestionnaireModule,
         NestjsQueryGraphQLModule.forFeature({
             // import the NestjsQueryTypeOrmModule to register the entity with typeorm
             // and provide a QueryService
-            imports: [NestjsQueryTypeOrmModule.forFeature([
-                Patient,
-                Informant,
-                EmergencyContact,
-                PatientStatus,
-            ]),
-            MongooseModule.forFeature([
-                {
-                    name: QuestionnaireAssessment.name,
-                    schema: AssessmentSchema,
-                },
-                { name: Answer.name, schema: AnswerSchema },
-                {
-                    name: QuestionnaireVersion.name,
-                    schema: QuestionnaireVersionSchema,
-                },
-            ]),
+            imports: [
+                NestjsQueryTypeOrmModule.forFeature([
+                    Patient,
+                    Informant,
+                    EmergencyContact,
+                    PatientStatus,
+                ]),
+                MongooseModule.forFeature([
+                    {
+                        name: QuestionnaireAssessment.name,
+                        schema: AssessmentSchema,
+                    },
+                    { name: Answer.name, schema: AnswerSchema },
+                    {
+                        name: QuestionnaireVersion.name,
+                        schema: QuestionnaireVersionSchema,
+                    },
+                ]),
             ],
 
             // describe the resolvers you want to expose
@@ -67,12 +78,28 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     EntityClass: Informant,
                     guards: guards,
                     read: {
-                        defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
-                        decorators: [UsePermission(PermissionEnum.VIEW_PATIENTS)],
+                        defaultSort: [
+                            { field: 'id', direction: SortDirection.DESC },
+                        ],
+                        decorators: [
+                            UsePermission(PermissionEnum.VIEW_PATIENTS),
+                        ],
                     },
-                    create: { decorators: [UsePermission(PermissionEnum.MANAGE_PATIENTS)] },
-                    update: { decorators: [UsePermission(PermissionEnum.MANAGE_PATIENTS)] },
-                    delete: { decorators: [UsePermission(PermissionEnum.MANAGE_PATIENTS)] },
+                    create: {
+                        decorators: [
+                            UsePermission(PermissionEnum.MANAGE_PATIENTS),
+                        ],
+                    },
+                    update: {
+                        decorators: [
+                            UsePermission(PermissionEnum.MANAGE_PATIENTS),
+                        ],
+                    },
+                    delete: {
+                        decorators: [
+                            UsePermission(PermissionEnum.MANAGE_PATIENTS),
+                        ],
+                    },
                 },
                 {
                     DTOClass: EmergencyContact,
@@ -81,23 +108,49 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     UpdateDTOClass: EmergencyContactInput,
                     guards: guards,
                     read: {
-                        defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
-                        decorators: [UsePermission(PermissionEnum.VIEW_PATIENTS)],
+                        defaultSort: [
+                            { field: 'id', direction: SortDirection.DESC },
+                        ],
+                        decorators: [
+                            UsePermission(PermissionEnum.VIEW_PATIENTS),
+                        ],
                     },
                     create: { disabled: true },
-                    update: { decorators: [UsePermission(PermissionEnum.MANAGE_PATIENTS)] },
-                    delete: { decorators: [UsePermission(PermissionEnum.MANAGE_PATIENTS)] },
+                    update: {
+                        decorators: [
+                            UsePermission(PermissionEnum.MANAGE_PATIENTS),
+                        ],
+                    },
+                    delete: {
+                        decorators: [
+                            UsePermission(PermissionEnum.MANAGE_PATIENTS),
+                        ],
+                    },
                 },
                 {
                     DTOClass: PatientStatus,
                     EntityClass: PatientStatus,
                     guards: guards,
                     read: {
-                        defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
+                        defaultSort: [
+                            { field: 'id', direction: SortDirection.DESC },
+                        ],
                     },
-                    create: { decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)] },
-                    update: { decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)] },
-                    delete: { decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)] },
+                    create: {
+                        decorators: [
+                            UsePermission(PermissionEnum.MANAGE_SETTINGS),
+                        ],
+                    },
+                    update: {
+                        decorators: [
+                            UsePermission(PermissionEnum.MANAGE_SETTINGS),
+                        ],
+                    },
+                    delete: {
+                        decorators: [
+                            UsePermission(PermissionEnum.MANAGE_SETTINGS),
+                        ],
+                    },
                 },
             ],
         }),
@@ -110,8 +163,6 @@ const guards = [GqlAuthGuard, PermissionGuard];
         PatientQueryService,
         QuestionnaireAssessmentService,
     ],
-    exports: [
-        PatientQueryService,
-    ],
+    exports: [PatientQueryService],
 })
-export class PatientModule { }
+export class PatientModule {}
