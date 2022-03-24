@@ -94,6 +94,16 @@ export class QuestionnaireScriptService {
         return result;
     }
 
+    async getQuestionnaireScriptsById(
+        questionnaireId,
+    ): Promise<QuestionnaireScript[]> {
+        const questionnaireScripts = await this.questionnaireScriptRepository.find(
+            { questionnaireId },
+        );
+
+        return questionnaireScripts;
+    }
+
     async updateQuestionnaireScripts(
         input: UpdateQuestionnaireScriptInput,
     ): Promise<QuestionnaireScript> {
