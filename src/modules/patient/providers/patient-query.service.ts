@@ -139,12 +139,12 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
                 }
             });
         }
-
+        console.log(answeredQuestionnaires);
         for (let i = 0; i < answeredQuestionnaires.length; i++) {
             const answeredQuestionnaire = answeredQuestionnaires[i];
 
             const questionnaireScripts = await this.questionnaireScriptService.getQuestionnaireScriptsById(
-                answeredQuestionnaire?._doc._id,
+                answeredQuestionnaire?._doc._id.toString(),
             );
 
             answeredQuestionnaire.abbreviation =
