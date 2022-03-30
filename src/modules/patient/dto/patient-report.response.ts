@@ -1,5 +1,6 @@
-import { FilterableField } from "@nestjs-query/query-graphql";
-import { ObjectType, Field } from "@nestjs/graphql";
+import { FilterableField } from '@nestjs-query/query-graphql';
+import { ObjectType, Field } from '@nestjs/graphql';
+import { QuestionnaireScript } from 'src/modules/questionnaire/models/questionnaire-script.model';
 
 @ObjectType()
 export class QuestionnaireChoice {
@@ -42,7 +43,6 @@ class AnswerResult {
     @Field(() => Number, { nullable: true })
     numberValue: number;
 }
-
 
 @ObjectType()
 class AnsweredQuestions {
@@ -100,10 +100,12 @@ export class AnsweredQuestionnaire {
     @Field(() => String, { nullable: true })
     name: string;
 
+    @Field(() => [QuestionnaireScript])
+    questionnaireScripts: QuestionnaireScript[];
+
     @Field(() => String, { nullable: true })
     questionnaireFullName: string;
 
     @Field(() => [AnsweredQuestions], { nullable: true })
     questions: AnsweredQuestions[];
 }
-

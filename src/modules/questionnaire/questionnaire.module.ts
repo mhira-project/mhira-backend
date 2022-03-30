@@ -103,5 +103,6 @@ const guards = [GqlAuthGuard, PermissionGuard];
         QuestionnaireAssessmentService,
         AssessmentResolver,
     ],
+    exports: [QuestionnaireScriptService],
 })
 export class QuestionnaireModule {}
