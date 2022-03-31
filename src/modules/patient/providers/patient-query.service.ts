@@ -114,6 +114,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         const queries = [] as Promise<QuestionnaireAssessment>[];
         const answeredQuestionnaires = [];
         const answers = [];
+        let questionnaireScripts = [];
 
         for (const assessment of patient.assessments) {
             queries.push(
@@ -139,13 +140,27 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
                 }
             });
         }
-        console.log(answeredQuestionnaires);
+
         for (let i = 0; i < answeredQuestionnaires.length; i++) {
             const answeredQuestionnaire = answeredQuestionnaires[i];
 
-            const questionnaireScripts = await this.questionnaireScriptService.getQuestionnaireScriptsById(
+            const questionnaireName = answeredQuestionnaire.abbreviation;
+            const questionnaireLanguage = answeredQuestionnaire.language;
+
+            const [
+                questionnaireScriptsData,
+            ] = await this.questionnaireScriptService.getQuestionnaireScriptsById(
                 answeredQuestionnaire?._doc._id.toString(),
             );
+
+            questionnaireScripts = [
+                ...questionnaireScripts,
+                {
+                    ...questionnaireScriptsData,
+                    questionnaireName,
+                    questionnaireLanguage,
+                },
+            ];
 
             answeredQuestionnaire.abbreviation =
                 answeredQuestionnaire?._doc?.questionnaire?.abbreviation;
@@ -153,8 +168,6 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
                 answeredQuestionnaire?._doc?.name;
             answeredQuestionnaire.language =
                 answeredQuestionnaire._doc.questionnaire?.language;
-
-            answeredQuestionnaire.questionnaireScripts = questionnaireScripts;
 
             const answeredQuestionsMap = PatientQueryService.mapAnsweredQuestions(
                 answers[i],
@@ -166,7 +179,6 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
             );
             answeredQuestionnaire.questions = questions;
         }
-
         const assessmentResponse = [] as AssessmentResponse[];
 
         for (const assessment of patient.assessments) {
@@ -179,6 +191,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         return {
             patient,
             answeredQuestionnaires,
+            questionnaireScripts,
             assessments: assessmentResponse,
         } as PatientReport;
     }
