@@ -168,6 +168,8 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
                 answeredQuestionnaire?._doc?.name;
             answeredQuestionnaire.language =
                 answeredQuestionnaire._doc.questionnaire?.language;
+            answeredQuestionnaire.name =
+                answeredQuestionnaire?._doc?.questionnaire?.abbreviation;
 
             const answeredQuestionsMap = PatientQueryService.mapAnsweredQuestions(
                 answers[i],
