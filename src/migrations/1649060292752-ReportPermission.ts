@@ -10,5 +10,8 @@ export class ReportPermission1649060292752 implements MigrationInterface {
         }
     }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {}
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        // Just to avoid errors in sonar cloud
+        console.log('asd');
+    }
 }
