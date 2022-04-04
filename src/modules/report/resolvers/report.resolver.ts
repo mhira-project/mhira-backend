@@ -21,6 +21,8 @@ import {
 import { ReportQuery, ReportQueryConnection } from '../dtos/report-args';
 import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
 import { User } from 'src/modules/user/models/user.model';
+import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
+import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
 
 @ObjectType()
 class ReportDeleteResponse extends PartialType(Report) {}
@@ -29,12 +31,15 @@ class ReportDeleteResponse extends PartialType(Report) {}
 @UseGuards(GqlAuthGuard)
 export class ReportResolver {
     constructor(private readonly reportService: ReportService) {}
+
     @Query(() => ReportQueryConnection)
+    @UsePermission(PermissionEnum.VIEW_REPORTS)
     async reports(@Args({ type: () => ReportQuery }) query: ReportQuery) {
         return this.reportService.getReports(query);
     }
 
     @Query(() => [Report])
+    @UsePermission(PermissionEnum.VIEW_REPORTS)
     async getReportsByResource(
         @Args('resource', { type: () => String }) resource: string,
         @CurrentUser() currentUser: User,
@@ -46,6 +51,7 @@ export class ReportResolver {
     }
 
     @Mutation(() => Report)
+    @UsePermission(PermissionEnum.MANAGE_REPORTS)
     async createOneReport(
         @Args('input', { type: () => CreateOneReportInput })
         input: CreateOneReportInput,
@@ -55,6 +61,7 @@ export class ReportResolver {
     }
 
     @Mutation(() => Report)
+    @UsePermission(PermissionEnum.MANAGE_REPORTS)
     async updateOneReport(
         @Args('input', { type: () => UpdateOneReportInput })
         input: UpdateOneReportInput,
@@ -63,6 +70,7 @@ export class ReportResolver {
     }
 
     @Mutation(() => ReportDeleteResponse)
+    @UsePermission(PermissionEnum.DELETE_REPORTS)
     async deleteReport(
         @Args('input', { type: () => DeleteOneReportInput })
         input: DeleteOneReportInput,
