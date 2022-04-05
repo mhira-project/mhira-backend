@@ -127,7 +127,6 @@ export class QuestionnaireService {
 
             return version as QuestionnaireVersion;
         });
-
         // only return questionnaireVersions with existing questionnaire... <= cannot delete questionnaireVersions if you want to recreate the questions for statistic purposes
         questionnaireVersions = questionnaireVersions.filter(
             version => version.questionnaire !== null,
@@ -223,8 +222,6 @@ export class QuestionnaireService {
                 `A questionnaire for '${settings.form_id}' already exists in language '${questionnaireInput.language}'.`,
             );
         }
-
-        console.log(questionnaireInput);
 
         const createdQuestionnaireVersion = new this.questionnaireVersionModel();
         const createdQuestionnaire = new this.questionnaireModel();

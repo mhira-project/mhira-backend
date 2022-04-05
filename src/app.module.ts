@@ -33,9 +33,25 @@ import { ReportModule } from './modules/report/report.module';
             uploads: false,
             formatError: (error: GraphQLError) => {
                 if (typeof error.message === 'string') {
-                    return new GraphQLError(error.message);
+                    return new GraphQLError(
+                        error.message,
+                        null,
+                        null,
+                        null,
+                        error.path,
+                        error,
+                        error.extensions,
+                    );
                 }
-                return new GraphQLError(error.message['message']);
+                return new GraphQLError(
+                    error.message['message'],
+                    null,
+                    null,
+                    null,
+                    error.path,
+                    error,
+                    error.extensions,
+                );
             },
         }),
         UserModule,
