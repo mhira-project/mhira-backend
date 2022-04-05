@@ -8,13 +8,22 @@ import {
 } from '../dtos/create-assessment.input';
 import { Assessment, FullAssessment } from '../models/assessment.model';
 import { QuestionnaireAssessmentService } from '../../questionnaire/services/questionnaire-assessment.service';
-import { Filter, InjectQueryService, mergeFilter, QueryService, SortDirection } from '@nestjs-query/core';
-import { AssessmentConnection, AssessmentQuery } from '../dtos/assessment.query';
+import {
+    Filter,
+    InjectQueryService,
+    mergeFilter,
+    QueryService,
+    SortDirection,
+} from '@nestjs-query/core';
+import {
+    AssessmentConnection,
+    AssessmentQuery,
+} from '../dtos/assessment.query';
 import { PatientAuthorizer } from 'src/modules/patient/authorizers/patient.authorizer';
 import { User } from 'src/modules/user/models/user.model';
 import { ConnectionType } from '@nestjs-query/query-graphql';
 import { PatientQueryService } from 'src/modules/patient/providers/patient-query.service';
-
+import { Caregiver } from 'src/modules/caregiver/models/caregiver.model';
 
 @Injectable()
 export class AssessmentService {
@@ -22,10 +31,13 @@ export class AssessmentService {
         private questionnaireAssessmentService: QuestionnaireAssessmentService,
         @InjectRepository(Assessment)
         private assessmentRepository: Repository<Assessment>,
+        @InjectRepository(User) private userRepository: Repository<User>,
+        @InjectRepository(Caregiver)
+        private caregiverRepository: Repository<Caregiver>,
         @InjectQueryService(Assessment)
         private readonly assessmentQueryService: QueryService<Assessment>,
         private readonly patientQueryService: PatientQueryService,
-    ) { }
+    ) {}
 
     getQuestionnaireAssessment(id: string) {
         return this.questionnaireAssessmentService.getById(id);
@@ -33,24 +45,31 @@ export class AssessmentService {
 
     /**
      * Get assessments filter by authorized departments.
-     * 
-     * @param query 
-     * @param currentUser 
-     * @returns 
+     *
+     * @param query
+     * @param currentUser
+     * @returns
      */
-    async getAssessments(query: AssessmentQuery, currentUser: User): Promise<ConnectionType<Assessment>> {
-        const patientAuthorizeFilter = await PatientAuthorizer.authorizePatient(currentUser?.id);
+    async getAssessments(
+        query: AssessmentQuery,
+        currentUser: User,
+    ): Promise<ConnectionType<Assessment>> {
+        const patientAuthorizeFilter = await PatientAuthorizer.authorizePatient(
+            currentUser?.id,
+        );
 
         /**
          * Get Current User's patients
-         * 
+         *
          * This is required to filter assessment by patient departments
          * as the current filter mechanism does not support nested
          * filter that is more than 3 relationships deep.
-         * 
+         *
          * @TODO add caching for current users patients for performance
          */
-        const currentUsersPatients = await this.patientQueryService.query({ filter: patientAuthorizeFilter });
+        const currentUsersPatients = await this.patientQueryService.query({
+            filter: patientAuthorizeFilter,
+        });
 
         // Return empty result if no department assigned
         if (currentUsersPatients.length === 0) {
@@ -61,9 +80,11 @@ export class AssessmentService {
             );
         }
 
+        console.log(currentUsersPatients);
+
         const combinedFilter = mergeFilter(query.filter, {
             patientId: {
-                in: currentUsersPatients.map(patient => patient.id)
+                in: currentUsersPatients.map(patient => patient.id),
             },
         });
 
@@ -76,26 +97,36 @@ export class AssessmentService {
             : [{ field: 'id', direction: SortDirection.DESC }];
 
         return AssessmentConnection.createFromPromise(
-            (q) => this.assessmentQueryService.query(q),
+            q => this.assessmentQueryService.query(q),
             query,
-            (q) => this.assessmentQueryService.count(q),
+            q => this.assessmentQueryService.count(q),
         );
     }
 
     /**
      * Get assessment if authorized. Throws exception if Not Found
-     * 
-     * @param assessmentId 
-     * @param currentUser 
-     * @returns 
+     *
+     * @param assessmentId
+     * @param currentUser
+     * @returns
      */
-    async getAssessment(assessmentId: number, currentUser: User): Promise<Assessment> {
+    async getAssessment(
+        assessmentId: number,
+        currentUser: User,
+    ): Promise<Assessment> {
+        const patientAuthorizeFilter = await PatientAuthorizer.authorizePatient(
+            currentUser?.id,
+        );
 
-        const patientAuthorizeFilter = await PatientAuthorizer.authorizePatient(currentUser?.id);
+        const combinedFilter = mergeFilter(
+            { id: { eq: assessmentId } } as Filter<Assessment>,
+            { patient: patientAuthorizeFilter },
+        );
 
-        const combinedFilter = mergeFilter({ id: { eq: assessmentId } } as Filter<Assessment>, { patient: patientAuthorizeFilter });
-
-        const assessments = await this.assessmentQueryService.query({ paging: { limit: 1 }, filter: combinedFilter });
+        const assessments = await this.assessmentQueryService.query({
+            paging: { limit: 1 },
+            filter: combinedFilter,
+        });
 
         const assessment = assessments?.[0];
 
@@ -121,7 +152,40 @@ export class AssessmentService {
             assessment.patientId = assessmentInput.patientId;
             assessment.clinicianId = assessmentInput.clinicianId;
             assessment.informant = assessmentInput.informant;
+            assessment.expirationDate = assessmentInput.expirationDate;
+            assessment.note = assessmentInput.note;
+            assessment.deliveryDate = assessmentInput.deliveryDate;
             assessment.questionnaireAssessmentId = questionnaireAssessment.id;
+
+            if (assessmentInput.informantClinicianId) {
+                const clinician = await this.userRepository.findOne({
+                    id: assessmentInput.informantClinicianId,
+                });
+
+                if (!clinician)
+                    throw new NotFoundException(
+                        'Informant clinician not found!',
+                    );
+
+                assessment.informantClinician = clinician;
+
+                // To prevent double informant
+                assessmentInput.informantCaregiverId = null;
+            }
+
+            if (assessmentInput.informantCaregiverId) {
+                const caregiver = await this.caregiverRepository.findOne({
+                    id: assessmentInput.informantCaregiverId,
+                });
+
+                if (!caregiver)
+                    throw new NotFoundException(
+                        'Informant caregiver not found!',
+                    );
+
+                assessment.informantCaregiver = caregiver;
+            }
+
             await assessment.save();
         } catch (err) {
             // undo mongo assessment and rethrow
@@ -143,10 +207,18 @@ export class AssessmentService {
                 where: {
                     id: assessmentId,
                     isActive: true,
-                }, relations: ['clinician', 'patient']
+                },
+                relations: [
+                    'clinician',
+                    'patient',
+                    'informantClinician',
+                    'informantCaregiver',
+                ],
             },
         )) as FullAssessment;
-        assessment.questionnaireAssessment = await this.questionnaireAssessmentService.getById(assessment.questionnaireAssessmentId);
+        assessment.questionnaireAssessment = await this.questionnaireAssessmentService.getById(
+            assessment.questionnaireAssessmentId,
+        );
         return assessment;
     }
 
@@ -157,11 +229,15 @@ export class AssessmentService {
         );
 
         // find & update mongo assessment
-        let questionnaireAssessment = await this.questionnaireAssessmentService.getById(assessment.questionnaireAssessmentId);
-        const originalQuestionnaires = [...questionnaireAssessment.questionnaires] as Types.ObjectId[];
+        let questionnaireAssessment = await this.questionnaireAssessmentService.getById(
+            assessment.questionnaireAssessmentId,
+        );
+        const originalQuestionnaires = [
+            ...questionnaireAssessment.questionnaires,
+        ] as Types.ObjectId[];
         questionnaireAssessment = await this.questionnaireAssessmentService.updateAssessment(
             questionnaireAssessment,
-            assessmentInput.questionnaires
+            assessmentInput.questionnaires,
         );
 
         try {
@@ -171,10 +247,13 @@ export class AssessmentService {
             assessment.clinicianId = assessmentInput.clinicianId;
             assessment.informant = assessmentInput.informant;
             assessment.questionnaireAssessmentId = questionnaireAssessment.id;
-            await assessment.save()
+            await assessment.save();
         } catch (err) {
             // undo mongo changes
-            await this.questionnaireAssessmentService.updateAssessment(questionnaireAssessment, originalQuestionnaires);
+            await this.questionnaireAssessmentService.updateAssessment(
+                questionnaireAssessment,
+                originalQuestionnaires,
+            );
             throw err;
         }
 
@@ -190,7 +269,10 @@ export class AssessmentService {
         if (!archive) await queryRunner.manager.delete(Assessment, id);
 
         try {
-            await this.questionnaireAssessmentService.deleteAssessment(assessment.questionnaireAssessmentId as any as Types.ObjectId, archive);
+            await this.questionnaireAssessmentService.deleteAssessment(
+                (assessment.questionnaireAssessmentId as any) as Types.ObjectId,
+                archive,
+            );
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
@@ -206,10 +288,13 @@ export class AssessmentService {
                 where: {
                     isActive: true,
                     uuid,
-                }, relations: ['clinician', 'patient']
+                },
+                relations: ['clinician', 'patient'],
             },
         )) as FullAssessment;
-        assessment.questionnaireAssessment = await this.questionnaireAssessmentService.getById(assessment.questionnaireAssessmentId);
+        assessment.questionnaireAssessment = await this.questionnaireAssessmentService.getById(
+            assessment.questionnaireAssessmentId,
+        );
         return assessment;
     }
 }

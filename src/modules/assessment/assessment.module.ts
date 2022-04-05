@@ -19,6 +19,8 @@ import {
 } from '../questionnaire/models/questionnaire-version.schema';
 import { PatientModule } from '../patient/patient.module';
 import { PublicAssessmentResolver } from './resolvers/public.assesment.resolver';
+import { User } from '../user/models/user.model';
+import { Caregiver } from '../caregiver/models/caregiver.model';
 
 const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
@@ -27,7 +29,11 @@ const guards = [GqlAuthGuard, PermissionGuard];
             // import the NestjsQueryTypeOrmModule to register the entity with typeorm
             // and provide a QueryService
             imports: [
-                NestjsQueryTypeOrmModule.forFeature([Assessment]),
+                NestjsQueryTypeOrmModule.forFeature([
+                    Assessment,
+                    User,
+                    Caregiver,
+                ]),
 
                 MongooseModule.forFeature([
                     {
@@ -64,4 +70,4 @@ const guards = [GqlAuthGuard, PermissionGuard];
         PublicAssessmentResolver,
     ],
 })
-export class AssessmentModule { }
+export class AssessmentModule {}

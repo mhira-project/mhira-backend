@@ -35,9 +35,24 @@ export class CreateFullAssessmentInput {
     @Field(() => String)
     informant: string;
 
+    @Field(() => String, { nullable: true })
+    note: string;
+
+    @Field(() => Int, { nullable: true })
+    informantClinicianId?: number;
+
+    @Field(() => Int, { nullable: true })
+    informantCaregiverId?: number;
+
     @Field(() => [String])
     @ArrayNotEmpty()
     questionnaires: Types.ObjectId[];
+
+    @Field(() => GraphQLISODateTime, { nullable: true })
+    expirationDate: Date;
+
+    @Field(() => GraphQLISODateTime, { nullable: true })
+    deliveryDate: Date;
 }
 
 @InputType()

@@ -1,22 +1,26 @@
 import {
-    FilterableField, FilterableUnPagedRelation,
+    FilterableField,
+    FilterableUnPagedRelation,
 } from '@nestjs-query/query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Assessment } from 'src/modules/assessment/models/assessment.model';
 import {
     BaseEntity,
     Column,
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
+    ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
-
 } from 'typeorm';
 import { PatientCaregiver } from './patient-caregiver.model';
 
 @ObjectType()
-@FilterableUnPagedRelation('patientCaregivers', () => PatientCaregiver, { nullable: true })
+@FilterableUnPagedRelation('patientCaregivers', () => PatientCaregiver, {
+    nullable: true,
+})
 @Entity()
 export class Caregiver extends BaseEntity {
     static searchable = [
@@ -36,7 +40,7 @@ export class Caregiver extends BaseEntity {
         'apartment',
         'place',
         'country',
-        'street'
+        'street',
     ];
 
     @FilterableField(() => Int)
@@ -99,6 +103,9 @@ export class Caregiver extends BaseEntity {
     @Column({ nullable: true })
     number?: string;
 
-    @OneToMany(() => PatientCaregiver, patientCaregiver => patientCaregiver.caregiver)
+    @OneToMany(
+        () => PatientCaregiver,
+        patientCaregiver => patientCaregiver.caregiver,
+    )
     patientCaregivers: PatientCaregiver[];
 }
