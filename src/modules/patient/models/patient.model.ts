@@ -5,7 +5,10 @@ import {
 } from '@nestjs-query/query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { PatientCaregiver } from 'src/modules/caregiver/models/patient-caregiver.model';
-import { Assessment, AssessmentResponse } from 'src/modules/assessment/models/assessment.model';
+import {
+    Assessment,
+    AssessmentResponse,
+} from 'src/modules/assessment/models/assessment.model';
 import { Department } from 'src/modules/department/models/department.model';
 import { User } from 'src/modules/user/models/user.model';
 import {
@@ -26,6 +29,7 @@ import { EmergencyContact } from './emergency-contact.model';
 import { GenderEnum } from './gender.enum';
 import { Informant } from './informant.model';
 import { PatientStatus } from './patient-status.model';
+import { QuestionnaireScript } from 'src/modules/questionnaire/models/questionnaire-script.model';
 
 @ObjectType()
 @FilterableRelation('status', () => PatientStatus, {
@@ -34,11 +38,14 @@ import { PatientStatus } from './patient-status.model';
 })
 @FilterableUnPagedRelation('caseManagers', () => User, { nullable: true })
 @FilterableUnPagedRelation('informants', () => Informant, { nullable: true })
-@FilterableUnPagedRelation('emergencyContacts', () => EmergencyContact, { nullable: true })
+@FilterableUnPagedRelation('emergencyContacts', () => EmergencyContact, {
+    nullable: true,
+})
 @FilterableUnPagedRelation('departments', () => Department, { nullable: true })
-@FilterableUnPagedRelation('patientCaregivers', () => PatientCaregiver, { nullable: true })
+@FilterableUnPagedRelation('patientCaregivers', () => PatientCaregiver, {
+    nullable: true,
+})
 @FilterableRelation('assessments', () => Assessment, { nullable: true })
-
 @Entity()
 export class Patient extends BaseEntity {
     static searchable = [
@@ -192,8 +199,20 @@ export class Patient extends BaseEntity {
     )
     assessments: Assessment[];
 
-    @OneToMany(() => PatientCaregiver, patientCaregiver => patientCaregiver.patient)
+    @OneToMany(
+        () => PatientCaregiver,
+        patientCaregiver => patientCaregiver.patient,
+    )
     patientCaregivers: PatientCaregiver[];
+}
+
+@ObjectType()
+class QuestionnaireScriptOutput extends QuestionnaireScript {
+    @Field(() => String)
+    questionnaireName: string;
+
+    @Field(() => String)
+    questionnaireLanguage: string;
 }
 
 @ObjectType()
@@ -206,4 +225,7 @@ export class PatientReport {
 
     @Field(() => Patient, { nullable: true })
     patient: Patient;
+
+    @Field(() => [QuestionnaireScriptOutput], { nullable: true })
+    questionnaireScripts: QuestionnaireScriptOutput[];
 }
