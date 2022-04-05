@@ -111,19 +111,27 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
             },
         });
 
-        const queries = [] as Promise<QuestionnaireAssessment>[];
         const answeredQuestionnaires = [];
         const answers = [];
         let questionnaireScripts = [];
+        const assessmentResponse = [] as AssessmentResponse[];
+        const questionnaireAssessment: QuestionnaireAssessment[] = []; //await Promise.all(queries);
 
         for (const assessment of patient.assessments) {
-            queries.push(
-                this.questionnaireAssessmentService.getById(
-                    assessment.questionnaireAssessmentId,
-                ),
+            const singleQuestionnaireAssessment = await this.questionnaireAssessmentService.getById(
+                assessment.questionnaireAssessmentId,
             );
+
+            if (singleQuestionnaireAssessment)
+                questionnaireAssessment.push(singleQuestionnaireAssessment);
+
+            assessmentResponse.push({
+                ...assessment,
+                status: singleQuestionnaireAssessment.status,
+                assessmentId: assessment.questionnaireAssessmentId,
+            } as AssessmentResponse);
         }
-        const questionnaireAssessment = await Promise.all(queries);
+
         for (const assessment of questionnaireAssessment) {
             assessment.questionnaires.forEach(entry => {
                 if (
@@ -180,14 +188,6 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
                 answeredQuestionsMap,
             );
             answeredQuestionnaire.questions = questions;
-        }
-        const assessmentResponse = [] as AssessmentResponse[];
-
-        for (const assessment of patient.assessments) {
-            assessmentResponse.push({
-                ...assessment,
-                assessmentId: assessment.questionnaireAssessmentId,
-            } as AssessmentResponse);
         }
 
         return {
