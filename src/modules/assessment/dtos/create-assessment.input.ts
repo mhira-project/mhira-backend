@@ -59,4 +59,10 @@ export class CreateFullAssessmentInput {
 export class UpdateFullAssessmentInput extends CreateFullAssessmentInput {
     @Field(() => Int)
     assessmentId: number;
+
+    @Field(() => GraphQLISODateTime, { nullable: true })
+    expirationDate: Date;
+
+    @Field(() => GraphQLISODateTime, { nullable: true })
+    deliveryDate: Date;
 }

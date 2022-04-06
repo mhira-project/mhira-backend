@@ -247,6 +247,8 @@ export class AssessmentService {
             assessment.clinicianId = assessmentInput.clinicianId;
             assessment.informant = assessmentInput.informant;
             assessment.questionnaireAssessmentId = questionnaireAssessment.id;
+            assessment.expirationDate = assessmentInput.expirationDate;
+            assessment.deliveryDate = assessmentInput.deliveryDate;
             await assessment.save();
         } catch (err) {
             // undo mongo changes
