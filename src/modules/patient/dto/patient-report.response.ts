@@ -100,9 +100,6 @@ export class AnsweredQuestionnaire {
     @Field(() => String, { nullable: true })
     name: string;
 
-    @Field(() => [QuestionnaireScript])
-    questionnaireScripts: QuestionnaireScript[];
-
     @Field(() => String, { nullable: true })
     questionnaireFullName: string;
 
