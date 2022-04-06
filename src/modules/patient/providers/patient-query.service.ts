@@ -153,14 +153,16 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
                 answeredQuestionnaire?._doc._id.toString(),
             );
 
-            questionnaireScripts = [
-                ...questionnaireScripts,
-                {
-                    ...questionnaireScriptsData,
-                    questionnaireName,
-                    questionnaireLanguage,
-                },
-            ];
+            if (questionnaireScriptsData) {
+                questionnaireScripts = [
+                    ...questionnaireScripts,
+                    {
+                        ...questionnaireScriptsData,
+                        questionnaireName,
+                        questionnaireLanguage,
+                    },
+                ];
+            }
 
             answeredQuestionnaire.abbreviation =
                 answeredQuestionnaire?._doc?.questionnaire?.abbreviation;
@@ -189,6 +191,8 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
                 assessmentId: assessment.questionnaireAssessmentId,
             } as AssessmentResponse);
         }
+
+        console.log(questionnaireScripts);
 
         return {
             patient,
