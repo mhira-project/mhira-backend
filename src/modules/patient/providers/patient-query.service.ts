@@ -153,7 +153,13 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
                 answeredQuestionnaire?._doc._id.toString(),
             );
 
-            if (questionnaireScriptsData) {
+            const existingScript = questionnaireScripts.some(
+                script =>
+                    script.questionnaireId.toString() ===
+                    answeredQuestionnaire?._doc._id.toString(),
+            );
+
+            if (questionnaireScriptsData && !existingScript) {
                 questionnaireScripts = [
                     ...questionnaireScripts,
                     {
@@ -191,8 +197,6 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
                 assessmentId: assessment.questionnaireAssessmentId,
             } as AssessmentResponse);
         }
-
-        console.log(questionnaireScripts);
 
         return {
             patient,
