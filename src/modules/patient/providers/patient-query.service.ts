@@ -116,7 +116,6 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         let questionnaireScripts = [];
         const assessmentResponse = [] as AssessmentResponse[];
         const questionnaireAssessment: QuestionnaireAssessment[] = []; //await Promise.all(queries);
-        const answeredQuetionnaireIds = [];
 
         for (const assessment of patient.assessments) {
             const singleQuestionnaireAssessment = await this.questionnaireAssessmentService.getById(
