@@ -116,6 +116,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         let questionnaireScripts = [];
         const assessmentResponse = [] as AssessmentResponse[];
         const questionnaireAssessment: QuestionnaireAssessment[] = []; //await Promise.all(queries);
+        const answeredQuetionnaireIds = [];
 
         for (const assessment of patient.assessments) {
             const singleQuestionnaireAssessment = await this.questionnaireAssessmentService.getById(
@@ -155,27 +156,28 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
             const questionnaireName = answeredQuestionnaire.abbreviation;
             const questionnaireLanguage = answeredQuestionnaire.language;
 
-            const [
-                questionnaireScriptsData,
-            ] = await this.questionnaireScriptService.getQuestionnaireScriptsById(
-                answeredQuestionnaire?._doc._id.toString(),
-            );
-
             const existingScript = questionnaireScripts.some(
                 script =>
                     script.questionnaireId.toString() ===
                     answeredQuestionnaire?._doc._id.toString(),
             );
 
-            if (questionnaireScriptsData && !existingScript) {
-                questionnaireScripts = [
-                    ...questionnaireScripts,
-                    {
+            if (!existingScript) {
+                const questionnaireScriptsData: any = await this.questionnaireScriptService.getQuestionnaireScriptsById(
+                    answeredQuestionnaire?._doc._id.toString(),
+                );
+
+                if (questionnaireScriptsData.length !== 0) {
+                    questionnaireScriptsData.map(item => {
+                        item.questionnaireName = questionnaireName;
+                        item.questionnaireLanguage = questionnaireLanguage;
+                    });
+
+                    questionnaireScripts = [
+                        ...questionnaireScripts,
                         ...questionnaireScriptsData,
-                        questionnaireName,
-                        questionnaireLanguage,
-                    },
-                ];
+                    ];
+                }
             }
 
             answeredQuestionnaire.abbreviation =
