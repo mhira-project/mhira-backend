@@ -249,6 +249,38 @@ export class AssessmentService {
             assessment.questionnaireAssessmentId = questionnaireAssessment.id;
             assessment.expirationDate = assessmentInput.expirationDate;
             assessment.deliveryDate = assessmentInput.deliveryDate;
+
+            if (assessmentInput.informantClinicianId) {
+                const clinician = await this.userRepository.findOne({
+                    id: assessmentInput.informantClinicianId,
+                });
+
+                if (!clinician)
+                    throw new NotFoundException(
+                        'Informant clinician not found!',
+                    );
+
+                assessment.informantClinician = clinician;
+
+                assessmentInput.informantCaregiverId = null;
+                assessment.informantCaregiver = null;
+            }
+
+            if (assessmentInput.informantCaregiverId) {
+                const caregiver = await this.caregiverRepository.findOne({
+                    id: assessmentInput.informantCaregiverId,
+                });
+
+                if (!caregiver)
+                    throw new NotFoundException(
+                        'Informant caregiver not found!',
+                    );
+
+                assessment.informantCaregiver = caregiver;
+                assessmentInput.informantClinicianId = null;
+                assessment.informantClinician = null;
+            }
+
             await assessment.save();
         } catch (err) {
             // undo mongo changes
