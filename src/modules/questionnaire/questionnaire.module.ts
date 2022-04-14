@@ -34,6 +34,7 @@ import { QuestionnaireScriptService } from './services/questionnaire-script.serv
 import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { PermissionGuard } from '../permission/guards/permission.guard';
 import { GqlAuthGuard } from '../auth/auth.guard';
+import { QuestionnaireVersionService } from './services/questionnaire-version.service';
 
 const guards = [GqlAuthGuard, PermissionGuard];
 
@@ -101,6 +102,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
         QuestionnaireScriptService,
         QuestionnaireResolver,
         QuestionnaireAssessmentService,
+        QuestionnaireVersionService,
         AssessmentResolver,
     ],
     exports: [QuestionnaireScriptService],
