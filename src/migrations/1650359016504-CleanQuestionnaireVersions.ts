@@ -27,5 +27,7 @@ export class CleanQuestionnaireVersions1650359016504
         }
     }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {}
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        console.log('asd');
+    }
 }
