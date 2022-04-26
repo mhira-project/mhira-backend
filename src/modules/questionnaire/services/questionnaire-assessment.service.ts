@@ -66,7 +66,7 @@ export class QuestionnaireAssessmentService {
         if (
             ![
                 AssessmentStatus.PARTIALLY_COMPLETED,
-                AssessmentStatus.PENDING,
+                AssessmentStatus.PLANNED,
             ].includes(foundAssessment.status)
         ) {
             throw new Error(
@@ -162,7 +162,7 @@ export class QuestionnaireAssessmentService {
     deleteAssessment(_id: Types.ObjectId, archive = true) {
         return (archive
             ? this.assessmentModel.findByIdAndUpdate(_id, {
-                  status: AssessmentStatus.ARCHIVED,
+                  status: AssessmentStatus.CANCELLED,
               })
             : this.assessmentModel.findByIdAndDelete(_id)
         )
