@@ -14,8 +14,14 @@ import { FilterableField, UnPagedRelation } from '@nestjs-query/query-graphql';
 import { User } from 'src/modules/user/models/user.model';
 
 @ObjectType()
-@UnPagedRelation('roles', () => Role, { disableRemove: true, disableUpdate: true })
-@UnPagedRelation('users', () => User, { disableRemove: true, disableUpdate: true })
+@UnPagedRelation('roles', () => Role, {
+    disableRemove: true,
+    disableUpdate: true,
+})
+@UnPagedRelation('users', () => User, {
+    disableRemove: true,
+    disableUpdate: true,
+})
 @Entity()
 export class Permission extends BaseEntity {
     @FilterableField(() => Int)
@@ -45,6 +51,7 @@ export class Permission extends BaseEntity {
     @ManyToMany(
         () => Role,
         role => role.permissions,
+        { onDelete: 'CASCADE' },
     )
     roles: Role[];
 
