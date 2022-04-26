@@ -249,6 +249,7 @@ export class AssessmentService {
             assessment.questionnaireAssessmentId = questionnaireAssessment.id;
             assessment.expirationDate = assessmentInput.expirationDate;
             assessment.deliveryDate = assessmentInput.deliveryDate;
+            assessment.note = assessmentInput.note;
             await assessment.save();
         } catch (err) {
             // undo mongo changes
