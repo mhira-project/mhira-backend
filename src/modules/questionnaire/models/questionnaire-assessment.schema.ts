@@ -19,7 +19,7 @@ export class QuestionnaireAssessment extends Document {
     @Prop({
         type: 'string',
         enum: Object.values(AssessmentStatus),
-        default: AssessmentStatus.PENDING,
+        default: AssessmentStatus.PLANNED,
     })
     status: AssessmentStatus;
 

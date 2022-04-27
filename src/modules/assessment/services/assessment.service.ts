@@ -24,6 +24,7 @@ import { User } from 'src/modules/user/models/user.model';
 import { ConnectionType } from '@nestjs-query/query-graphql';
 import { PatientQueryService } from 'src/modules/patient/providers/patient-query.service';
 import { Caregiver } from 'src/modules/caregiver/models/caregiver.model';
+import { AssessmentStatus } from 'src/modules/questionnaire/enums/assessment-status.enum';
 
 @Injectable()
 export class AssessmentService {
@@ -80,8 +81,6 @@ export class AssessmentService {
             );
         }
 
-        console.log(currentUsersPatients);
-
         const combinedFilter = mergeFilter(query.filter, {
             patientId: {
                 in: currentUsersPatients.map(patient => patient.id),
@@ -96,11 +95,27 @@ export class AssessmentService {
             ? query.sorting
             : [{ field: 'id', direction: SortDirection.DESC }];
 
-        return AssessmentConnection.createFromPromise(
+        const result: any = await AssessmentConnection.createFromPromise(
             q => this.assessmentQueryService.query(q),
             query,
             q => this.assessmentQueryService.count(q),
         );
+
+        for (let i = 0; i < result.edges.length; i++) {
+            const assessment = result.edges[i].node;
+
+            const expirationToDate = new Date(assessment?.expirationDate);
+            const newDate = new Date();
+
+            if (assessment?.expirationDate && expirationToDate < newDate) {
+                await this.questionnaireAssessmentService.changeAssessmentStatus(
+                    assessment.questionnaireAssessmentId,
+                    AssessmentStatus.EXPIRED,
+                );
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -145,9 +160,20 @@ export class AssessmentService {
             assessmentInput.questionnaires,
         );
 
+        const d1 = new Date(assessmentInput?.deliveryDate),
+            d2 = new Date();
+
+        console.log(d1 > d2);
+
         try {
             // create postgres assessment
             assessment = new Assessment();
+            if (!assessmentInput.deliveryDate || d1 < d2) {
+                await this.questionnaireAssessmentService.changeAssessmentStatus(
+                    questionnaireAssessment.id,
+                    AssessmentStatus.OPEN_FOR_COMPLETION,
+                );
+            }
             assessment.name = assessmentInput.name;
             assessment.patientId = assessmentInput.patientId;
             assessment.clinicianId = assessmentInput.clinicianId;
@@ -156,36 +182,28 @@ export class AssessmentService {
             assessment.note = assessmentInput.note;
             assessment.deliveryDate = assessmentInput.deliveryDate;
             assessment.questionnaireAssessmentId = questionnaireAssessment.id;
-
             if (assessmentInput.informantClinicianId) {
                 const clinician = await this.userRepository.findOne({
                     id: assessmentInput.informantClinicianId,
                 });
-
                 if (!clinician)
                     throw new NotFoundException(
                         'Informant clinician not found!',
                     );
-
                 assessment.informantClinician = clinician;
-
                 // To prevent double informant
                 assessmentInput.informantCaregiverId = null;
             }
-
             if (assessmentInput.informantCaregiverId) {
                 const caregiver = await this.caregiverRepository.findOne({
                     id: assessmentInput.informantCaregiverId,
                 });
-
                 if (!caregiver)
                     throw new NotFoundException(
                         'Informant caregiver not found!',
                     );
-
                 assessment.informantCaregiver = caregiver;
             }
-
             await assessment.save();
         } catch (err) {
             // undo mongo assessment and rethrow
@@ -249,6 +267,7 @@ export class AssessmentService {
             assessment.questionnaireAssessmentId = questionnaireAssessment.id;
             assessment.expirationDate = assessmentInput.expirationDate;
             assessment.deliveryDate = assessmentInput.deliveryDate;
+            assessment.note = assessmentInput.note;
             await assessment.save();
         } catch (err) {
             // undo mongo changes

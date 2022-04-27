@@ -58,7 +58,7 @@ export class Assessment extends BaseEntity {
     informant?: string;
 
     @FilterableField({ nullable: true })
-    @Column({ default: 'PENDING' })
+    @Column({ default: 'PLANNED' })
     status: string;
 
     @Field(() => String, { nullable: true })

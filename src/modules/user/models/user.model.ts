@@ -1,4 +1,4 @@
-import { ObjectType, Int, GraphQLISODateTime } from '@nestjs/graphql';
+import { ObjectType, Int, GraphQLISODateTime, Field } from '@nestjs/graphql';
 import {
     Entity,
     PrimaryGeneratedColumn,
@@ -33,7 +33,7 @@ import { Hash } from 'src/shared/helpers/hash.helper';
 @FilterableUnPagedRelation('roles', () => Role)
 @UnPagedRelation('permissions', () => Permission)
 @FilterableUnPagedRelation('departments', () => Department)
-@Entity()
+@Entity({ synchronize: true })
 export class User extends BaseEntity {
     static searchable = [
         'firstName',
@@ -52,6 +52,10 @@ export class User extends BaseEntity {
     @FilterableField()
     @Column({ default: false })
     isSuperUser: boolean;
+
+    @Field()
+    @Column({ default: false })
+    acceptedTerm: boolean;
 
     @FilterableField()
     @Column({ unique: true, comment: 'Login Username' })

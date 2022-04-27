@@ -1,5 +1,14 @@
 import { UseGuards } from '@nestjs/common';
-import { Resolver, Query, Int, Args, Mutation, ResolveField, Parent, ID } from '@nestjs/graphql';
+import {
+    Resolver,
+    Query,
+    Int,
+    Args,
+    Mutation,
+    ResolveField,
+    Parent,
+    ID,
+} from '@nestjs/graphql';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
 import { Assessment, FullAssessment } from '../models/assessment.model';
@@ -14,14 +23,15 @@ import { QuestionnaireAssessment } from '../../questionnaire/models/questionnair
 import { ConnectionType } from '@nestjs-query/query-graphql';
 import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
 import { User } from 'src/modules/user/models/user.model';
-import { AssessmentQuery, AssessmentConnection } from '../dtos/assessment.query';
+import {
+    AssessmentQuery,
+    AssessmentConnection,
+} from '../dtos/assessment.query';
 
 @Resolver(() => Assessment)
 @UseGuards(GqlAuthGuard, PermissionGuard)
 export class AssessmentResolver {
-    constructor(
-        private readonly assessmentService: AssessmentService,
-    ) { }
+    constructor(private readonly assessmentService: AssessmentService) {}
 
     @Query(() => AssessmentConnection)
     @UsePermission(PermissionEnum.VIEW_ASSESSMENTS)
@@ -29,8 +39,7 @@ export class AssessmentResolver {
         @Args({ type: () => AssessmentQuery }) query: AssessmentQuery,
         @CurrentUser() currentUser: User,
     ): Promise<ConnectionType<Assessment>> {
-
-        return this.assessmentService.getAssessments(query, currentUser)
+        return this.assessmentService.getAssessments(query, currentUser);
     }
 
     @Query(() => Assessment)
@@ -39,13 +48,14 @@ export class AssessmentResolver {
         @Args('id', { type: () => ID }) patientId: number,
         @CurrentUser() currentUser: User,
     ): Promise<Assessment> {
-
-        return this.assessmentService.getAssessment(patientId, currentUser)
+        return this.assessmentService.getAssessment(patientId, currentUser);
     }
 
     @ResolveField('questionnaireAssessment', () => QuestionnaireAssessment)
     getQuestionnaireAssessment(@Parent() assessment: Assessment) {
-        return this.assessmentService.getQuestionnaireAssessment(assessment.questionnaireAssessmentId);
+        return this.assessmentService.getQuestionnaireAssessment(
+            assessment.questionnaireAssessmentId,
+        );
     }
 
     @Query(() => FullAssessment)
@@ -74,9 +84,12 @@ export class AssessmentResolver {
 
     @Mutation(() => Boolean)
     @UsePermission(PermissionEnum.DELETE_ASSESSMENTS)
-    async deleteAssessment(@Args('id', { type: () => Int }) id: number, @Args('archive', { nullable: true, defaultValue: true }) archive: boolean) {
+    async deleteAssessment(
+        @Args('id', { type: () => Int }) id: number,
+        @Args('archive', { nullable: true, defaultValue: true })
+        archive: boolean,
+    ) {
         await this.assessmentService.deleteAssessment(id, archive);
         return archive;
     }
-
 }

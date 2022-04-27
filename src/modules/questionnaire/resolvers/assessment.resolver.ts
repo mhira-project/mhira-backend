@@ -16,10 +16,11 @@ import { QuestionnaireAssessment } from '../models/questionnaire-assessment.sche
 import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
 import { QuestionnaireAssessmentService } from '../services/questionnaire-assessment.service';
 import { Questionnaire } from '../models/questionnaire.schema';
+import { AssessmentStatus } from '../enums/assessment-status.enum';
 
 @Resolver(() => QuestionnaireAssessment)
 export class AssessmentResolver {
-    constructor(private assessmentService: QuestionnaireAssessmentService) { }
+    constructor(private assessmentService: QuestionnaireAssessmentService) {}
 
     @Query(() => QuestionnaireAssessment)
     getAssessment(
@@ -32,14 +33,22 @@ export class AssessmentResolver {
     addAnswer(
         @Args('assessment') assessmentInput: AnswerAssessmentInput,
     ): Promise<QuestionnaireAssessment> {
+        this.assessmentService.changeAssessmentStatus(
+            assessmentInput.assessmentId,
+            AssessmentStatus.PARTIALLY_COMPLETED,
+        );
         return this.assessmentService.addAnswerToAssessment(assessmentInput);
     }
 
     @Mutation(() => QuestionnaireAssessment)
     changeAssessmentStatus(
-        @Args('statusInput') { assessmentId, status }: ChangeAssessmentStatusInput,
+        @Args('statusInput')
+        { assessmentId, status }: ChangeAssessmentStatusInput,
     ): Promise<QuestionnaireAssessment> {
-        return this.assessmentService.changeAssessmentStatus(assessmentId, status);
+        return this.assessmentService.changeAssessmentStatus(
+            assessmentId,
+            status,
+        );
     }
 
     @Mutation(() => QuestionnaireAssessment)
