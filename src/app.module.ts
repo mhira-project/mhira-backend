@@ -17,6 +17,8 @@ import { DepartmentModule } from './modules/department/department.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CaregiverModule } from './modules/caregiver/caregiver.module';
 import { ReportModule } from './modules/report/report.module';
+import { Disclaimer } from './modules/disclaimer/models/disclaimer.model';
+import { DisclaimerModule } from './modules/disclaimer/disclaimer.module';
 
 @Module({
     imports: [
@@ -65,6 +67,7 @@ import { ReportModule } from './modules/report/report.module';
         QuestionnaireModule,
         CaregiverModule,
         ReportModule,
+        DisclaimerModule,
     ],
     controllers: [],
     providers: [],
