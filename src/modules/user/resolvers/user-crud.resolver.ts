@@ -1,7 +1,18 @@
 import { UpdateManyResponse, Filter, SortDirection } from '@nestjs-query/core';
-import { CRUDResolver, FilterType, UpdateManyResponseType } from '@nestjs-query/query-graphql';
+import {
+    CRUDResolver,
+    FilterType,
+    UpdateManyResponseType,
+} from '@nestjs-query/query-graphql';
 import { UseGuards } from '@nestjs/common';
-import { Resolver, Args, Mutation, ID, ResolveField, Parent } from '@nestjs/graphql';
+import {
+    Resolver,
+    Args,
+    Mutation,
+    ID,
+    ResolveField,
+    Parent,
+} from '@nestjs/graphql';
 import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
@@ -24,7 +35,7 @@ export class UserCrudResolver extends CRUDResolver(User, {
     UpdateDTOClass: UpdateUserInput,
     read: {
         defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
-        decorators: [UsePermission(PermissionEnum.VIEW_USERS)]
+        decorators: [UsePermission(PermissionEnum.VIEW_USERS)],
     },
     create: { disabled: true },
     update: { disabled: true },
@@ -36,8 +47,10 @@ export class UserCrudResolver extends CRUDResolver(User, {
 
     @Mutation(() => User)
     @UsePermission(PermissionEnum.MANAGE_USERS)
-    async createOneUser(@Args('input', { type: () => CreateOneUserInput }) input: CreateOneUserInput): Promise<User> {
-
+    async createOneUser(
+        @Args('input', { type: () => CreateOneUserInput })
+        input: CreateOneUserInput,
+    ): Promise<User> {
         // delegate further actions to service
         return this.service.createOne(input['user']);
     }
@@ -45,10 +58,10 @@ export class UserCrudResolver extends CRUDResolver(User, {
     @Mutation(() => User)
     @UsePermission(PermissionEnum.MANAGE_USERS)
     async updateOneUser(
-        @Args('input', { type: () => UpdateOneUserInput }) input: UpdateOneUserInput,
+        @Args('input', { type: () => UpdateOneUserInput })
+        input: UpdateOneUserInput,
         @CurrentUser() currentUser: User,
     ): Promise<User> {
-
         const { id, update } = input;
 
         // Delegate further actions to service
@@ -56,12 +69,23 @@ export class UserCrudResolver extends CRUDResolver(User, {
     }
 
     @Mutation(() => User)
+    async updateUserAcceptedTerm(
+        @Args('input', { type: () => UpdateOneUserInput })
+        input: UpdateOneUserInput,
+    ): Promise<User> {
+        const { id, update } = input;
+
+        // Delegate further actions to service
+        return this.service.updateUserAcceptedTerm(Number(id), update);
+    }
+
+    @Mutation(() => User)
     @UsePermission(PermissionEnum.MANAGE_USERS)
     async deleteOneUser(
-        @Args('input', { type: () => DeleteOneUserInput }) input: DeleteOneUserInput,
+        @Args('input', { type: () => DeleteOneUserInput })
+        input: DeleteOneUserInput,
         @CurrentUser() currentUser: User,
     ): Promise<User> {
-
         const { id } = input;
 
         // Delegate further actions to service
@@ -71,7 +95,9 @@ export class UserCrudResolver extends CRUDResolver(User, {
     // restore one mutation will update the `deletedAt` column to null.
     @Mutation(() => User)
     @UsePermission(PermissionEnum.MANAGE_USERS)
-    restoreOneUser(@Args('input', { type: () => ID }) id: number): Promise<User> {
+    restoreOneUser(
+        @Args('input', { type: () => ID }) id: number,
+    ): Promise<User> {
         return this.service.restoreOne(id);
     }
 
@@ -87,15 +113,15 @@ export class UserCrudResolver extends CRUDResolver(User, {
 
     @ResolveField(() => Boolean)
     passwordChangeRequired(@Parent() user: User) {
-
         return this.service.passwordChangeRequired(user);
     }
 
     // permission grants
-    @ResolveField(() => [Permission], { description: 'Get User Permission Grants. ' })
+    @ResolveField(() => [Permission], {
+        description: 'Get User Permission Grants. ',
+    })
     @UseGuards(GqlAuthGuard)
     permissionGrants(@Parent() user: User): Promise<Permission[]> {
-
         return PermissionService.userPermissionGrants(user.id);
     }
 }
