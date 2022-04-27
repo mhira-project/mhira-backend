@@ -95,11 +95,27 @@ export class AssessmentService {
             ? query.sorting
             : [{ field: 'id', direction: SortDirection.DESC }];
 
-        return AssessmentConnection.createFromPromise(
+        const result: any = await AssessmentConnection.createFromPromise(
             q => this.assessmentQueryService.query(q),
             query,
             q => this.assessmentQueryService.count(q),
         );
+
+        for (let i = 0; i < result.edges.length; i++) {
+            const assessment = result.edges[i].node;
+
+            const expirationToDate = new Date(assessment?.expirationDate);
+            const newDate = new Date();
+
+            if (assessment?.expirationDate && expirationToDate < newDate) {
+                await this.questionnaireAssessmentService.changeAssessmentStatus(
+                    assessment.questionnaireAssessmentId,
+                    AssessmentStatus.EXPIRED,
+                );
+            }
+        }
+
+        return result;
     }
 
     /**
