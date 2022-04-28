@@ -25,7 +25,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
     questionnaireScriptService: QuestionnaireScriptService;
     constructor(@InjectRepository(Patient) repo: Repository<Patient>) {
         // pass the use soft delete option to the service.
-        super(repo, { useSoftDelete: true });
+        super(repo);
     }
 
     /**
