@@ -159,10 +159,15 @@ export class QuestionnaireAssessmentService {
             .exec();
     }
 
-    deleteAssessment(_id: Types.ObjectId, archive = true) {
+    async deleteAssessment(_id: Types.ObjectId, archive = true) {
+        const assessment = await this.assessmentModel.findById(_id);
+
         return (archive
             ? this.assessmentModel.findByIdAndUpdate(_id, {
-                  status: AssessmentStatus.CANCELLED,
+                  status:
+                      assessment?.status !== AssessmentStatus.COMPLETED
+                          ? AssessmentStatus.CANCELLED
+                          : assessment?.status,
               })
             : this.assessmentModel.findByIdAndDelete(_id)
         )
