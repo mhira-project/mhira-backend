@@ -33,7 +33,7 @@ export class CreateFullAssessmentInput {
     clinicianId: number;
 
     @Field(() => String)
-    informant: string;
+    informantType: string;
 
     @Field(() => String, { nullable: true })
     note: string;
@@ -41,8 +41,8 @@ export class CreateFullAssessmentInput {
     @Field(() => Int, { nullable: true })
     informantClinicianId?: number;
 
-    @Field(() => Int, { nullable: true })
-    informantCaregiverId?: number;
+    @Field(() => String, { nullable: true })
+    informantCaregiverRelation?: string;
 
     @Field(() => [String])
     @ArrayNotEmpty()
