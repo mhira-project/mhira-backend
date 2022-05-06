@@ -20,13 +20,12 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-import { Caregiver } from 'src/modules/caregiver/models/caregiver.model';
+import { AssessmentInformant } from '../enums/assessment-informant.enum';
 
 @ObjectType()
 @FilterableRelation('patient', () => Patient)
 @FilterableRelation('clinician', () => User, { nullable: true })
 @FilterableRelation('informantClinician', () => User, { nullable: true })
-@FilterableRelation('informantCaregiver', () => Caregiver, { nullable: true })
 @Entity()
 export class Assessment extends BaseEntity {
     @FilterableField(() => Int)
@@ -54,8 +53,8 @@ export class Assessment extends BaseEntity {
     clinicianId?: number;
 
     @FilterableField(() => String, { nullable: true })
-    @Column({ nullable: true })
-    informant?: string;
+    @Column({ nullable: true, default: AssessmentInformant.PATIENT })
+    informantType?: string;
 
     @FilterableField({ nullable: true })
     @Column({ default: 'PLANNED' })
@@ -72,6 +71,10 @@ export class Assessment extends BaseEntity {
     @Field(() => GraphQLISODateTime, { nullable: true })
     @Column({ nullable: true })
     deliveryDate?: Date;
+
+    @Field(() => String, { nullable: true })
+    @Column({ nullable: true })
+    informantCaregiverRelation?: string;
 
     @FilterableField(() => GraphQLISODateTime)
     @CreateDateColumn()
@@ -107,9 +110,6 @@ export class Assessment extends BaseEntity {
     @ManyToOne(() => User)
     clinician: User;
 
-    @ManyToOne(() => Caregiver)
-    informantCaregiver: Caregiver;
-
     @ManyToOne(() => User)
     informantClinician: User;
 }
@@ -124,9 +124,6 @@ export class FullAssessment extends Assessment {
 
     @Field(() => Patient)
     patient: Patient;
-
-    @Field(() => Caregiver, { nullable: true })
-    informantCaregiver: Caregiver;
 
     @Field(() => User, { nullable: true })
     informantClinician: User;

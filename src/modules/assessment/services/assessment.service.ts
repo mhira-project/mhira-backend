@@ -163,8 +163,6 @@ export class AssessmentService {
         const d1 = new Date(assessmentInput?.deliveryDate),
             d2 = new Date();
 
-        console.log(d1 > d2);
-
         try {
             // create postgres assessment
             assessment = new Assessment();
@@ -174,10 +172,11 @@ export class AssessmentService {
                     AssessmentStatus.OPEN_FOR_COMPLETION,
                 );
             }
+
             assessment.name = assessmentInput.name;
             assessment.patientId = assessmentInput.patientId;
             assessment.clinicianId = assessmentInput.clinicianId;
-            assessment.informant = assessmentInput.informant;
+            assessment.informantType = assessmentInput.informantType;
             assessment.expirationDate = assessmentInput.expirationDate;
             assessment.note = assessmentInput.note;
             assessment.deliveryDate = assessmentInput.deliveryDate;
@@ -192,17 +191,11 @@ export class AssessmentService {
                     );
                 assessment.informantClinician = clinician;
                 // To prevent double informant
-                assessmentInput.informantCaregiverId = null;
+                assessmentInput.informantCaregiverRelation = null;
             }
-            if (assessmentInput.informantCaregiverId) {
-                const caregiver = await this.caregiverRepository.findOne({
-                    id: assessmentInput.informantCaregiverId,
-                });
-                if (!caregiver)
-                    throw new NotFoundException(
-                        'Informant caregiver not found!',
-                    );
-                assessment.informantCaregiver = caregiver;
+            if (assessmentInput.informantCaregiverRelation) {
+                assessment.informantCaregiverRelation =
+                    assessmentInput.informantCaregiverRelation;
             }
             await assessment.save();
         } catch (err) {
@@ -226,12 +219,7 @@ export class AssessmentService {
                     id: assessmentId,
                     isActive: true,
                 },
-                relations: [
-                    'clinician',
-                    'patient',
-                    'informantClinician',
-                    'informantCaregiver',
-                ],
+                relations: ['clinician', 'patient', 'informantClinician'],
             },
         )) as FullAssessment;
         assessment.questionnaireAssessment = await this.questionnaireAssessmentService.getById(
@@ -258,16 +246,43 @@ export class AssessmentService {
             assessmentInput.questionnaires,
         );
 
+        const d1 = new Date(assessmentInput?.deliveryDate),
+            d2 = new Date();
+
+        if (!assessmentInput.deliveryDate || d1 < d2) {
+            await this.questionnaireAssessmentService.changeAssessmentStatus(
+                questionnaireAssessment.id,
+                AssessmentStatus.OPEN_FOR_COMPLETION,
+            );
+        }
+
         try {
             // update postgres assessment
             assessment.name = assessmentInput.name;
             assessment.patientId = assessmentInput.patientId;
             assessment.clinicianId = assessmentInput.clinicianId;
-            assessment.informant = assessmentInput.informant;
+            assessment.informantType = assessmentInput.informantType;
             assessment.questionnaireAssessmentId = questionnaireAssessment.id;
             assessment.expirationDate = assessmentInput.expirationDate;
             assessment.deliveryDate = assessmentInput.deliveryDate;
-            assessment.note = assessmentInput.note;
+            assessment.informantCaregiverRelation = null;
+            assessment.informantClinician = null;
+            if (assessmentInput.informantClinicianId) {
+                const clinician = await this.userRepository.findOne({
+                    id: assessmentInput.informantClinicianId,
+                });
+                if (!clinician)
+                    throw new NotFoundException(
+                        'Informant clinician not found!',
+                    );
+                assessment.informantClinician = clinician;
+                // To prevent double informant
+                assessmentInput.informantCaregiverRelation = null;
+            }
+            if (assessmentInput.informantCaregiverRelation) {
+                assessment.informantCaregiverRelation =
+                    assessmentInput.informantCaregiverRelation;
+            }
             await assessment.save();
         } catch (err) {
             // undo mongo changes

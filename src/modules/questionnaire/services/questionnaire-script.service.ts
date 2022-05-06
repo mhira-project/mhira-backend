@@ -83,8 +83,6 @@ export class QuestionnaireScriptService {
         // Apply combined authorized filter
         query.filter = combinedFilter;
 
-        console.log(combinedFilter);
-
         const result = await QuestionnaireScriptConnection.createFromPromise(
             q => this.questionnaireScriptQueryService.query(q),
             query,
