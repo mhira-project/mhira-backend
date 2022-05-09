@@ -105,7 +105,7 @@ export class AssessmentService {
             const assessment = result.edges[i].node;
 
             const expirationToDate = new Date(assessment?.expirationDate);
-            const deliveryDate = new Date(assessment?.deliveryDate);
+            const deliveryToDate = new Date(assessment?.deliveryDate);
             const newDate = new Date();
 
             if (assessment?.deliveryDate && deliveryToDate < newDate) {
