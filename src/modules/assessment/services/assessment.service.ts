@@ -105,7 +105,15 @@ export class AssessmentService {
             const assessment = result.edges[i].node;
 
             const expirationToDate = new Date(assessment?.expirationDate);
+            const deliveryDate = new Date(assessment?.deliveryDate);
             const newDate = new Date();
+
+            if (assessment?.deliveryDate && deliveryToDate < newDate) {
+                await this.questionnaireAssessmentService.changeAssessmentStatus(
+                    assessment.questionnaireAssessmentId,
+                    AssessmentStatus.OPEN_FOR_COMPLETION,
+                );
+            }
 
             if (assessment?.expirationDate && expirationToDate < newDate) {
                 await this.questionnaireAssessmentService.changeAssessmentStatus(
