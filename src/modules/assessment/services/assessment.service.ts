@@ -108,7 +108,15 @@ export class AssessmentService {
             const deliveryToDate = new Date(assessment?.deliveryDate);
             const newDate = new Date();
 
-            if (assessment?.deliveryDate && deliveryToDate < newDate) {
+            const questionnaireAssessment = await this.questionnaireAssessmentService.getById(
+                assessment.questionnaireAssessmentId.toString(),
+            );
+
+            if (
+                questionnaireAssessment.status === AssessmentStatus.PLANNED &&
+                assessment?.deliveryDate &&
+                deliveryToDate < newDate
+            ) {
                 await this.questionnaireAssessmentService.changeAssessmentStatus(
                     assessment.questionnaireAssessmentId,
                     AssessmentStatus.OPEN_FOR_COMPLETION,
