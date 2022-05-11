@@ -281,6 +281,7 @@ export class AssessmentService {
             assessment.questionnaireAssessmentId = questionnaireAssessment.id;
             assessment.expirationDate = assessmentInput.expirationDate;
             assessment.deliveryDate = assessmentInput.deliveryDate;
+            assessment.note = assessmentInput.note;
             assessment.informantCaregiverRelation = null;
             assessment.informantClinician = null;
             if (assessmentInput.informantClinicianId) {
