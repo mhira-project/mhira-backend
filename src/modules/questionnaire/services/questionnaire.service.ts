@@ -73,7 +73,7 @@ export class QuestionnaireService {
         return this.questionnaireModel.findById(_id).exec();
     }
 
-    async getNewestVersionById(questionnaireId: Types.ObjectId) {
+    public async getNewestVersionById(questionnaireId: Types.ObjectId) {
         return this.questionnaireVersionModel
             .findOne({
                 questionnaire: questionnaireId,
