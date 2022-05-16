@@ -9,7 +9,6 @@ import { Disclaimer } from '../models/disclaimer.model';
 import { DisclaimerService } from '../providers/disclaimer.service';
 
 @Resolver(() => Disclaimer)
-@UseGuards(GqlAuthGuard, PermissionGuard)
 export class DisclaimerResolver {
     constructor(private readonly disclaimerService: DisclaimerService) {}
 
@@ -19,6 +18,7 @@ export class DisclaimerResolver {
     }
 
     @Mutation(() => Disclaimer)
+    @UseGuards(GqlAuthGuard)
     async updateDisclaimer(
         @Args('input') input: UpdateDisclaimerInput,
     ): Promise<boolean> {
