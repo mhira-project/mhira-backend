@@ -1,5 +1,5 @@
-import { FilterableField, UnPagedRelation } from "@nestjs-query/query-graphql";
-import { Field, Int, ObjectType } from "@nestjs/graphql";
+import { FilterableField, UnPagedRelation } from '@nestjs-query/query-graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import {
     BaseEntity,
     Column,
@@ -9,25 +9,22 @@ import {
     OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
-} from "typeorm";
-import { Patient } from "./patient.model";
+} from 'typeorm';
+import { Patient } from './patient.model';
 
 @ObjectType()
-@UnPagedRelation('patients', () => Patient,
-    {
-        nullable: true,
-        disableUpdate: true,
-        disableRemove: true
-    }
-)
+@UnPagedRelation('patients', () => Patient, {
+    nullable: true,
+    disableUpdate: true,
+    disableRemove: true,
+})
 @Entity()
 export class PatientStatus extends BaseEntity {
-
     @FilterableField(() => Int)
     @PrimaryGeneratedColumn()
     id: number;
 
-    @FilterableField()
+    @FilterableField({ nullable: true })
     @Column()
     name: string;
 
@@ -47,7 +44,9 @@ export class PatientStatus extends BaseEntity {
     @DeleteDateColumn()
     deletedAt?: Date;
 
-    @OneToMany(() => Patient, patient => patient.status)
+    @OneToMany(
+        () => Patient,
+        patient => patient.status,
+    )
     patients: Patient[];
-
 }

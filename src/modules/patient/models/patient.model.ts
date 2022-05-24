@@ -34,7 +34,7 @@ import { QuestionnaireScript } from 'src/modules/questionnaire/models/questionna
 @ObjectType()
 @FilterableRelation('status', () => PatientStatus, {
     nullable: true,
-    disableUpdate: true,
+    disableUpdate: false,
 })
 @FilterableUnPagedRelation('caseManagers', () => User, { nullable: true })
 @FilterableUnPagedRelation('informants', () => Informant, { nullable: true })
@@ -59,7 +59,7 @@ export class Patient extends BaseEntity {
     ];
 
     @FilterableField(() => Int)
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('increment')
     id: number;
 
     @FilterableField({

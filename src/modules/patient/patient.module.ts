@@ -32,6 +32,8 @@ import {
 } from '../questionnaire/models/questionnaire-version.schema';
 import { QuestionnaireScript } from '../questionnaire/models/questionnaire-script.model';
 import { QuestionnaireModule } from '../questionnaire/questionnaire.module';
+import { CreateOnePatientStatusInput } from './dto/update-patient-status.input';
+import { PatientStatusService } from './providers/patient-status.service';
 
 const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
@@ -137,9 +139,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
                         ],
                     },
                     create: {
-                        decorators: [
-                            UsePermission(PermissionEnum.MANAGE_SETTINGS),
-                        ],
+                        disabled: true,
                     },
                     update: {
                         decorators: [
@@ -162,6 +162,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
         EmergencyContactResolver,
         PatientQueryService,
         QuestionnaireAssessmentService,
+        PatientStatusService,
     ],
     exports: [PatientQueryService],
 })
