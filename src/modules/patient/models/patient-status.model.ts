@@ -24,7 +24,7 @@ export class PatientStatus extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @FilterableField({ nullable: true })
+    @FilterableField()
     @Column()
     name: string;
 
