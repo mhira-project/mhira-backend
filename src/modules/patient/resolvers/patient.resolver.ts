@@ -6,7 +6,7 @@ import {
     QueryArgsType,
     UpdateOneInputType,
 } from '@nestjs-query/query-graphql';
-import { BadRequestException, UseGuards } from '@nestjs/common';
+import { BadRequestException, Inject, UseGuards } from '@nestjs/common';
 import {
     Args,
     ArgsType,
@@ -30,6 +30,9 @@ import { CreatePatientInput } from '../dto/create-patient.input';
 import { UpdatePatientInput } from '../dto/update-patient.input';
 import { PatientQueryService } from '../providers/patient-query.service';
 import { Patient, PatientReport } from '../models/patient.model';
+import { PatientStatus } from '../models/patient-status.model';
+import { CreateOnePatientStatusInput } from '../dto/update-patient-status.input';
+import { PatientStatusService } from '../providers/patient-status.service';
 
 @ArgsType()
 class PatientQuery extends QueryArgsType(Patient) {}
@@ -57,6 +60,8 @@ class PatientDeleteResponse extends PartialType(Patient) {}
 @Resolver(() => Patient)
 @UseGuards(GqlAuthGuard, PermissionGuard)
 export class PatientResolver {
+    @Inject() patientStatusService: PatientStatusService;
+
     constructor(protected service: PatientQueryService) {}
 
     @Query(() => PatientConnection)
@@ -213,5 +218,14 @@ export class PatientResolver {
         } catch (error) {
             return error;
         }
+    }
+
+    @Mutation(() => PatientStatus)
+    @UsePermission(PermissionEnum.MANAGE_SETTINGS)
+    async createOnePatientStatus(
+        @Args('input', { type: () => CreateOnePatientStatusInput })
+        input: CreateOnePatientStatusInput,
+    ): Promise<PatientStatus> {
+        return await this.patientStatusService.create(input);
     }
 }
