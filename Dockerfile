@@ -29,12 +29,11 @@ WORKDIR /app
 
 COPY package*.json ./
 
-COPY wait-for-postgres.sh ./
+COPY wait-for-it.sh ./
+RUN chmod +x wait-for-it.sh
 
 COPY --from=builder /app/node_modules ./node_modules
 
 COPY --from=builder /app/dist ./dist
 
 CMD ["node", "dist/main"]
-
-RUN ["chmod", "+x", "/app/wait-for-postgres.sh"]
