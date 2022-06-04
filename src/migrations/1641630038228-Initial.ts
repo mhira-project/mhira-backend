@@ -1510,6 +1510,6 @@ export class Initial1641630038228 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-
+        console.log('nothing to do here');
     }
 }
