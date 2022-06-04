@@ -3,7 +3,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class UserAcceptedTerm1651061611792 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(
-            `ALTER TABLE "user" ADD COLUMN "acceptedTerm" BOOLEAN DEFAULT false`,
+            `ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "acceptedTerm" BOOLEAN DEFAULT false`,
         );
     }
 

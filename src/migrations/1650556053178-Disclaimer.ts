@@ -2,7 +2,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class Disclaimer1650556053178 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`CREATE TABLE disclaimer (
+        await queryRunner.query(`CREATE TABLE IF NOT EXISTS disclaimer (
             type VARCHAR PRIMARY KEY,
             description VARCHAR NOT NULL,
             "updatedAt" TIMESTAMP WITHOUT TIME ZONE

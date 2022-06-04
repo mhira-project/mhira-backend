@@ -3,16 +3,16 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class AssessmentInformant1651740038228 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(
-            `ALTER TABLE "assessment" DROP COLUMN informant`,
+            `ALTER TABLE "assessment" DROP COLUMN IF EXISTS informant`,
         );
         await queryRunner.query(
-            `ALTER TABLE "assessment" ADD COLUMN "informantType" character varying`,
+            `ALTER TABLE "assessment" ADD COLUMN IF NOT EXISTS "informantType" character varying`,
         );
         await queryRunner.query(
-            `ALTER TABLE "assessment" DROP COLUMN "informantCaregiverId"`,
+            `ALTER TABLE "assessment" DROP COLUMN IF EXISTS "informantCaregiverId"`,
         );
         await queryRunner.query(
-            `ALTER TABLE "assessment" ADD COLUMN "informantCaregiverRelation" character varying`,
+            `ALTER TABLE "assessment" ADD COLUMN IF NOT EXISTS "informantCaregiverRelation" character varying`,
         );
     }
 

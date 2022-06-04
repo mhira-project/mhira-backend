@@ -4,10 +4,10 @@ export class AssessmentExpirationFields1649403519834
     implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(
-            `ALTER TABLE "assessment" ADD COLUMN "expirationDate" timestamp without time zone`,
+            `ALTER TABLE "assessment" ADD COLUMN IF NOT EXISTS "expirationDate" timestamp without time zone`,
         );
         await queryRunner.query(
-            `ALTER TABLE "assessment" ADD COLUMN "deliveryDate" timestamp without time zone`,
+            `ALTER TABLE "assessment" ADD COLUMN IF NOT EXISTS "deliveryDate" timestamp without time zone`,
         );
     }
 
