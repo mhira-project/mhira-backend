@@ -4,7 +4,7 @@ export class Caregivers1643899056854 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
-        create table caregiver
+        create table IF NOT EXISTS caregiver
 (
     id                 serial
         constraint "PK_114bf658fe2b416245381f89be0"
@@ -30,7 +30,7 @@ export class Caregivers1643899056854 implements MigrationInterface {
         `)
 
         await queryRunner.query(`
-      create table patient_caregiver
+      create table IF NOT EXISTS patient_caregiver
 (
     id            serial
         constraint "PK_835a0fa676526ee26379524b5fd"

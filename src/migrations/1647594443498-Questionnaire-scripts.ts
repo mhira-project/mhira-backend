@@ -3,7 +3,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class QuestionnaireScripts1647594443498 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
-        create table questionnaire_script
+        create table IF NOT EXISTS questionnaire_script
      (
          id               serial
          constraint "PK_a486e98875eace5a6257fd6b2f9"
@@ -21,7 +21,7 @@ export class QuestionnaireScripts1647594443498 implements MigrationInterface {
          `);
 
         await queryRunner.query(`
-         create table questionnaire_script_report
+         create table IF NOT EXISTS questionnaire_script_report
          (
              id          serial
              constraint "PK_e5a0d33828fecb338f4cca87342"
