@@ -11,8 +11,8 @@ export class CreateAssessmentInput {
     @FilterableField(() => GraphQLISODateTime, { nullable: true })
     date?: Date;
 
-    @Field({ nullable: true })
-    name: string;
+    @Field(() => Int)
+    assessmentTypeId: number;
 
     @FilterableField(() => Int, { nullable: true })
     clinicianId: number;
@@ -23,8 +23,8 @@ export class CreateAssessmentInput {
 
 @InputType()
 export class CreateFullAssessmentInput {
-    @Field(() => String)
-    name: string;
+    @Field(() => Int)
+    assessmentTypeId: number;
 
     @Field(() => Int)
     patientId: number;
