@@ -21,6 +21,9 @@ import { PatientModule } from '../patient/patient.module';
 import { PublicAssessmentResolver } from './resolvers/public.assesment.resolver';
 import { User } from '../user/models/user.model';
 import { Caregiver } from '../caregiver/models/caregiver.model';
+import { AssessmentTypeService } from './services/assessment-type.service';
+import { AssessmentTypeResolver } from './resolvers/assessment-type.resolver';
+import { AssessmentType } from './models/assessment-type.model';
 
 const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
@@ -33,6 +36,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     Assessment,
                     User,
                     Caregiver,
+                    AssessmentType,
                 ]),
 
                 MongooseModule.forFeature([
@@ -65,6 +69,8 @@ const guards = [GqlAuthGuard, PermissionGuard];
     ],
     providers: [
         AssessmentService,
+        AssessmentTypeService,
+        AssessmentTypeResolver,
         AssessmentResolver,
         QuestionnaireAssessmentService,
         PublicAssessmentResolver,

@@ -21,11 +21,13 @@ import {
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AssessmentInformant } from '../enums/assessment-informant.enum';
+import { AssessmentType } from './assessment-type.model';
 
 @ObjectType()
 @FilterableRelation('patient', () => Patient)
 @FilterableRelation('clinician', () => User, { nullable: true })
 @FilterableRelation('informantClinician', () => User, { nullable: true })
+@FilterableRelation('assessmentType', () => AssessmentType, { nullable: true })
 @Entity()
 export class Assessment extends BaseEntity {
     @FilterableField(() => Int)
@@ -40,9 +42,9 @@ export class Assessment extends BaseEntity {
     @Column({ nullable: true })
     date?: Date;
 
-    @FilterableField({ nullable: true })
-    @Column({ nullable: true })
-    name: string;
+    // @FilterableField({ nullable: true })
+    // @Column({ nullable: true })
+    // name: string;
 
     @FilterableField(() => Int)
     @Column()
@@ -112,6 +114,12 @@ export class Assessment extends BaseEntity {
 
     @ManyToOne(() => User)
     informantClinician: User;
+
+    @ManyToOne(
+        () => AssessmentType,
+        assessmentType => assessmentType.assessments,
+    )
+    assessmentType: AssessmentType;
 }
 
 @ObjectType()
@@ -127,6 +135,9 @@ export class FullAssessment extends Assessment {
 
     @Field(() => User, { nullable: true })
     informantClinician: User;
+
+    @Field(() => AssessmentType)
+    assessmentType: AssessmentType;
 }
 
 @ObjectType()

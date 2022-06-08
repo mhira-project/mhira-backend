@@ -25,6 +25,7 @@ import { ConnectionType } from '@nestjs-query/query-graphql';
 import { PatientQueryService } from 'src/modules/patient/providers/patient-query.service';
 import { Caregiver } from 'src/modules/caregiver/models/caregiver.model';
 import { AssessmentStatus } from 'src/modules/questionnaire/enums/assessment-status.enum';
+import { AssessmentType } from '../models/assessment-type.model';
 
 @Injectable()
 export class AssessmentService {
@@ -37,6 +38,8 @@ export class AssessmentService {
         private caregiverRepository: Repository<Caregiver>,
         @InjectQueryService(Assessment)
         private readonly assessmentQueryService: QueryService<Assessment>,
+        @InjectRepository(AssessmentType)
+        private readonly assessmentTypeRepo: Repository<AssessmentType>,
         private readonly patientQueryService: PatientQueryService,
     ) {}
 
@@ -171,6 +174,13 @@ export class AssessmentService {
     async createNewAssessment(assessmentInput: CreateFullAssessmentInput) {
         let assessment: Assessment;
 
+        const assessmentType = await this.assessmentTypeRepo.findOne(
+            assessmentInput.assessmentTypeId,
+        );
+
+        if (!assessmentType)
+            throw new NotFoundException('Assessment type not found!');
+
         // create mongo assessment
         const questionnaireAssessment = await this.questionnaireAssessmentService.createNewAssessment(
             assessmentInput.questionnaires,
@@ -189,7 +199,7 @@ export class AssessmentService {
                 );
             }
 
-            assessment.name = assessmentInput.name;
+            assessment.assessmentType = assessmentType;
             assessment.patientId = assessmentInput.patientId;
             assessment.clinicianId = assessmentInput.clinicianId;
             assessment.informantType = assessmentInput.informantType;
@@ -235,12 +245,21 @@ export class AssessmentService {
                     id: assessmentId,
                     isActive: true,
                 },
-                relations: ['clinician', 'patient', 'informantClinician'],
+                relations: [
+                    'clinician',
+                    'patient',
+                    'informantClinician',
+                    'assessmentType',
+                ],
             },
         )) as FullAssessment;
+
         assessment.questionnaireAssessment = await this.questionnaireAssessmentService.getById(
             assessment.questionnaireAssessmentId,
         );
+
+        console.log(assessment);
+
         return assessment;
     }
 
@@ -249,6 +268,13 @@ export class AssessmentService {
         const assessment = await this.assessmentRepository.findOneOrFail(
             assessmentInput.assessmentId,
         );
+
+        const assessmentType = await this.assessmentTypeRepo.findOne(
+            assessmentInput.assessmentTypeId,
+        );
+
+        if (!assessmentType)
+            throw new NotFoundException('Assessment type not found!');
 
         // find & update mongo assessment
         let questionnaireAssessment = await this.questionnaireAssessmentService.getById(
@@ -274,7 +300,7 @@ export class AssessmentService {
 
         try {
             // update postgres assessment
-            assessment.name = assessmentInput.name;
+            assessment.assessmentType = assessmentType;
             assessment.patientId = assessmentInput.patientId;
             assessment.clinicianId = assessmentInput.clinicianId;
             assessment.informantType = assessmentInput.informantType;
