@@ -7,6 +7,7 @@ export class AssessmentType1654507311250 implements MigrationInterface {
      (
          id               serial   constraint "PK_ab3af1c886a0939a6a7a702827d" primary key,
          name             varchar                 not null,
+         status           character varying               ,
          "deletedAt"      timestamp,
          "createdAt"      timestamp default now() not null,
          "updatedAt"      timestamp default now() not null

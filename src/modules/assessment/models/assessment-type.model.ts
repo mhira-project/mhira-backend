@@ -11,6 +11,7 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
+import { AssessmentTypeEnum } from '../enums/assessment-type.enum';
 import { Assessment } from './assessment.model';
 
 @ObjectType()
@@ -23,6 +24,10 @@ export class AssessmentType extends BaseEntity {
     @FilterableField()
     @Column()
     name: string;
+
+    @FilterableField()
+    @Column({ default: AssessmentTypeEnum.ACTIVE })
+    status: AssessmentTypeEnum;
 
     @FilterableField()
     @CreateDateColumn()
