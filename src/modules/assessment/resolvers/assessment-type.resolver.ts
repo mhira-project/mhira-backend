@@ -40,12 +40,17 @@ export class AssessmentTypeResolver {
         return this.assessmentTypeService.getAssessmentTypes(query);
     }
 
+    @Query(() => [AssessmentType])
+    // @UsePermission(PermissionEnum.VIEW_ASSESSMENTS)
+    async activeAssessmentTypes(): Promise<AssessmentType[]> {
+        return this.assessmentTypeService.getActiveAssessmentTypes();
+    }
+
     @Mutation(() => AssessmentType)
     // @UsePermission(PermissionEnum.MANAGE_ASSESSMENTS)
     createNewAssessmentType(
         @Args('assessmentType') assessmentTypeInput: CreateAssessmentTypeInput,
     ) {
-        console.log(assessmentTypeInput);
         return this.assessmentTypeService.createAssessmentType(
             assessmentTypeInput,
         );

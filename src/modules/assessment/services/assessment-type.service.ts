@@ -24,6 +24,7 @@ import {
     CreateAssessmentTypeInput,
     UpdateAssessmentTypeInput,
 } from '../dtos/create-assessment-type.input';
+import { AssessmentTypeEnum } from '../enums/assessment-type.enum';
 
 @Injectable()
 export class AssessmentTypeService {
@@ -57,12 +58,23 @@ export class AssessmentTypeService {
         return result;
     }
 
+    async getActiveAssessmentTypes(): Promise<AssessmentType[]> {
+        // Apply combined authorized filter
+
+        const result = await this.assessmentTypeRepository.find({
+            status: AssessmentTypeEnum.ACTIVE,
+        });
+
+        return result;
+    }
+
     async createAssessmentType(
         input: CreateAssessmentTypeInput,
     ): Promise<AssessmentType> {
         const newAssesmentType = this.assessmentTypeRepository.create();
 
         newAssesmentType.name = input.name;
+        newAssesmentType.status = input.status;
 
         return await this.assessmentTypeRepository.save(newAssesmentType);
     }
@@ -78,6 +90,7 @@ export class AssessmentTypeService {
             throw new NotFoundException('Assessment type not found!');
 
         assessmentType.name = input.name;
+        assessmentType.status = input.status;
 
         return await this.assessmentTypeRepository.save(assessmentType);
     }
