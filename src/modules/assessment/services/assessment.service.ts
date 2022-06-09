@@ -368,7 +368,7 @@ export class AssessmentService {
                     isActive: true,
                     uuid,
                 },
-                relations: ['clinician', 'patient'],
+                relations: ['clinician', 'patient', 'assessmentType'],
             },
         )) as FullAssessment;
         assessment.questionnaireAssessment = await this.questionnaireAssessmentService.getById(
