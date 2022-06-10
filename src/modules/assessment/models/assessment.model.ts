@@ -136,7 +136,7 @@ export class FullAssessment extends Assessment {
     @Field(() => User, { nullable: true })
     informantClinician: User;
 
-    @Field(() => AssessmentType)
+    @Field(() => AssessmentType, { nullable: true })
     assessmentType: AssessmentType;
 }
 
