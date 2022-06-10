@@ -13,7 +13,7 @@ export class InsertAssessmentTypesByName1654780819593
         await queryRunner.query(`
       
        UPDATE assessment_type 
-       SET status = 'ACTIVE' WHERE status IS NULL;
+       SET status = 'INACTIVE' WHERE status IS NULL;
  
 
         `);
