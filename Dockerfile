@@ -32,7 +32,9 @@ WORKDIR /app
 COPY package*.json ./
 
 COPY wait-for-it.sh ./
+COPY start.sh ./
 RUN chmod +x wait-for-it.sh
+RUN chmod +x start.sh
 
 COPY --from=builder /app/node_modules ./node_modules
 
