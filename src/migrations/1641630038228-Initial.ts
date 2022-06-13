@@ -7,13 +7,6 @@ export class Initial1641630038228 implements MigrationInterface {
             -- PostgreSQL database dump
             --
 
-            -- Dumped from database version 12.11 (Ubuntu 12.11-0ubuntu0.20.04.1)
-            -- Dumped by pg_dump version 12.11 (Ubuntu 12.11-0ubuntu0.20.04.1)
-
-            --
-            -- Name: access_token; Type: TABLE; Schema: public; Owner: default
-            --
-
             CREATE TABLE public.access_token (
                 id character varying NOT NULL,
                 "userId" integer NOT NULL,
@@ -24,7 +17,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.access_token OWNER TO default;
+
 
             --
             -- Name: assessment; Type: TABLE; Schema: public; Owner: default
@@ -52,7 +45,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.assessment OWNER TO default;
+
 
             --
             -- Name: assessment_id_seq; Type: SEQUENCE; Schema: public; Owner: default
@@ -67,7 +60,7 @@ export class Initial1641630038228 implements MigrationInterface {
                 CACHE 1;
 
 
-            ALTER TABLE public.assessment_id_seq OWNER TO default;
+
 
             --
             -- Name: assessment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: default
@@ -99,7 +92,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.caregiver OWNER TO default;
+
 
             --
             -- Name: caregiver_id_seq; Type: SEQUENCE; Schema: public; Owner: default
@@ -114,7 +107,7 @@ export class Initial1641630038228 implements MigrationInterface {
                 CACHE 1;
 
 
-            ALTER TABLE public.caregiver_id_seq OWNER TO default;
+
 
             --
             -- Name: caregiver_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: default
@@ -138,7 +131,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.department OWNER TO default;
+
 
             --
             -- Name: COLUMN department.name; Type: COMMENT; Schema: public; Owner: default
@@ -160,7 +153,7 @@ export class Initial1641630038228 implements MigrationInterface {
                 CACHE 1;
 
 
-            ALTER TABLE public.department_id_seq OWNER TO default;
+
 
             --
             -- Name: department_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: default
@@ -180,7 +173,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.disclaimer OWNER TO default;
+
 
             --
             -- Name: emergency_contact; Type: TABLE; Schema: public; Owner: default
@@ -200,7 +193,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.emergency_contact OWNER TO default;
+
 
             --
             -- Name: emergency_contact_id_seq; Type: SEQUENCE; Schema: public; Owner: default
@@ -215,7 +208,7 @@ export class Initial1641630038228 implements MigrationInterface {
                 CACHE 1;
 
 
-            ALTER TABLE public.emergency_contact_id_seq OWNER TO default;
+
 
             --
             -- Name: emergency_contact_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: default
@@ -244,7 +237,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.informant OWNER TO default;
+
 
             --
             -- Name: informant_id_seq; Type: SEQUENCE; Schema: public; Owner: default
@@ -259,7 +252,7 @@ export class Initial1641630038228 implements MigrationInterface {
                 CACHE 1;
 
 
-            ALTER TABLE public.informant_id_seq OWNER TO default;
+
 
             --
             -- Name: informant_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: default
@@ -300,7 +293,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.patient OWNER TO default;
+
 
             --
             -- Name: patient_caregiver; Type: TABLE; Schema: public; Owner: default
@@ -319,7 +312,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.patient_caregiver OWNER TO default;
+
 
             --
             -- Name: patient_caregiver_id_seq; Type: SEQUENCE; Schema: public; Owner: default
@@ -334,7 +327,7 @@ export class Initial1641630038228 implements MigrationInterface {
                 CACHE 1;
 
 
-            ALTER TABLE public.patient_caregiver_id_seq OWNER TO default;
+
 
             --
             -- Name: patient_caregiver_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: default
@@ -353,7 +346,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.patient_case_manager OWNER TO default;
+
 
             --
             -- Name: patient_department; Type: TABLE; Schema: public; Owner: default
@@ -365,7 +358,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.patient_department OWNER TO default;
+
 
             --
             -- Name: patient_id_seq; Type: SEQUENCE; Schema: public; Owner: default
@@ -380,7 +373,7 @@ export class Initial1641630038228 implements MigrationInterface {
                 CACHE 1;
 
 
-            ALTER TABLE public.patient_id_seq OWNER TO default;
+
 
             --
             -- Name: patient_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: default
@@ -403,7 +396,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.patient_status OWNER TO default;
+
 
             --
             -- Name: patient_status_id_seq; Type: SEQUENCE; Schema: public; Owner: default
@@ -418,7 +411,7 @@ export class Initial1641630038228 implements MigrationInterface {
                 CACHE 1;
 
 
-            ALTER TABLE public.patient_status_id_seq OWNER TO default;
+
 
             --
             -- Name: patient_status_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: default
@@ -441,7 +434,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.permission OWNER TO default;
+
 
             --
             -- Name: permission_id_seq; Type: SEQUENCE; Schema: public; Owner: default
@@ -456,7 +449,7 @@ export class Initial1641630038228 implements MigrationInterface {
                 CACHE 1;
 
 
-            ALTER TABLE public.permission_id_seq OWNER TO default;
+
 
             --
             -- Name: permission_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: default
@@ -483,7 +476,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.questionnaire_script OWNER TO default;
+
 
             --
             -- Name: questionnaire_script_id_seq; Type: SEQUENCE; Schema: public; Owner: default
@@ -498,7 +491,7 @@ export class Initial1641630038228 implements MigrationInterface {
                 CACHE 1;
 
 
-            ALTER TABLE public.questionnaire_script_id_seq OWNER TO default;
+
 
             --
             -- Name: questionnaire_script_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: default
@@ -517,7 +510,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.questionnaire_script_report OWNER TO default;
+
 
             --
             -- Name: relationship_type; Type: TABLE; Schema: public; Owner: default
@@ -532,7 +525,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.relationship_type OWNER TO default;
+
 
             --
             -- Name: relationship_type_id_seq; Type: SEQUENCE; Schema: public; Owner: default
@@ -547,7 +540,7 @@ export class Initial1641630038228 implements MigrationInterface {
                 CACHE 1;
 
 
-            ALTER TABLE public.relationship_type_id_seq OWNER TO default;
+
 
             --
             -- Name: relationship_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: default
@@ -576,7 +569,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.report OWNER TO default;
+
 
             --
             -- Name: report_id_seq; Type: SEQUENCE; Schema: public; Owner: default
@@ -591,7 +584,7 @@ export class Initial1641630038228 implements MigrationInterface {
                 CACHE 1;
 
 
-            ALTER TABLE public.report_id_seq OWNER TO default;
+
 
             --
             -- Name: report_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: default
@@ -610,7 +603,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.report_role OWNER TO default;
+
 
             --
             -- Name: role; Type: TABLE; Schema: public; Owner: default
@@ -627,7 +620,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.role OWNER TO default;
+
 
             --
             -- Name: role_id_seq; Type: SEQUENCE; Schema: public; Owner: default
@@ -642,7 +635,7 @@ export class Initial1641630038228 implements MigrationInterface {
                 CACHE 1;
 
 
-            ALTER TABLE public.role_id_seq OWNER TO default;
+
 
             --
             -- Name: role_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: default
@@ -661,7 +654,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.role_permission OWNER TO default;
+
 
             --
             -- Name: setting; Type: TABLE; Schema: public; Owner: default
@@ -673,7 +666,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.setting OWNER TO default;
+
 
             --
             -- Name: user; Type: TABLE; Schema: public; Owner: default
@@ -704,7 +697,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public."user" OWNER TO default;
+
 
             --
             -- Name: COLUMN "user".username; Type: COMMENT; Schema: public; Owner: default
@@ -730,7 +723,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.user_department OWNER TO default;
+
 
             --
             -- Name: user_id_seq; Type: SEQUENCE; Schema: public; Owner: default
@@ -745,7 +738,7 @@ export class Initial1641630038228 implements MigrationInterface {
                 CACHE 1;
 
 
-            ALTER TABLE public.user_id_seq OWNER TO default;
+
 
             --
             -- Name: user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: default
@@ -764,7 +757,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.user_permission OWNER TO default;
+
 
             --
             -- Name: user_previous_password; Type: TABLE; Schema: public; Owner: default
@@ -778,7 +771,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.user_previous_password OWNER TO default;
+
 
             --
             -- Name: COLUMN user_previous_password.password; Type: COMMENT; Schema: public; Owner: default
@@ -800,7 +793,7 @@ export class Initial1641630038228 implements MigrationInterface {
                 CACHE 1;
 
 
-            ALTER TABLE public.user_previous_password_id_seq OWNER TO default;
+
 
             --
             -- Name: user_previous_password_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: default
@@ -819,7 +812,7 @@ export class Initial1641630038228 implements MigrationInterface {
             );
 
 
-            ALTER TABLE public.user_role OWNER TO default;
+
 
             --
             -- Name: assessment id; Type: DEFAULT; Schema: public; Owner: default
@@ -1498,7 +1491,7 @@ export class Initial1641630038228 implements MigrationInterface {
             --
 
             ALTER TABLE ONLY public.assessment
-                ADD CONSTRAINT "FK_fd1fdcb990f1fd615cfbaf3b12a" FOREIGN KEY ("clinicianId") REFERENCES public."user"(id);
+                ADD CONSTRAINT "FK_fd1fdcb990f1fd615cfbaf3b12a" FOREIGN KEY ("clinicianId") REFERENCES public."user"(id);        
 
 
             --
