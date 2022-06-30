@@ -145,6 +145,6 @@ export class AssessmentResponse extends Assessment {
     @Field(() => String)
     assessmentId: string;
 
-    @Field(() => AssessmentType)
+     @Field(() => AssessmentType, { nullable: true })
     assessmentType: AssessmentType;
 }
