@@ -100,10 +100,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
     ): Promise<PatientReport> {
         const condition = status ? `assessments.status = '${status}'` : 'true';
         const patient = await this.repo.findOne({
-            join: {
-                alias: 'patient',
-                leftJoinAndSelect: { assessments: 'patient.assessments' },
-            },
+            relations: ['assessments', 'assessments.assessmentType'],
             where: qb => {
                 qb.where({
                     id,

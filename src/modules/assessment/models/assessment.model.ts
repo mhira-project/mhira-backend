@@ -144,4 +144,7 @@ export class FullAssessment extends Assessment {
 export class AssessmentResponse extends Assessment {
     @Field(() => String)
     assessmentId: string;
+
+    @Field(() => AssessmentType)
+    assessmentType: AssessmentType;
 }
