@@ -66,7 +66,7 @@ export class QuestionnaireAssessmentService {
         if (
             ![
                 AssessmentStatus.PARTIALLY_COMPLETED,
-                AssessmentStatus.OPEN_FOR_COMPLETITION,
+                AssessmentStatus.OPEN_FOR_COMPLETION,
             ].includes(foundAssessment.status)
         ) {
             throw new Error(
