@@ -166,12 +166,4 @@ export class User extends BaseEntity {
     )
     accessTokens: AccessToken[];
 
-    @BeforeInsert()
-    async beforeInsert() {
-        // Expire the default password immediately
-        this.passwordExpiresAt = moment().toDate();
-
-        // Hash the password
-        this.password = await Hash.make(this.password);
-    }
 }
