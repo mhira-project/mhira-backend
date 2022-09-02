@@ -10,6 +10,7 @@ import { Role } from 'src/modules/permission/models/role.model';
 import { RoleCode } from 'src/modules/permission/enums/role-code.enum';
 import { UpdateUserInput } from '../dto/update-user.input';
 import { PermissionService } from 'src/modules/permission/providers/permission.service';
+import {Hash} from "../../../shared";
 
 @QueryService(User)
 export class UserCrudService extends TypeOrmQueryService<User> {
@@ -30,7 +31,9 @@ export class UserCrudService extends TypeOrmQueryService<User> {
 
         const user = await super.createOne(input);
 
-        // attach Default Role
+        user.passwordExpiresAt = moment().toDate();
+        user.password = await Hash.make(user.password);
+
         const defaultRole = await Role.findOne({ code: RoleCode.NO_ROLE });
 
         if (defaultRole) {
