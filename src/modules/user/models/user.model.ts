@@ -1,4 +1,4 @@
-import { ObjectType, Int, GraphQLISODateTime, Field } from '@nestjs/graphql';
+import {ObjectType, Int, GraphQLISODateTime, Field} from '@nestjs/graphql';
 import {
     Entity,
     PrimaryGeneratedColumn,
@@ -10,30 +10,27 @@ import {
     ManyToMany,
     JoinTable,
     OneToMany,
-    BeforeInsert,
 } from 'typeorm';
-import { Permission } from 'src/modules/permission/models/permission.model';
-import { AccessToken } from 'src/modules/auth/models/access-token.model';
-import { GenderEnum } from 'src/modules/patient/models/gender.enum';
+import {Permission} from 'src/modules/permission/models/permission.model';
+import {AccessToken} from 'src/modules/auth/models/access-token.model';
+import {GenderEnum} from 'src/modules/patient/models/gender.enum';
 import {
     FilterableField,
     KeySet,
     FilterableUnPagedRelation,
     UnPagedRelation,
 } from '@nestjs-query/query-graphql';
-import { Role } from 'src/modules/permission/models/role.model';
-import { UserPreviousPassword } from './user-previous-password.model';
-import { Department } from 'src/modules/department/models/department.model';
-import { Patient } from 'src/modules/patient/models/patient.model';
-import * as moment from 'moment';
-import { Hash } from 'src/shared/helpers/hash.helper';
+import {Role} from 'src/modules/permission/models/role.model';
+import {UserPreviousPassword} from './user-previous-password.model';
+import {Department} from 'src/modules/department/models/department.model';
+import {Patient} from 'src/modules/patient/models/patient.model';
 
 @ObjectType()
 @KeySet(['id'])
 @FilterableUnPagedRelation('roles', () => Role)
 @UnPagedRelation('permissions', () => Permission)
 @FilterableUnPagedRelation('departments', () => Department)
-@Entity({ synchronize: true })
+@Entity({synchronize: true})
 export class User extends BaseEntity {
     static searchable = [
         'firstName',
@@ -50,75 +47,76 @@ export class User extends BaseEntity {
     id: number;
 
     @FilterableField()
-    @Column({ default: false })
+    @Column({default: false})
     isSuperUser: boolean;
 
     @Field()
-    @Column({ default: false })
+    @Column({default: false})
     acceptedTerm: boolean;
 
     @FilterableField()
-    @Column({ unique: true, comment: 'Login Username' })
+    @Column({unique: true, comment: 'Login Username'})
     username: string;
 
-    @Column({ comment: 'Hashed password' })
+    @Column({comment: 'Hashed password'})
     password: string;
 
-    @FilterableField({ nullable: true, defaultValue: true })
-    @Column({ default: true })
+    @FilterableField({nullable: true, defaultValue: true})
+    @Column({default: true})
     active?: boolean;
 
     @FilterableField()
     @Column()
     firstName: string;
 
-    @FilterableField({ nullable: true })
-    @Column({ nullable: true })
+    @FilterableField({nullable: true})
+    @Column({nullable: true})
     middleName?: string;
 
     @FilterableField()
     @Column()
     lastName: string;
 
-    @FilterableField({ nullable: true })
-    @Column({ nullable: true })
+    @FilterableField({nullable: true})
+    @Column({nullable: true})
     email?: string;
 
-    @FilterableField({ nullable: true })
-    @Column({ nullable: true })
+    @FilterableField({nullable: true})
+    @Column({nullable: true})
     phone?: string;
 
-    @FilterableField({ nullable: true })
-    @Column({ nullable: true })
+    @FilterableField({nullable: true})
+    @Column({nullable: true})
     workID?: string;
 
-    @FilterableField({ nullable: true })
-    @Column({ nullable: true })
+    @FilterableField({nullable: true})
+    @Column({nullable: true})
     address?: string;
 
-    @FilterableField({ nullable: true })
-    @Column({ nullable: true })
+    @FilterableField({nullable: true})
+    @Column({nullable: true})
     gender?: GenderEnum;
 
-    @FilterableField({ nullable: true })
-    @Column({ nullable: true })
+    @FilterableField({nullable: true})
+    @Column({nullable: true})
     birthDate?: Date;
 
-    @FilterableField({ nullable: true })
-    @Column({ nullable: true })
+    @FilterableField({nullable: true})
+    @Column({nullable: true})
     nationality?: string;
 
-    @FilterableField(() => GraphQLISODateTime, { nullable: true })
-    @Column({ nullable: true })
+    @FilterableField(() => GraphQLISODateTime, {nullable: true})
+    @Column({nullable: true})
     passwordExpiresAt: Date;
 
     @OneToMany(
         () => UserPreviousPassword,
         password => password.user,
+        {onDelete: 'CASCADE'},
     )
     previousPasswords: UserPreviousPassword[];
 
-    @Column({ default: 0, nullable: true })
+    @Column({default: 0, nullable: true})
     failedLoginAttempts: number;
 
     @FilterableField(() => GraphQLISODateTime)
@@ -129,7 +127,7 @@ export class User extends BaseEntity {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @FilterableField(() => GraphQLISODateTime, { nullable: true })
+    @FilterableField(() => GraphQLISODateTime, {nullable: true})
     @DeleteDateColumn()
     deletedAt: Date;
 
@@ -137,21 +135,21 @@ export class User extends BaseEntity {
         () => Permission,
         permission => permission.users,
     )
-    @JoinTable({ name: 'user_permission' })
+    @JoinTable({name: 'user_permission'})
     permissions: Permission[];
 
     @ManyToMany(
         () => Role,
         role => role.users,
     )
-    @JoinTable({ name: 'user_role' })
+    @JoinTable({name: 'user_role'})
     roles: Role[];
 
     @ManyToMany(
         () => Department,
         department => department.users,
     )
-    @JoinTable({ name: 'user_department' })
+    @JoinTable({name: 'user_department'})
     departments: Department[];
 
     @ManyToMany(
@@ -163,6 +161,7 @@ export class User extends BaseEntity {
     @OneToMany(
         () => AccessToken,
         token => token.user,
+        {onDelete: 'CASCADE'},
     )
     accessTokens: AccessToken[];
 
