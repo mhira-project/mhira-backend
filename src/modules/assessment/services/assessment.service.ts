@@ -126,7 +126,12 @@ export class AssessmentService {
                 );
             }
 
-            if (assessment?.expirationDate && expirationToDate < newDate) {
+            if (
+                assessment?.expirationDate &&
+                expirationToDate < newDate &&
+                questionnaireAssessment?.status !== AssessmentStatus.COMPLETED &&
+                questionnaireAssessment?.status !== AssessmentStatus.PARTIALLY_COMPLETED
+            ) {
                 await this.questionnaireAssessmentService.changeAssessmentStatus(
                     assessment.questionnaireAssessmentId,
                     AssessmentStatus.EXPIRED,
