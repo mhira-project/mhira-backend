@@ -16,7 +16,7 @@ import {Hash} from "../../../shared";
 export class UserCrudService extends TypeOrmQueryService<User> {
     constructor(@InjectRepository(User) repo: Repository<User>) {
         // pass the use soft delete option to the service.
-        super(repo, { useSoftDelete: true });
+        super(repo);
     }
 
     async createOne(input: CreateUserInput): Promise<User> {
