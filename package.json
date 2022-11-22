@@ -22,6 +22,7 @@
         "test:e2e": "jest --config ./test/jest-e2e.json"
     },
     "dependencies": {
+        "@nestjs-modules/mailer": "^1.8.1",
         "@nestjs-query/query-graphql": "^0.27.0",
         "@nestjs-query/query-mongoose": "^0.27.0",
         "@nestjs-query/query-typeorm": "^0.27.0",
@@ -55,10 +56,12 @@
         "graphql-relay": "^0.6.0",
         "graphql-tools": "^5.0.0",
         "graphql-upload": "^11.0.0",
+        "handlebars": "^4.7.7",
         "moment": "^2.27.0",
         "mongoose": "^5.10.11",
         "nest-schedule": "^0.6.4",
         "node-xlsx": "^0.16.1",
+        "nodemailer": "^6.8.0",
         "otp-generator": "^1.1.0",
         "passport": "^0.4.1",
         "passport-jwt": "^4.0.0",
