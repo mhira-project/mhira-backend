@@ -83,7 +83,8 @@ export class XLSForm {
         const formattedData: Partial<T>[] = [];
         const columns = this.getColumnDefinitions(sheetName);
         const rows = this.getRowData(sheetName);
-
+        console.log('columns ', columns)
+        console.log('rows ', rows)
         for (const rowObject of rows) {
             if (rowObject.length === 0) {
                 continue;
@@ -105,6 +106,8 @@ export class XLSForm {
                         )
                             ? QuestionnaireType.OTHER
                             : columnValue;
+                    } if(column == 'label') {
+                        dataObject[column] = columnValue;
                     } else {
                         dataObject[column] =
                             columnValue === 'yes' || columnValue === 'no'
