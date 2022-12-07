@@ -22,6 +22,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { AssessmentInformant } from '../enums/assessment-informant.enum';
 import { AssessmentType } from './assessment-type.model';
+import { AssessmentEmailStatus } from '../enums/assessment-emailstatus.enum';
 
 @ObjectType()
 @FilterableRelation('patient', () => Patient)
@@ -97,6 +98,18 @@ export class Assessment extends BaseEntity {
     @FilterableField(() => String, { nullable: true })
     @Column({ type: 'varchar', nullable: true })
     uuid: string;
+
+    @Field(() => Boolean)
+    @Column({ default: false })
+    emailReminder?: boolean;
+
+    @FilterableField(() => String)
+    @Column({ default: AssessmentEmailStatus.NOT_SCHEDULED })
+    emailStatus?: string;
+
+    @Field(() => String, { nullable: true })
+    @Column({ nullable: true })
+    receiverEmail?: string;
 
     @BeforeInsert()
     private generateUuid() {

@@ -26,6 +26,7 @@ import { PatientQueryService } from 'src/modules/patient/providers/patient-query
 import { Caregiver } from 'src/modules/caregiver/models/caregiver.model';
 import { AssessmentStatus } from 'src/modules/questionnaire/enums/assessment-status.enum';
 import { AssessmentType } from '../models/assessment-type.model';
+import { AssessmentEmailStatus } from '../enums/assessment-emailstatus.enum';
 
 @Injectable()
 export class AssessmentService {
@@ -223,6 +224,16 @@ export class AssessmentService {
                 assessment.informantCaregiverRelation =
                     assessmentInput.informantCaregiverRelation;
             }
+            // If emailReminder is not checked then all the other email values will be edited
+            assessment.emailReminder = assessmentInput.emailReminder;
+            if (!assessmentInput.emailReminder) {
+                assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED;
+                assessment.receiverEmail = null;
+            } else {
+                assessment.emailStatus = assessmentInput.emailStatus;
+                assessment.receiverEmail = assessmentInput.receiverEmail;
+            }
+
             await assessment.save();
         } catch (err) {
             // undo mongo assessment and rethrow
@@ -257,8 +268,6 @@ export class AssessmentService {
         assessment.questionnaireAssessment = await this.questionnaireAssessmentService.getById(
             assessment.questionnaireAssessmentId,
         );
-
-        console.log(assessment);
 
         return assessment;
     }
@@ -325,6 +334,15 @@ export class AssessmentService {
             if (assessmentInput.informantCaregiverRelation) {
                 assessment.informantCaregiverRelation =
                     assessmentInput.informantCaregiverRelation;
+            }
+            // If emailReminder is not checked then all the other email values will be edited
+            assessment.emailReminder = assessmentInput.emailReminder;
+            if (!assessmentInput.emailReminder) {
+                assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED;
+                assessment.receiverEmail = null;
+            } else {
+                assessment.emailStatus = assessmentInput.emailStatus;
+                assessment.receiverEmail = assessmentInput.receiverEmail;
             }
             await assessment.save();
         } catch (err) {
