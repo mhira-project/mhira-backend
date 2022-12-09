@@ -1,4 +1,4 @@
-import { Field, InputType } from "@nestjs/graphql";
+import { Field, InputType, Int } from "@nestjs/graphql";
 
 @InputType()
 export class SendMailInput {
@@ -16,4 +16,26 @@ export class SendMailInput {
 
     @Field(() => String)
     body: string;
+}
+
+
+@InputType()
+export class CreateEmail {
+    @Field(() => String)
+    name: string;
+
+    @Field(() => String)
+    subject: string;
+
+    @Field(() => String)
+    body: string;
+
+    @Field(() => String)
+    module: string;
+}
+
+@InputType()
+export class UpdateEmail extends CreateEmail {
+    @Field(() => Int)
+    id: number
 }
