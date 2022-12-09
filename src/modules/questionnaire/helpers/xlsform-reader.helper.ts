@@ -84,8 +84,6 @@ export class XLSForm {
         const columns = this.getColumnDefinitions(sheetName);
         const rows = this.getRowData(sheetName);
 
-        // console.log('columns ', columns)
-        // console.log('rows ', rows)
         for (const rowObject of rows) {
             if (rowObject.length === 0) {
                 continue;
