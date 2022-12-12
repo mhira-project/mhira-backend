@@ -197,7 +197,7 @@ export class PatientResolver {
         @CurrentUser() currentUser: User,
     ): Promise<PatientDeleteResponse> {
         // Get patient if authorized. Throws exception if Not Found
-        this.service.getOnePatient(currentUser, Number(input.id));
+        await this.service.getOnePatient(currentUser, Number(input.id));
 
         return this.service.deleteOne(input.id);
     }
