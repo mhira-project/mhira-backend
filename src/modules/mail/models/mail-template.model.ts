@@ -10,7 +10,7 @@ import { MailModule } from '../enums/mail-module.enum';
 
 @ObjectType()
 @Entity()
-export class Mail extends BaseEntity {
+export class MailTemplate extends BaseEntity {
 
     @FilterableField(() => Int)
     @PrimaryGeneratedColumn()
@@ -28,7 +28,11 @@ export class Mail extends BaseEntity {
     @Column()
     body: string;
 
-    @FilterableField(() => String, { nullable: true })
-    @Column({ default: MailModule.ACTIVE })
+    @Field(() => Boolean)
+    @Column({ default: true })
+    status: boolean;
+
+    @FilterableField(() => String)
+    @Column()
     module: string;
 }

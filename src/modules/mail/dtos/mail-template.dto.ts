@@ -30,6 +30,9 @@ export class CreateEmail {
     @Field(() => String)
     body: string;
 
+    @Field(() => Boolean)
+    status: boolean;
+
     @Field(() => String)
     module: string;
 }

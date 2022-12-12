@@ -3,7 +3,7 @@ import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { Module } from '@nestjs/common';
 import { GqlAuthGuard } from '../auth/auth.guard';
 import { PermissionGuard } from '../permission/guards/permission.guard';
-import { Mail } from './models/mail.model';
+import { MailTemplate } from './models/mail-template.model';
 import { MailResolver } from './resolvers/mail.resolver';
 import { MailService } from './services/mail.service';
 
@@ -12,14 +12,14 @@ import { MailService } from './services/mail.service';
     NestjsQueryGraphQLModule.forFeature({
       imports: [
         NestjsQueryTypeOrmModule.forFeature([
-          Mail
+          MailTemplate
         ])
       ],
       services: [MailService],
       resolvers: [
         {
-          DTOClass: Mail,
-          EntityClass: Mail,
+          DTOClass: MailTemplate,
+          EntityClass: MailTemplate,
           guards: [GqlAuthGuard, PermissionGuard],
           read: { disabled: true },
           create: { disabled: true },

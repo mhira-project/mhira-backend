@@ -1,23 +1,33 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
-import { CreateEmail, SendMailInput, UpdateEmail } from '../dtos/mail.dto';
-import { Mail } from '../models/mail.model';
+import { CreateEmail, SendMailInput, UpdateEmail } from '../dtos/mail-template.dto';
+import { MailTemplate } from '../models/mail-template.model';
 import { MailService } from '../services/mail.service';
 
-@Resolver(() => Mail)
+@Resolver(() => MailTemplate)
 @UseGuards(GqlAuthGuard, PermissionGuard)
 export class MailResolver {
     constructor(private readonly mailService: MailService) {}
-
+    
     @Mutation(() => String)
     async sendEmail(@Args('payload') payload: SendMailInput): Promise<string> {
         return this.mailService.sendEmail(payload)
     }
 
-    @Mutation(() => Mail)
-    async createEmailTemplate(@Args('input') input: CreateEmail): Promise<Mail> {
+    @Query(() => MailTemplate)
+    async getEmailTemplate(@Args('id', { type: () => ID }) id: number): Promise<MailTemplate> {
+        return await this.mailService.getEmailTemplate(id)
+    }
+
+    @Query(() => [MailTemplate])
+    async getAllEmailTemplates(): Promise<MailTemplate[]> {
+        return this.mailService.getAllEmailTemplates()
+    }
+
+    @Mutation(() => MailTemplate)
+    async createEmailTemplate(@Args('input') input: CreateEmail): Promise<MailTemplate> {
         return this.mailService.createEmailTemplate(input)
     }
 
@@ -26,8 +36,8 @@ export class MailResolver {
         return this.mailService.deleteEmailTemplate(emailId)
     }
 
-    @Mutation(() => Mail)
-    async updateEmailTemplate(@Args('input') input: UpdateEmail): Promise<Mail> {
+    @Mutation(() => MailTemplate)
+    async updateEmailTemplate(@Args('input') input: UpdateEmail): Promise<MailTemplate> {
         return this.mailService.updateEmailTemplate(input)
     }
 }

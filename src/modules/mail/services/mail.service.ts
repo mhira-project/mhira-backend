@@ -2,15 +2,15 @@ import { MailerService } from "@nestjs-modules/mailer";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { CreateEmail, SendMailInput, UpdateEmail } from "../dtos/mail.dto";
-import { Mail } from "../models/mail.model";
+import { CreateEmail, SendMailInput, UpdateEmail } from "../dtos/mail-template.dto";
+import { MailTemplate } from "../models/mail-template.model";
 
 @Injectable()
 export class MailService {
     constructor(
         private mailerService: MailerService,
-        @InjectRepository(Mail)
-        private mailRepository: Repository<Mail>,
+        @InjectRepository(MailTemplate)
+        private mailTemplateRepository: Repository<MailTemplate>,
     ) {}
 
     async sendEmail(payload: SendMailInput): Promise<string> {
@@ -26,30 +26,46 @@ export class MailService {
         return "Success"
     }
 
-    async createEmailTemplate(input: CreateEmail): Promise<Mail> {
+    async getEmailTemplate(id: number): Promise<MailTemplate> {
         try {
-            const mail = this.mailRepository.create(input)
-            return this.mailRepository.save(mail)
-            // return "success"
+            const data = await this.mailTemplateRepository.findOneOrFail(id)
+            console.log(data)
+            return data;
         } catch (error) {
-            console.log(error)
+            return error
+        }
+    }
+
+    async getAllEmailTemplates(): Promise<MailTemplate[]> {
+        try {
+            return this.mailTemplateRepository.find()
+        } catch (error) {
+            return error
+        }
+    }
+
+    async createEmailTemplate(input: CreateEmail): Promise<MailTemplate> {
+        try {
+            console.log(input)
+            const mail = this.mailTemplateRepository.create(input)
+            return this.mailTemplateRepository.save(mail)
+        } catch (error) {
+            return error
         }
     }
 
     async deleteEmailTemplate(emailId: number) {
         try {
-            await this.mailRepository.delete(emailId)
+            await this.mailTemplateRepository.delete(emailId)
             return "Success"
         } catch (error) {
-            console.log(error)
+            return error
         }
     }
 
-    async updateEmailTemplate(input: UpdateEmail): Promise<Mail> {
-        // const { id, ...data} = input
-
+    async updateEmailTemplate(input: UpdateEmail): Promise<MailTemplate> {
         try {
-            let email = await this.mailRepository.findOneOrFail(input.id)
+            let email = await this.mailTemplateRepository.findOneOrFail(input.id)
 
             email.name = input.name
             email.subject = input.subject
@@ -58,7 +74,7 @@ export class MailService {
 
             return email.save();
         } catch(error) {
-            console.log(error)
+            return error
         }
     } 
 }
