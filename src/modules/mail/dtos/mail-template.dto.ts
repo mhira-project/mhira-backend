@@ -20,7 +20,7 @@ export class SendMailInput {
 
 
 @InputType()
-export class CreateEmail {
+export class CreateEmailTemplate {
     @Field(() => String)
     name: string;
 
@@ -38,7 +38,22 @@ export class CreateEmail {
 }
 
 @InputType()
-export class UpdateEmail extends CreateEmail {
+export class UpdateEmailTemplate {
     @Field(() => Int)
     id: number
+
+    @Field(() => String, { nullable: true })
+    name?: string;
+
+    @Field(() => String, { nullable: true })
+    subject?: string;
+
+    @Field(() => String, { nullable: true })
+    body?: string;
+
+    @Field(() => Boolean, { nullable: true })
+    status?: boolean;
+
+    @Field(() => String, { nullable: true })
+    module?: string;
 }

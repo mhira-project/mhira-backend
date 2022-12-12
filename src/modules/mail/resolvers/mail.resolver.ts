@@ -2,7 +2,7 @@ import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
-import { CreateEmail, SendMailInput, UpdateEmail } from '../dtos/mail-template.dto';
+import { CreateEmailTemplate, SendMailInput, UpdateEmailTemplate } from '../dtos/mail-template.dto';
 import { MailTemplate } from '../models/mail-template.model';
 import { MailService } from '../services/mail.service';
 
@@ -27,7 +27,7 @@ export class MailResolver {
     }
 
     @Mutation(() => MailTemplate)
-    async createEmailTemplate(@Args('input') input: CreateEmail): Promise<MailTemplate> {
+    async createEmailTemplate(@Args('input') input: CreateEmailTemplate): Promise<MailTemplate> {
         return this.mailService.createEmailTemplate(input)
     }
 
@@ -37,7 +37,7 @@ export class MailResolver {
     }
 
     @Mutation(() => MailTemplate)
-    async updateEmailTemplate(@Args('input') input: UpdateEmail): Promise<MailTemplate> {
+    async updateEmailTemplate(@Args('input') input: UpdateEmailTemplate): Promise<MailTemplate> {
         return this.mailService.updateEmailTemplate(input)
     }
 }

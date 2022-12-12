@@ -1,8 +1,8 @@
 import { registerEnumType } from '@nestjs/graphql';
 
-export enum MailModule {
+export enum TemplateModule {
     ASSESSMENT = 'ASSESSMENT',
     CLIENT = 'CLIENT',
 }
 
-registerEnumType(MailModule, { name: 'MailModule' });
+registerEnumType(TemplateModule, { name: 'TemplateModule' });

@@ -1,8 +1,9 @@
 import { MailerService } from "@nestjs-modules/mailer";
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { CreateEmail, SendMailInput, UpdateEmail } from "../dtos/mail-template.dto";
+import { CreateEmailTemplate, SendMailInput, UpdateEmailTemplate } from "../dtos/mail-template.dto";
+import { TemplateModule } from "../enums/template-module.enum";
 import { MailTemplate } from "../models/mail-template.model";
 
 @Injectable()
@@ -29,7 +30,6 @@ export class MailService {
     async getEmailTemplate(id: number): Promise<MailTemplate> {
         try {
             const data = await this.mailTemplateRepository.findOneOrFail(id)
-            console.log(data)
             return data;
         } catch (error) {
             return error
@@ -44,9 +44,12 @@ export class MailService {
         }
     }
 
-    async createEmailTemplate(input: CreateEmail): Promise<MailTemplate> {
+    async createEmailTemplate(input: CreateEmailTemplate): Promise<MailTemplate> {
         try {
-            console.log(input)
+            if (!Object.values(TemplateModule).some((value) => value === input.module)) {
+                throw new NotFoundException("Module input is incorrect!")
+            }
+
             const mail = this.mailTemplateRepository.create(input)
             return this.mailTemplateRepository.save(mail)
         } catch (error) {
@@ -63,13 +66,14 @@ export class MailService {
         }
     }
 
-    async updateEmailTemplate(input: UpdateEmail): Promise<MailTemplate> {
+    async updateEmailTemplate(input: UpdateEmailTemplate): Promise<MailTemplate> {
         try {
             let email = await this.mailTemplateRepository.findOneOrFail(input.id)
 
             email.name = input.name
             email.subject = input.subject
             email.body = input.body
+            email.status = input.status
             email.module = input.module
 
             return email.save();

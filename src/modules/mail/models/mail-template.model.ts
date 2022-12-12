@@ -6,7 +6,7 @@ import {
     Entity,
     PrimaryGeneratedColumn,
 } from 'typeorm';
-import { MailModule } from '../enums/mail-module.enum';
+import { TemplateModule } from '../enums/template-module.enum';
 
 @ObjectType()
 @Entity()
