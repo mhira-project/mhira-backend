@@ -208,8 +208,11 @@ export class PatientResolver {
         @Args('id', { type: () => ID }) id: number,
         @Args('questionnaireId', { nullable: true }) questionnaireId: string,
         @Args('assessmentStatus', { nullable: true }) assessmentStatus: string,
+        @CurrentUser() currentUser: User,
     ): Promise<PatientReport> {
         try {
+            await this.service.getOnePatient(currentUser, id);
+
             return await this.service.getQuestionnaireReport(
                 id,
                 assessmentStatus,
