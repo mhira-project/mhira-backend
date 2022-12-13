@@ -104,15 +104,15 @@ export class Assessment extends BaseEntity {
     uuid: string;
 
     @Field(() => Boolean)
-    @Column({ default: false })
+    @Column()
     emailReminder?: boolean;
 
     @FilterableField(() => String)
-    @Column({ default: AssessmentEmailStatus.NOT_SCHEDULED })
+    @Column()
     emailStatus?: string;
 
     @Field(() => String, { nullable: true })
-    @Column({ nullable: true })
+    @Column()
     receiverEmail?: string;
 
     @BeforeInsert()

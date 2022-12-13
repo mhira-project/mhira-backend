@@ -109,8 +109,6 @@ export class AssessmentTypeService {
             },
         });
 
-        console.log(assessmentsByTypeId);
-
         if (assessmentsByTypeId.length !== 0) {
             throw new ConflictException('Cannot delete assessment type!');
         }

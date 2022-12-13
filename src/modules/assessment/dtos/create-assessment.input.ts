@@ -58,9 +58,6 @@ export class CreateFullAssessmentInput {
     emailReminder: boolean;
 
     @Field(() => String, { nullable: true })
-    emailStatus: string;
-
-    @Field(() => String, { nullable: true })
     receiverEmail: string;
 }
 

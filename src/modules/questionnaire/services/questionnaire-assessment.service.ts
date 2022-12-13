@@ -159,16 +159,16 @@ export class QuestionnaireAssessmentService {
         assessmentId: Types.ObjectId,
         status: AssessmentStatus,
     ) {
+        const assessmentModel = await this.assessmentModel.findById(assessmentId)
 
-        if (status === AssessmentStatus.COMPLETED) {
+        if (assessmentModel.status !== AssessmentStatus.COMPLETED && status === AssessmentStatus.COMPLETED) {
             let assessment = await this.assessmentRepository.findOne({ where: { questionnaireAssessmentId: assessmentId } })
             assessment.submissionDate = new Date();
             await assessment.save();
         }
 
-        return this.assessmentModel
-            .findByIdAndUpdate(assessmentId, { status })
-            .exec();
+        assessmentModel.status = status
+        return assessmentModel.save()
     }
 
     async deleteAssessment(_id: Types.ObjectId, archive = true) {
