@@ -230,12 +230,12 @@ export class AssessmentService {
                     assessmentInput.informantCaregiverRelation;
             }
             // If emailReminder is not checked then all the other email values will be edited
-            assessment.emailReminder = assessmentInput.emailReminder;
+            assessment.emailReminder = assessmentInput.emailReminder || false;
             if (!assessmentInput.emailReminder) {
                 assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED;
                 assessment.receiverEmail = null;
             } else {
-                assessment.emailStatus = assessmentInput.emailStatus;
+                assessment.emailStatus = AssessmentEmailStatus.SCHEDULED;
                 assessment.receiverEmail = assessmentInput.receiverEmail;
             }
 
@@ -341,12 +341,12 @@ export class AssessmentService {
                     assessmentInput.informantCaregiverRelation;
             }
             // If emailReminder is not checked then all the other email values will be edited
-            assessment.emailReminder = assessmentInput.emailReminder;
+            assessment.emailReminder = assessmentInput.emailReminder || false;
             if (!assessmentInput.emailReminder) {
                 assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED;
                 assessment.receiverEmail = null;
             } else {
-                assessment.emailStatus = assessmentInput.emailStatus;
+                assessment.emailStatus = AssessmentEmailStatus.SCHEDULED;
                 assessment.receiverEmail = assessmentInput.receiverEmail;
             }
             await assessment.save();

@@ -54,11 +54,8 @@ export class CreateFullAssessmentInput {
     @Field(() => GraphQLISODateTime, { nullable: true })
     deliveryDate: Date;
 
-    @Field(() => Boolean)
+    @Field(() => Boolean, { nullable: true })
     emailReminder: boolean;
-
-    @Field(() => String, { nullable: true })
-    emailStatus: string;
 
     @Field(() => String, { nullable: true })
     receiverEmail: string;

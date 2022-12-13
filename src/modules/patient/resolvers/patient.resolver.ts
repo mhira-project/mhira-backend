@@ -197,7 +197,7 @@ export class PatientResolver {
         @CurrentUser() currentUser: User,
     ): Promise<PatientDeleteResponse> {
         // Get patient if authorized. Throws exception if Not Found
-        this.service.getOnePatient(currentUser, Number(input.id));
+        await this.service.getOnePatient(currentUser, Number(input.id));
 
         return this.service.deleteOne(input.id);
     }
@@ -208,8 +208,11 @@ export class PatientResolver {
         @Args('id', { type: () => ID }) id: number,
         @Args('questionnaireId', { nullable: true }) questionnaireId: string,
         @Args('assessmentStatus', { nullable: true }) assessmentStatus: string,
+        @CurrentUser() currentUser: User,
     ): Promise<PatientReport> {
         try {
+            await this.service.getOnePatient(currentUser, id);
+
             return await this.service.getQuestionnaireReport(
                 id,
                 assessmentStatus,
