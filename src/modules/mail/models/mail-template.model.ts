@@ -16,7 +16,7 @@ export class MailTemplate extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Field(() => String)
+    @FilterableField(() => String)
     @Column({ nullable: false })
     name: string;
 
@@ -28,7 +28,7 @@ export class MailTemplate extends BaseEntity {
     @Column()
     body: string;
 
-    @Field(() => Boolean)
+    @FilterableField(() => Boolean)
     @Column({ default: true })
     status: boolean;
 
