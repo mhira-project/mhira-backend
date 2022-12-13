@@ -75,6 +75,10 @@ export class Assessment extends BaseEntity {
     @Column({ nullable: true })
     deliveryDate?: Date;
 
+    @Field(() => GraphQLISODateTime, { nullable: true })
+    @Column({ nullable: true })
+    submissionDate?: Date;
+
     @Field(() => String, { nullable: true })
     @Column({ nullable: true })
     informantCaregiverRelation?: string;
