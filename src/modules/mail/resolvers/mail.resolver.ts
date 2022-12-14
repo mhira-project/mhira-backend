@@ -46,9 +46,9 @@ export class MailResolver {
         return this.mailService.createEmailTemplate(input);
     }
 
-    @Mutation(() => String)
-    async deleteEmailTemplate(@Args('emailId') emailId: number) {
-        return this.mailService.deleteEmailTemplate(emailId);
+    @Mutation(() => Boolean)
+    async deleteEmailTemplate(@Args('id') templateId: number) {
+        return this.mailService.deleteEmailTemplate(templateId);
     }
 
     @Mutation(() => MailTemplate)
