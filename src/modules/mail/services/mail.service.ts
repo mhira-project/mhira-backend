@@ -87,10 +87,18 @@ export class MailService {
         }
     }
 
-    async deleteEmailTemplate(emailId: number) {
+    async deleteEmailTemplate(templateId: number) {
         try {
-            await this.mailTemplateRepository.delete(emailId);
-            return 'Success';
+            const template = await this.mailTemplateRepository.findOne(
+                templateId,
+            );
+
+            if (!template) {
+                throw new NotFoundException('Mail template not found!');
+            }
+
+            await this.mailTemplateRepository.delete(templateId);
+            return true;
         } catch (error) {
             return error;
         }
