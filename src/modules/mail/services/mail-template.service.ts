@@ -1,11 +1,9 @@
-import { MailerService } from '@nestjs-modules/mailer';
 import { ConnectionType } from '@nestjs-query/query-graphql';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
     CreateEmailTemplate,
-    SendMailInput,
     UpdateEmailTemplate,
 } from '../dtos/mail-template.dto';
 import {
@@ -21,27 +19,13 @@ import {
 } from '@nestjs-query/core';
 
 @Injectable()
-export class MailService {
+export class MailTemplateService {
     constructor(
-        private mailerService: MailerService,
         @InjectRepository(MailTemplate)
         private mailTemplateRepository: Repository<MailTemplate>,
         @InjectQueryService(MailTemplate)
         private readonly mailTemplateQueryService: QueryService<MailTemplate>,
     ) {}
-
-    async sendEmail(payload: SendMailInput): Promise<string> {
-        await this.mailerService.sendMail({
-            to: payload.to,
-            from: payload.from,
-            subject: payload.subject,
-            template: 'test',
-            context: {
-                test: payload,
-            },
-        });
-        return 'Success';
-    }
 
     async getEmailTemplate(id: number): Promise<MailTemplate> {
         try {

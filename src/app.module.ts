@@ -21,9 +21,11 @@ import { DisclaimerModule } from './modules/disclaimer/disclaimer.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MailModule } from './modules/mail/mail.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
     imports: [
+        ScheduleModule.forRoot(),
         MailerModule.forRoot({
             transport: {
               host: process.env.MAIL_HOST,

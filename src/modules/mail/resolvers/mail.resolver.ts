@@ -4,11 +4,10 @@ import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
 import {
     CreateEmailTemplate,
-    SendMailInput,
     UpdateEmailTemplate,
 } from '../dtos/mail-template.dto';
 import { MailTemplate } from '../models/mail-template.model';
-import { MailService } from '../services/mail.service';
+import { MailTemplateService } from '../services/mail-template.service';
 import {
     MailTemplateConnection,
     MailTemplateQuery,
@@ -18,12 +17,7 @@ import { ConnectionType } from '@nestjs-query/query-graphql';
 @Resolver(() => MailTemplate)
 @UseGuards(GqlAuthGuard, PermissionGuard)
 export class MailResolver {
-    constructor(private readonly mailService: MailService) {}
-
-    @Mutation(() => String)
-    async sendEmail(@Args('payload') payload: SendMailInput): Promise<string> {
-        return this.mailService.sendEmail(payload);
-    }
+    constructor(private readonly mailService: MailTemplateService) {}
 
     @Query(() => MailTemplate)
     async getEmailTemplate(
