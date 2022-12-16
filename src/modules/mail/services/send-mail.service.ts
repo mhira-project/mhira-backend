@@ -21,36 +21,39 @@ export class SendMailService {
                 .createQueryBuilder('assessment')
                 .where(
                     `Extract(epoch FROM (assessment.deliveryDate - now()))/60 BETWEEN 0 AND 30 
-                    AND assessment.emailStatus = 'SCHEDULED'`,
+                    AND assessment.emailStatus = 'NOT_SCHEDULED'`,
                 )
                 .getMany();
 
             console.log('selectedAssessment', selectAssessment);
 
             selectAssessment.map(async assessmentInfo => {
-                // await this.sendEmail(assessmentInfo)
-                console.log(assessmentInfo);
+                await this.sendEmail(assessmentInfo)
             });
+
         } catch (error) {
             console.log(error);
         }
     }
 
     async sendEmail(assessmentInfo: any) {
-        try {
             await this.mailerService.sendMail({
                 to: 'dionverushi@gmail.com',
                 from: 'dionverushi@gmail.com',
                 subject: 'hello',
                 text: 'sup',
-            });
-            await this.assessmentRepository.update(assessmentInfo.id, {
-                status: AssessmentEmailStatus.SENT,
-            });
-        } catch (error) {
-            await this.assessmentRepository.update(assessmentInfo.id, {
-                status: AssessmentEmailStatus.FAILED,
-            });
-        }
+            })
+            .then(async() => {
+                await this.assessmentRepository.update(assessmentInfo.id, {
+                    emailStatus: AssessmentEmailStatus.SENT,
+                });
+                console.log("success")
+            })
+            .catch(async(error) => {
+                console.log(error)
+                await this.assessmentRepository.update(assessmentInfo.id, {
+                    emailStatus: AssessmentEmailStatus.FAILED,
+                });
+            })
     }
 }

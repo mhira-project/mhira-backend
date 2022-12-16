@@ -38,11 +38,7 @@ import { ScheduleModule } from '@nestjs/schedule';
             },
             defaults: {
               from: '"nest-modules" <modules@nestjs.com>',
-            },
-            template: {
-              dir: join(__dirname + '/templates'),
-              adapter: new HandlebarsAdapter(),
-            },
+            }
           }),
         MongooseModule.forRoot(configService.getMongoConnectionString(), {
             useFindAndModify: false,
