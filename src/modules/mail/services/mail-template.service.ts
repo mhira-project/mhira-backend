@@ -10,7 +10,7 @@ import {
     MailTemplateConnection,
     MailTemplateQuery,
 } from '../dtos/mail-template.query';
-import { TemplateModule } from '../enums/template-module.enum';
+import { TemplateModuleEnum } from '../enums/template-module.enum';
 import { MailTemplate } from '../models/mail-template.model';
 import {
     InjectQueryService,
@@ -56,14 +56,6 @@ export class MailTemplateService {
         input: CreateEmailTemplate,
     ): Promise<MailTemplate> {
         try {
-            if (
-                !Object.values(TemplateModule).some(
-                    value => value === input.module
-                )
-            ) {
-                throw new NotFoundException('Module input is incorrect!');
-            }
-
             const moduleFound = await this.mailTemplateRepository.findOne({ module: input.module });
 
             if (moduleFound) {
@@ -96,19 +88,21 @@ export class MailTemplateService {
 
     async updateEmailTemplate(
         input: UpdateEmailTemplate,
-    ): Promise<MailTemplate> {
+    ):Promise<MailTemplate> {
+        const { id, ...values } = input
         try {
-            let email = await this.mailTemplateRepository.findOneOrFail(
-                input.id,
-            );
+            const data = await this.mailTemplateRepository
+                .createQueryBuilder()
+                .update(MailTemplate, { ...values })
+                .where("id = :id", { id: id })
+                .returning("*")
+                .updateEntity(true)
+                .execute();
+            
+            if (!data.affected) throw new NotFoundException("Mail template not found!")
 
-            email.name = input.name;
-            email.subject = input.subject;
-            email.body = input.body;
-            email.status = input.status;
-            email.module = input.module;
-
-            return email.save();
+            return data.raw[0]
+            
         } catch (error) {
             return error;
         }

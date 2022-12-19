@@ -1,23 +1,6 @@
 import { Field, InputType, Int } from "@nestjs/graphql";
-
-@InputType()
-export class SendMailInput {
-    @Field(() => String)
-    to: string;
-
-    @Field(() => String)
-    from: string;
-
-    @Field(() => String)
-    subject: string;
-
-    @Field(() => String)
-    title: string;
-
-    @Field(() => String)
-    body: string;
-}
-
+import { AssessmentTypeEnum } from "src/modules/assessment/enums/assessment-type.enum";
+import { TemplateModuleEnum } from "../enums/template-module.enum";
 
 @InputType()
 export class CreateEmailTemplate {
@@ -25,16 +8,16 @@ export class CreateEmailTemplate {
     name: string;
 
     @Field(() => String)
-    subject: string;
+    subject?: string;
 
     @Field(() => String)
     body: string;
 
-    @Field(() => Boolean)
-    status: boolean;
+    @Field(() => AssessmentTypeEnum)
+    status: AssessmentTypeEnum;
 
-    @Field(() => String)
-    module: string;
+    @Field(() => TemplateModuleEnum)
+    module: TemplateModuleEnum;
 }
 
 @InputType()
@@ -51,9 +34,9 @@ export class UpdateEmailTemplate {
     @Field(() => String, { nullable: true })
     body?: string;
 
-    @Field(() => Boolean, { nullable: true })
-    status?: boolean;
+    @Field(() => AssessmentTypeEnum, { nullable: true })
+    status?: AssessmentTypeEnum;
 
-    @Field(() => String, { nullable: true })
-    module?: string;
+    @Field(() => TemplateModuleEnum, { nullable: true })
+    module?: TemplateModuleEnum;
 }

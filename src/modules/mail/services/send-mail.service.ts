@@ -6,7 +6,7 @@ import { Assessment } from 'src/modules/assessment/models/assessment.model';
 import { Repository } from 'typeorm';
 import { AssessmentEmailStatus } from 'src/modules/assessment/enums/assessment-emailstatus.enum';
 import { MailTemplate } from '../models/mail-template.model';
-import { TemplateModule } from '../enums/template-module.enum'
+import { TemplateModuleEnum } from '../enums/template-module.enum'
 import Handlebars from 'handlebars';
 
 @Injectable()
@@ -19,17 +19,17 @@ export class SendMailService {
         private mailTemplateRepository: Repository<MailTemplate>
     ) {}
 
-    @Cron(CronExpression.EVERY_10_SECONDS)
-    async checkEmailDeliveries() {
+    @Cron(CronExpression.EVERY_5_MINUTES)
+    async checkAssessmentEmails() {
         try {
-            const mailTemplate = await this.mailTemplateRepository.findOne({ module: TemplateModule.ASSESSMENT})
+            const mailTemplate = await this.mailTemplateRepository.findOne({ module: TemplateModuleEnum.ASSESSMENT})
             
             if (!mailTemplate) return;
 
             const selectAssessment = await this.assessmentRepository
                 .createQueryBuilder('assessment')
                 .where(
-                    `Extract(epoch FROM (assessment.deliveryDate - now()))/60 BETWEEN 0 AND 30 
+                    `Extract(epoch FROM (assessment.deliveryDate - now()))/60 BETWEEN -5 AND 5 
                     AND assessment.emailStatus = 'SCHEDULED'`,
                 )
                 .leftJoinAndSelect('assessment.patient', 'patient')
@@ -40,11 +40,11 @@ export class SendMailService {
             });
 
         } catch (error) {
-            console.log(error);
+            return error
         }
     }
 
-    async sendEmail(assessmentInfo: any, mailTemplate: any) {
+    async sendEmail(assessmentInfo: Assessment, mailTemplate: MailTemplate) {
             const template = Handlebars.compile(mailTemplate.body)
 
             const templateData = {
@@ -53,7 +53,7 @@ export class SendMailService {
             }
 
             await this.mailerService.sendMail({
-                to: assessmentInfo.emailReminder,
+                to: assessmentInfo.receiverEmail,
                 from: 'dummyemail@email.com',
                 subject: mailTemplate.subject,
                 html: template(templateData),
@@ -63,11 +63,10 @@ export class SendMailService {
                     emailStatus: AssessmentEmailStatus.SENT,
                 });
             })
-            .catch(async(error) => {
+            .catch(async() => {
                 await this.assessmentRepository.update(assessmentInfo.id, {
                     emailStatus: AssessmentEmailStatus.FAILED,
                 });
-                console.log(error)
             })
     }
 }
