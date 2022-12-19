@@ -1,5 +1,5 @@
 import { ConnectionType } from '@nestjs-query/query-graphql';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -58,10 +58,16 @@ export class MailTemplateService {
         try {
             if (
                 !Object.values(TemplateModule).some(
-                    value => value === input.module,
+                    value => value === input.module
                 )
             ) {
                 throw new NotFoundException('Module input is incorrect!');
+            }
+
+            const moduleFound = await this.mailTemplateRepository.findOne({ module: input.module });
+
+            if (moduleFound) {
+                throw new ConflictException("Module already exists!")
             }
 
             const mail = this.mailTemplateRepository.create(input);
