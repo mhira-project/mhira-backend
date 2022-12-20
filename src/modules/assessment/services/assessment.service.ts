@@ -178,75 +178,83 @@ export class AssessmentService {
     }
 
     async createNewAssessment(assessmentInput: CreateFullAssessmentInput) {
-        let assessment: Assessment;
+        
+        const assessmentLength = assessmentInput.dates.length || 1
 
-        const assessmentType = await this.assessmentTypeRepo.findOne(
-            assessmentInput.assessmentTypeId,
-        );
+        const assessmentArray = []
 
-        if (!assessmentType)
-            throw new NotFoundException('Assessment type not found!');
-
-        // create mongo assessment
-        const questionnaireAssessment = await this.questionnaireAssessmentService.createNewAssessment(
-            assessmentInput.questionnaires,
-        );
-
-        const d1 = new Date(assessmentInput?.deliveryDate),
-            d2 = new Date();
-
-        try {
-            // create postgres assessment
-            assessment = new Assessment();
-            if (!assessmentInput.deliveryDate || d1 < d2) {
-                await this.questionnaireAssessmentService.changeAssessmentStatus(
-                    questionnaireAssessment.id,
-                    AssessmentStatus.OPEN_FOR_COMPLETION,
+        for (let i = 0; i < assessmentLength; i++) {
+            let assessment: Assessment;
+            
+            const assessmentType = await this.assessmentTypeRepo.findOne(
+                assessmentInput.assessmentTypeId,
                 );
+        
+                if (!assessmentType)
+                    throw new NotFoundException('Assessment type not found!');
+        
+                    // create mongo assessment
+                    const questionnaireAssessment = await this.questionnaireAssessmentService.createNewAssessment(
+                        assessmentInput.questionnaires,
+                );
+                
+                const d1 = new Date(assessmentInput?.dates[i].deliveryDate),
+                d2 = new Date();
+                
+                try {
+                    // create postgres assessment
+                    assessment = new Assessment();
+                    if (!assessmentInput.dates[i].deliveryDate || d1 < d2) {
+                        await this.questionnaireAssessmentService.changeAssessmentStatus(
+                            questionnaireAssessment.id,
+                            AssessmentStatus.OPEN_FOR_COMPLETION,
+                        );
+                    }
+        
+                    assessment.assessmentType = assessmentType;
+                    assessment.patientId = assessmentInput.patientId;
+                    assessment.clinicianId = assessmentInput.clinicianId;
+                    assessment.informantType = assessmentInput.informantType;
+                    assessment.expirationDate = assessmentInput.dates[i].expirationDate;
+                    assessment.note = assessmentInput.note;
+                    assessment.deliveryDate = assessmentInput.dates[i].deliveryDate;
+                    assessment.questionnaireAssessmentId = questionnaireAssessment.id;
+                    if (assessmentInput.informantClinicianId) {
+                        const clinician = await this.userRepository.findOne({
+                            id: assessmentInput.informantClinicianId,
+                        });
+                        if (!clinician)
+                            throw new NotFoundException(
+                                'Informant clinician not found!',
+                            );
+                        assessment.informantClinician = clinician;
+                        // To prevent double informant
+                        assessmentInput.informantCaregiverRelation = null;
+                    }
+                    if (assessmentInput.informantCaregiverRelation) {
+                        assessment.informantCaregiverRelation =
+                            assessmentInput.informantCaregiverRelation;
+                    }
+                    // If emailReminder is not checked then all the other email values will be edited
+                    assessment.emailReminder = assessmentInput.emailReminder || false;
+                    if (!assessmentInput.emailReminder) {
+                        assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED;
+                        assessment.receiverEmail = null;
+                    } else {
+                        assessment.emailStatus = AssessmentEmailStatus.SCHEDULED;
+                        assessment.receiverEmail = assessmentInput.receiverEmail;
+                    }
+        
+                    await assessment.save();
+                    assessmentArray.push(assessment)
+            } catch (err) {
+                // undo mongo assessment and rethrow
+                await questionnaireAssessment.remove();
+                throw err;
             }
-
-            assessment.assessmentType = assessmentType;
-            assessment.patientId = assessmentInput.patientId;
-            assessment.clinicianId = assessmentInput.clinicianId;
-            assessment.informantType = assessmentInput.informantType;
-            assessment.expirationDate = assessmentInput.expirationDate;
-            assessment.note = assessmentInput.note;
-            assessment.deliveryDate = assessmentInput.deliveryDate;
-            assessment.questionnaireAssessmentId = questionnaireAssessment.id;
-            if (assessmentInput.informantClinicianId) {
-                const clinician = await this.userRepository.findOne({
-                    id: assessmentInput.informantClinicianId,
-                });
-                if (!clinician)
-                    throw new NotFoundException(
-                        'Informant clinician not found!',
-                    );
-                assessment.informantClinician = clinician;
-                // To prevent double informant
-                assessmentInput.informantCaregiverRelation = null;
-            }
-            if (assessmentInput.informantCaregiverRelation) {
-                assessment.informantCaregiverRelation =
-                    assessmentInput.informantCaregiverRelation;
-            }
-            // If emailReminder is not checked then all the other email values will be edited
-            assessment.emailReminder = assessmentInput.emailReminder || false;
-            if (!assessmentInput.emailReminder) {
-                assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED;
-                assessment.receiverEmail = null;
-            } else {
-                assessment.emailStatus = AssessmentEmailStatus.SCHEDULED;
-                assessment.receiverEmail = assessmentInput.receiverEmail;
-            }
-
-            await assessment.save();
-        } catch (err) {
-            // undo mongo assessment and rethrow
-            await questionnaireAssessment.remove();
-            throw err;
         }
-
-        return assessment;
+        
+        return assessmentArray;
     }
 
     /**

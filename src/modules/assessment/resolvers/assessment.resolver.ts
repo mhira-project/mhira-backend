@@ -66,7 +66,7 @@ export class AssessmentResolver {
         return this.assessmentService.getFullAssessment(assessmentId);
     }
 
-    @Mutation(() => Assessment)
+    @Mutation(() => [Assessment])
     @UsePermission(PermissionEnum.MANAGE_ASSESSMENTS)
     createNewAssessment(
         @Args('assessment') assessmentInput: CreateFullAssessmentInput,
