@@ -8,6 +8,8 @@ import { AssessmentEmailStatus } from 'src/modules/assessment/enums/assessment-e
 import { MailTemplate } from '../models/mail-template.model';
 import { TemplateModuleEnum } from '../enums/template-module.enum'
 import Handlebars from 'handlebars';
+import * as CryptoJS from 'crypto-js'
+import { url } from '../../../shared'
 
 @Injectable()
 export class SendMailService {
@@ -19,17 +21,16 @@ export class SendMailService {
         private mailTemplateRepository: Repository<MailTemplate>
     ) {}
 
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron(CronExpression.EVERY_MINUTE)
     async checkAssessmentEmails() {
         try {
             const mailTemplate = await this.mailTemplateRepository.findOne({ module: TemplateModuleEnum.ASSESSMENT})
-            
             if (!mailTemplate) return;
 
             const selectAssessment = await this.assessmentRepository
                 .createQueryBuilder('assessment')
                 .where(
-                    `Extract(epoch FROM (assessment.deliveryDate - now()))/60 BETWEEN -5 AND 5 
+                    `(Extract(epoch FROM (assessment.deliveryDate - now()))/60)::integer = 0 
                     AND assessment.emailStatus = 'SCHEDULED'`,
                 )
                 .leftJoinAndSelect('assessment.patient', 'patient')
@@ -47,14 +48,16 @@ export class SendMailService {
     async sendEmail(assessmentInfo: Assessment, mailTemplate: MailTemplate) {
             const template = Handlebars.compile(mailTemplate.body)
 
+            const url = this.generateAssessmentURL(assessmentInfo.uuid)
+
             const templateData = {
                 name: assessmentInfo.patient.firstName,
-                link: "http://www.website.com"
+                link: url
             }
 
             await this.mailerService.sendMail({
                 to: assessmentInfo.receiverEmail,
-                from: 'dummyemail@email.com',
+                from: process.env.MAIL_USER,
                 subject: mailTemplate.subject,
                 html: template(templateData),
             })
@@ -69,4 +72,13 @@ export class SendMailService {
                 });
             })
     }
+
+    private generateAssessmentURL(assesmentUuid: string): string {
+        const secretKey = "hfsdjfhdufhiuegewurge8365746543785643785638276423874"
+
+        const cryptoId = CryptoJS.AES.encrypt(assesmentUuid, secretKey).toString();
+        
+        return url(`assessment/overview?assessment=${cryptoId}`)
+    }
+
 }
