@@ -1,21 +1,24 @@
 import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
 import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { Module } from '@nestjs/common';
+import { Assessment } from '../assessment/models/assessment.model';
 import { GqlAuthGuard } from '../auth/auth.guard';
 import { PermissionGuard } from '../permission/guards/permission.guard';
 import { MailTemplate } from './models/mail-template.model';
 import { MailResolver } from './resolvers/mail.resolver';
-import { MailService } from './services/mail.service';
+import { MailTemplateService } from './services/mail-template.service';
+import { SendMailService } from './services/send-mail.service';
 
 @Module({
   imports: [
     NestjsQueryGraphQLModule.forFeature({
       imports: [
         NestjsQueryTypeOrmModule.forFeature([
-          MailTemplate
+          MailTemplate,
+          Assessment
         ])
       ],
-      services: [MailService],
+      services: [MailTemplateService, SendMailService],
       resolvers: [
         {
           DTOClass: MailTemplate,
@@ -29,6 +32,6 @@ import { MailService } from './services/mail.service';
       ],
     }),
   ],
-  providers: [MailResolver, MailService]
+  providers: [MailResolver, MailTemplateService, SendMailService]
 })
 export class MailModule {}

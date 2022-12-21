@@ -21,27 +21,12 @@ import { DisclaimerModule } from './modules/disclaimer/disclaimer.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MailModule } from './modules/mail/mail.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
     imports: [
-        MailerModule.forRoot({
-            transport: {
-              host: process.env.MAIL_HOST,
-              secure: true,
-              port: process.env.MAIL_PORT,
-              auth: {
-                user: process.env.MAIL_USER,
-                pass: process.env.MAIL_PASS
-              },
-            },
-            defaults: {
-              from: '"nest-modules" <modules@nestjs.com>',
-            },
-            template: {
-              dir: join(__dirname + '/templates'),
-              adapter: new HandlebarsAdapter(),
-            },
-          }),
+        ScheduleModule.forRoot(),
+        MailerModule.forRoot(configService.getMailerConfig()),
         MongooseModule.forRoot(configService.getMongoConnectionString(), {
             useFindAndModify: false,
         }),

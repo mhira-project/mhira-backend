@@ -8,8 +8,11 @@ export class EmailTemplateEntity1670604146131 implements MigrationInterface {
             name character varying,
             subject character varying,
             body character varying,
-            status boolean,
-            module character varying
+            status character varying,
+            module character varying,
+            "deletedAt"      timestamp,
+            "createdAt"      timestamp default now() not null,
+            "updatedAt"      timestamp default now() not null
         )`);
     }
 
