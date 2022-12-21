@@ -26,20 +26,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 @Module({
     imports: [
         ScheduleModule.forRoot(),
-        MailerModule.forRoot({
-            transport: {
-              host: process.env.MAIL_HOST,
-              secure: true,
-              port: process.env.MAIL_PORT,
-              auth: {
-                user: process.env.MAIL_USER,
-                pass: process.env.MAIL_PASS
-              },
-            },
-            defaults: {
-              from: '"nest-modules" <modules@nestjs.com>',
-            }
-          }),
+        MailerModule.forRoot(configService.getMailerConfig()),
         MongooseModule.forRoot(configService.getMongoConnectionString(), {
             useFindAndModify: false,
         }),

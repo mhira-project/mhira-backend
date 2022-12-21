@@ -10,6 +10,7 @@ import { TemplateModuleEnum } from '../enums/template-module.enum'
 import Handlebars from 'handlebars';
 import * as CryptoJS from 'crypto-js'
 import { url } from '../../../shared'
+import { configService } from 'src/config/config.service';
 
 @Injectable()
 export class SendMailService {
@@ -51,13 +52,13 @@ export class SendMailService {
             const url = this.generateAssessmentURL(assessmentInfo.uuid)
 
             const templateData = {
-                name: assessmentInfo.patient.firstName,
+                // name: assessmentInfo.patient.firstName,
                 link: url
             }
 
-            await this.mailerService.sendMail({
+            this.mailerService.sendMail({
                 to: assessmentInfo.receiverEmail,
-                from: process.env.MAIL_USER,
+                from: configService.getSenderMail(),
                 subject: mailTemplate.subject,
                 html: template(templateData),
             })
@@ -74,7 +75,7 @@ export class SendMailService {
     }
 
     private generateAssessmentURL(assesmentUuid: string): string {
-        const secretKey = "hfsdjfhdufhiuegewurge8365746543785643785638276423874"
+        const secretKey = configService.getFrontendEncryptionKey()
 
         const cryptoId = CryptoJS.AES.encrypt(assesmentUuid, secretKey).toString();
         

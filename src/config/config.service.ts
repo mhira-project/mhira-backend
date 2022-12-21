@@ -31,6 +31,14 @@ class ConfigService {
         return this.getValue('SERVER_PORT', true);
     }
 
+    public getSenderMail() {
+        return this.getValue('SENDER_MAIL', true)
+    }
+
+    public getFrontendEncryptionKey() {
+        return this.getValue('FRONTEND_ENCRYPTION_KEY', true)
+    }
+ 
     public isProduction() {
         const mode = this.getValue('MODE', false);
         return mode != 'DEV';
@@ -78,6 +86,21 @@ class ConfigService {
             migrations: ['../dist/migrations/*.{js}'],
         };
     }
+
+    public getMailerConfig(): any {
+        return {
+            transport: {
+              host: this.getValue('MAIL_HOST'),
+              secure: false,
+              port: this.getValue('MAIL_PORT'),
+              auth: {
+                user: this.getValue('MAIL_USER'),
+                pass: this.getValue('MAIL_PASS')
+              },
+            },
+        }
+    }
+
     public getStorageConfig(): any {
         const dateStrPrefix = new Date().toISOString().split('T')[0];
         return {
