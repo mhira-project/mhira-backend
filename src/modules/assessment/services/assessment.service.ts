@@ -190,12 +190,13 @@ export class AssessmentService {
                 assessmentInput.assessmentTypeId,
                 );
         
-                if (!assessmentType)
+                if (!assessmentType) {
                     throw new NotFoundException('Assessment type not found!');
+                }
         
-                    // create mongo assessment
-                    const questionnaireAssessment = await this.questionnaireAssessmentService.createNewAssessment(
-                        assessmentInput.questionnaires,
+                // create mongo assessment
+                const questionnaireAssessment = await this.questionnaireAssessmentService.createNewAssessment(
+                    assessmentInput.questionnaires,
                 );
                 
                 const d1 = new Date(assessmentInput?.dates[i].deliveryDate),
@@ -254,7 +255,7 @@ export class AssessmentService {
             }
         }
         
-        return assessmentArray;
+        return assessmentArray[0];
     }
 
     /**
