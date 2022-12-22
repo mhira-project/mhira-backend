@@ -1,5 +1,5 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
@@ -46,32 +46,49 @@ export class SendMailService {
         }
     }
 
-    async sendEmail(assessmentInfo: Assessment, mailTemplate: MailTemplate) {
-            const template = Handlebars.compile(mailTemplate.body)
+    async sendAssessmentEmail(id: number) {
+        try {
+            const assessment = await this.assessmentRepository.findOneOrFail(id)
 
-            const url = this.generateAssessmentURL(assessmentInfo.uuid)
+            const mailTemplate = await this.mailTemplateRepository.findOne({ module: TemplateModuleEnum.CLIENT })
 
-            const templateData = {
-                // name: assessmentInfo.patient.firstName,
-                link: url
+            if (!mailTemplate) {
+                throw new NotFoundException("No email template found!")
             }
 
-            this.mailerService.sendMail({
-                to: assessmentInfo.receiverEmail,
-                from: configService.getSenderMail(),
-                subject: mailTemplate.subject,
-                html: template(templateData),
-            })
-            .then(async() => {
-                await this.assessmentRepository.update(assessmentInfo.id, {
-                    emailStatus: AssessmentEmailStatus.SENT,
-                });
-            })
-            .catch(async() => {
-                await this.assessmentRepository.update(assessmentInfo.id, {
-                    emailStatus: AssessmentEmailStatus.FAILED,
-                });
-            })
+            await this.sendEmail(assessment, mailTemplate)
+            return true
+        } catch (error) {
+            return error
+        }
+    }
+
+    async sendEmail(assessmentInfo: Assessment, mailTemplate: MailTemplate) {
+        const template = Handlebars.compile(mailTemplate.body)
+
+        const url = this.generateAssessmentURL(assessmentInfo.uuid)
+
+        const templateData = {
+            // name: assessmentInfo.patient.firstName,
+            link: url
+        }
+
+        this.mailerService.sendMail({
+            to: assessmentInfo.receiverEmail,
+            from: configService.getSenderMail(),
+            subject: mailTemplate.subject,
+            html: template(templateData),
+        })
+        .then(async() => {
+            await this.assessmentRepository.update(assessmentInfo.id, {
+                emailStatus: AssessmentEmailStatus.SENT,
+            });
+        })
+        .catch(async() => {
+            await this.assessmentRepository.update(assessmentInfo.id, {
+                emailStatus: AssessmentEmailStatus.FAILED,
+            });
+        })
     }
 
     private generateAssessmentURL(assesmentUuid: string): string {

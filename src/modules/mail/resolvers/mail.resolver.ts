@@ -13,11 +13,15 @@ import {
     MailTemplateQuery,
 } from '../dtos/mail-template.query';
 import { ConnectionType } from '@nestjs-query/query-graphql';
+import { SendMailService } from '../services/send-mail.service';
 
 @Resolver(() => MailTemplate)
 @UseGuards(GqlAuthGuard, PermissionGuard)
 export class MailResolver {
-    constructor(private readonly mailService: MailTemplateService) {}
+    constructor(
+        private readonly mailService: MailTemplateService,
+        private readonly sendMailService: SendMailService
+    ) {}
 
     @Query(() => MailTemplate)
     async getEmailTemplate(
@@ -32,6 +36,14 @@ export class MailResolver {
     ): Promise<ConnectionType<MailTemplate>> {
         return this.mailService.getAllEmailTemplates(query);
     }
+
+    @Mutation(() => Boolean)
+    async sendAssessmentEmail(
+        @Args('assessmentId', { type: () => ID }) assessmentId: number 
+    ) {
+        return this.sendMailService.sendAssessmentEmail(assessmentId)
+    }
+
 
     @Mutation(() => MailTemplate)
     async createEmailTemplate(
