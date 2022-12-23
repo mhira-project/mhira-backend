@@ -3,7 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { AssessmentEmailStatus } from 'src/modules/assessment/enums/assessment-emailstatus.enum';
 import { MailTemplate } from '../models/mail-template.model';
 import { TemplateModuleEnum } from '../enums/template-module.enum'
@@ -26,7 +26,6 @@ export class SendMailService {
     async checkAssessmentEmails() {
         try {
             const mailTemplate = await this.mailTemplateRepository.findOne({ module: TemplateModuleEnum.ASSESSMENT})
-            if (!mailTemplate) return;
 
             const selectAssessment = await this.assessmentRepository
                 .createQueryBuilder('assessment')
@@ -36,7 +35,12 @@ export class SendMailService {
                 )
                 .leftJoinAndSelect('assessment.patient', 'patient')
                 .getMany();
-            
+
+            //When there is no template all received assessment emails get status failed
+            if (!mailTemplate) {
+                return await this.assessmentRepository.update({id: In(selectAssessment.map(({ id }) => id))}, { emailStatus: AssessmentEmailStatus.FAILED })
+            }
+
             selectAssessment.map(async assessmentInfo => {
                 await this.sendEmail(assessmentInfo, mailTemplate)
             });
