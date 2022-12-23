@@ -1,21 +1,21 @@
-import { QueryService, mergeFilter } from '@nestjs-query/core';
-import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Patient, PatientReport } from '../models/patient.model';
-import { CreatePatientInput } from '../dto/create-patient.input';
-import { User } from 'src/modules/user/models/user.model';
-import { PatientAuthorizer } from '../authorizers/patient.authorizer';
-import { Inject, NotFoundException } from '@nestjs/common';
-import { QuestionnaireAssessmentService } from 'src/modules/questionnaire/services/questionnaire-assessment.service';
-import { QuestionnaireAssessment } from 'src/modules/questionnaire/models/questionnaire-assessment.schema';
-import { IAnswerMap } from 'src/modules/questionnaire/models/answer.schema';
+import {QueryService, mergeFilter} from '@nestjs-query/core';
+import {TypeOrmQueryService} from '@nestjs-query/query-typeorm';
+import {InjectRepository} from '@nestjs/typeorm';
+import {getRepository, Repository} from 'typeorm';
+import {Patient, PatientReport} from '../models/patient.model';
+import {CreatePatientInput} from '../dto/create-patient.input';
+import {User} from 'src/modules/user/models/user.model';
+import {PatientAuthorizer} from '../authorizers/patient.authorizer';
+import {Inject, NotFoundException} from '@nestjs/common';
+import {QuestionnaireAssessmentService} from 'src/modules/questionnaire/services/questionnaire-assessment.service';
+import {QuestionnaireAssessment} from 'src/modules/questionnaire/models/questionnaire-assessment.schema';
+import {IAnswerMap} from 'src/modules/questionnaire/models/answer.schema';
 import {
     AnsweredQuestions,
     IQuestionGroup,
 } from 'src/modules/questionnaire/models/questionnaire.schema';
-import { AssessmentResponse } from 'src/modules/assessment/models/assessment.model';
-import { QuestionnaireScriptService } from 'src/modules/questionnaire/services/questionnaire-script.service';
+import {Assessment, AssessmentResponse} from 'src/modules/assessment/models/assessment.model';
+import {QuestionnaireScriptService} from 'src/modules/questionnaire/services/questionnaire-script.service';
 
 @QueryService(Patient)
 export class PatientQueryService extends TypeOrmQueryService<Patient> {
@@ -23,6 +23,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
     questionnaireAssessmentService: QuestionnaireAssessmentService;
     @Inject(QuestionnaireScriptService)
     questionnaireScriptService: QuestionnaireScriptService;
+
     constructor(@InjectRepository(Patient) repo: Repository<Patient>) {
         // pass the use soft delete option to the service.
         super(repo);
@@ -43,12 +44,12 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         );
 
         const combinedFilter = mergeFilter(
-            { id: { eq: patientId } },
+            {id: {eq: patientId}},
             authorizeFilter,
         );
 
         const patients = await super.query({
-            paging: { limit: 1 },
+            paging: {limit: 1},
             filter: combinedFilter,
         });
 
@@ -73,6 +74,14 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         }
 
         return patient;
+    }
+
+    async archiveOnePatient(id: number) {
+        const result = await this.repo.softDelete(id);
+
+        await Assessment.update({ patientId: id }, { deletedAt: new Date() })
+
+        return result;
     }
 
     async createMany(input: CreatePatientInput[]): Promise<Patient[]> {
@@ -208,10 +217,10 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         const map = {} as IAnswerMap;
         for (const answer of answers) {
             answer.combinedDate = null;
-            map[answer.question.toString()] = { ...answer['_doc'] };
+            map[answer.question.toString()] = {...answer['_doc']};
             map[answer.question.toString()][
                 'questionId'
-            ] = answer.question.toString();
+                ] = answer.question.toString();
             if (answer.dateValue && answer.textValue) {
                 const [hours, minutes] = answer.textValue.split(':');
                 map[answer.question.toString()]['combinedDate'] = new Date(
@@ -230,7 +239,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
 
         for (const questionGroup of questionGroups) {
             const questions = questionGroup.questions.map(question => {
-                const { type, name, label, required, choices, hint } = question;
+                const {type, name, label, required, choices, hint} = question;
                 return {
                     type,
                     variable: name,

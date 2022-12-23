@@ -1,4 +1,4 @@
-import { mergeFilter, SortDirection } from '@nestjs-query/core';
+import {mergeFilter, SortDirection} from '@nestjs-query/core';
 import {
     ConnectionType,
     CreateOneInputType,
@@ -6,36 +6,39 @@ import {
     QueryArgsType,
     UpdateOneInputType,
 } from '@nestjs-query/query-graphql';
-import { BadRequestException, Inject, UseGuards } from '@nestjs/common';
+import {BadRequestException, Inject, UseGuards} from '@nestjs/common';
 import {
     Args,
     ArgsType,
     ID,
-    InputType,
+    InputType, Int,
     Mutation,
     ObjectType,
     PartialType,
     Query,
     Resolver,
 } from '@nestjs/graphql';
-import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
-import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
-import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
-import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
-import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
-import { PermissionService } from 'src/modules/permission/providers/permission.service';
-import { User } from 'src/modules/user/models/user.model';
-import { PatientAuthorizer } from '../authorizers/patient.authorizer';
-import { CreatePatientInput } from '../dto/create-patient.input';
-import { UpdatePatientInput } from '../dto/update-patient.input';
-import { PatientQueryService } from '../providers/patient-query.service';
-import { Patient, PatientReport } from '../models/patient.model';
-import { PatientStatus } from '../models/patient-status.model';
-import { CreateOnePatientStatusInput } from '../dto/update-patient-status.input';
-import { PatientStatusService } from '../providers/patient-status.service';
+import {CurrentUser} from 'src/modules/auth/auth-user.decorator';
+import {GqlAuthGuard} from 'src/modules/auth/auth.guard';
+import {UsePermission} from 'src/modules/permission/decorators/permission.decorator';
+import {PermissionEnum} from 'src/modules/permission/enums/permission.enum';
+import {PermissionGuard} from 'src/modules/permission/guards/permission.guard';
+import {PermissionService} from 'src/modules/permission/providers/permission.service';
+import {User} from 'src/modules/user/models/user.model';
+import {PatientAuthorizer} from '../authorizers/patient.authorizer';
+import {CreatePatientInput} from '../dto/create-patient.input';
+import {UpdatePatientInput} from '../dto/update-patient.input';
+import {PatientQueryService} from '../providers/patient-query.service';
+import {Patient, PatientReport} from '../models/patient.model';
+import {PatientStatus} from '../models/patient-status.model';
+import {CreateOnePatientStatusInput} from '../dto/update-patient-status.input';
+import {PatientStatusService} from '../providers/patient-status.service';
+import {SoftDeleteQueryBuilder} from "typeorm/query-builder/SoftDeleteQueryBuilder";
+import {UpdateResult} from "typeorm";
 
 @ArgsType()
-class PatientQuery extends QueryArgsType(Patient) {}
+class PatientQuery extends QueryArgsType(Patient) {
+}
 
 const PatientConnection = PatientQuery.ConnectionType;
 
@@ -43,31 +46,36 @@ const PatientConnection = PatientQuery.ConnectionType;
 export class CreateOnePatientInput extends CreateOneInputType(
     'patient',
     CreatePatientInput,
-) {}
+) {
+}
 
 @InputType()
 class UpdateOnePatientInput extends UpdateOneInputType(
     Patient,
     UpdatePatientInput,
-) {}
+) {
+}
 
 @InputType()
-class DeleteOnePatientInput extends DeleteOneInputType(Patient) {}
+class DeleteOnePatientInput extends DeleteOneInputType(Patient) {
+}
 
 @ObjectType()
-class PatientDeleteResponse extends PartialType(Patient) {}
+class PatientDeleteResponse extends PartialType(Patient) {
+}
 
 @Resolver(() => Patient)
 @UseGuards(GqlAuthGuard, PermissionGuard)
 export class PatientResolver {
     @Inject() patientStatusService: PatientStatusService;
 
-    constructor(protected service: PatientQueryService) {}
+    constructor(protected service: PatientQueryService) {
+    }
 
     @Query(() => PatientConnection)
     @UsePermission(PermissionEnum.VIEW_PATIENTS)
     async patients(
-        @Args({ type: () => PatientQuery }) query: PatientQuery,
+        @Args({type: () => PatientQuery}) query: PatientQuery,
         @CurrentUser() currentUser: User,
     ): Promise<ConnectionType<Patient>> {
         const authorizeFilter = await PatientAuthorizer.authorizePatient(
@@ -82,7 +90,7 @@ export class PatientResolver {
         // Apply default sort if not provided
         query.sorting = query.sorting?.length
             ? query.sorting
-            : [{ field: 'id', direction: SortDirection.DESC }];
+            : [{field: 'id', direction: SortDirection.DESC}];
 
         return PatientConnection.createFromPromise(
             q => this.service.query(q),
@@ -94,7 +102,7 @@ export class PatientResolver {
     @Query(() => Patient)
     @UsePermission(PermissionEnum.VIEW_PATIENTS)
     async patient(
-        @Args('id', { type: () => ID }) patientId: number,
+        @Args('id', {type: () => ID}) patientId: number,
         @CurrentUser() currentUser: User,
     ): Promise<Patient> {
         // Get patient if authorized. Throws exception if Not Found
@@ -104,15 +112,15 @@ export class PatientResolver {
     @Mutation(() => Patient)
     @UsePermission(PermissionEnum.MANAGE_PATIENTS)
     async createOnePatient(
-        @Args('input', { type: () => CreateOnePatientInput })
-        input: CreateOnePatientInput,
+        @Args('input', {type: () => CreateOnePatientInput})
+            input: CreateOnePatientInput,
         @CurrentUser() currentUser: User,
     ): Promise<Patient> {
         const patientInput = input['patient'] as CreatePatientInput;
 
         // Reload current user with departments
         currentUser = await User.findOne({
-            where: { id: currentUser.id },
+            where: {id: currentUser.id},
             relations: ['departments'],
         });
 
@@ -163,7 +171,7 @@ export class PatientResolver {
         @Args('input') input: UpdateOnePatientInput,
         @CurrentUser() currentUser: User,
     ): Promise<Patient> {
-        const { id, update } = input;
+        const {id, update} = input;
 
         // Get patient if authorized. Throws exception if Not Found
         await this.service.getOnePatient(currentUser, Number(input.id));
@@ -175,7 +183,7 @@ export class PatientResolver {
             const exists = await Patient.createQueryBuilder('patient')
                 .where(
                     'patient.medicalRecordNo = :medicalRecordNo AND patient.id <> :id',
-                    { medicalRecordNo: update.medicalRecordNo, id },
+                    {medicalRecordNo: update.medicalRecordNo, id},
                 )
                 .getOne();
 
@@ -192,14 +200,27 @@ export class PatientResolver {
     @Mutation(() => PatientDeleteResponse)
     @UsePermission(PermissionEnum.DELETE_PATIENTS)
     async deleteOnePatient(
-        @Args('input', { type: () => DeleteOnePatientInput })
-        input: DeleteOnePatientInput,
+        @Args('input', {type: () => DeleteOnePatientInput})
+            input: DeleteOnePatientInput,
         @CurrentUser() currentUser: User,
     ): Promise<PatientDeleteResponse> {
         // Get patient if authorized. Throws exception if Not Found
         await this.service.getOnePatient(currentUser, Number(input.id));
 
         return this.service.deleteOne(input.id);
+    }
+
+    @Mutation(() => Patient)
+    @UsePermission(PermissionEnum.MANAGE_PATIENTS)
+    async archiveOnePatient(
+        @Args('input', {type: () => ID}) id: number,
+        @CurrentUser() currentUser: User,
+    ): Promise<Patient> {
+        //Get patient if authorized. Throws exception if Not Found
+        const patient = await this.service.getOnePatient(currentUser, Number(id))
+
+        await this.service.archiveOnePatient(id);
+        return patient;
     }
 
     @Query(() => PatientReport)
@@ -226,8 +247,8 @@ export class PatientResolver {
     @Mutation(() => PatientStatus)
     @UsePermission(PermissionEnum.MANAGE_SETTINGS)
     async createOnePatientStatus(
-        @Args('input', { type: () => CreateOnePatientStatusInput })
-        input: CreateOnePatientStatusInput,
+        @Args('input', {type: () => CreateOnePatientStatusInput})
+            input: CreateOnePatientStatusInput,
     ): Promise<PatientStatus> {
         return await this.patientStatusService.create(input);
     }
