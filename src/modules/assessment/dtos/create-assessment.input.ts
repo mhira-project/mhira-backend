@@ -48,6 +48,18 @@ export class CreateFullAssessmentInput {
     @ArrayNotEmpty()
     questionnaires: Types.ObjectId[];
 
+    @Field(() => [Dates])
+    dates: Dates[]
+
+    @Field(() => Boolean, { nullable: true })
+    emailReminder: boolean;
+
+    @Field(() => String, { nullable: true })
+    receiverEmail: string;
+}
+
+@InputType() 
+export class Dates {
     @Field(() => GraphQLISODateTime, { nullable: true })
     expirationDate: Date;
 

@@ -22,6 +22,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { AssessmentInformant } from '../enums/assessment-informant.enum';
 import { AssessmentType } from './assessment-type.model';
+import { AssessmentEmailStatus } from '../enums/assessment-emailstatus.enum';
 
 @ObjectType()
 @FilterableRelation('patient', () => Patient)
@@ -74,6 +75,10 @@ export class Assessment extends BaseEntity {
     @Column({ nullable: true })
     deliveryDate?: Date;
 
+    @Field(() => GraphQLISODateTime, { nullable: true })
+    @Column({ nullable: true })
+    submissionDate?: Date;
+
     @Field(() => String, { nullable: true })
     @Column({ nullable: true })
     informantCaregiverRelation?: string;
@@ -97,6 +102,18 @@ export class Assessment extends BaseEntity {
     @FilterableField(() => String, { nullable: true })
     @Column({ type: 'varchar', nullable: true })
     uuid: string;
+
+    @Field(() => Boolean)
+    @Column()
+    emailReminder?: boolean;
+
+    @FilterableField(() => String)
+    @Column()
+    emailStatus?: string;
+
+    @Field(() => String, { nullable: true })
+    @Column()
+    receiverEmail?: string;
 
     @BeforeInsert()
     private generateUuid() {

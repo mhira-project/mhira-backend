@@ -11,6 +11,9 @@ import { QuestionValidatorFactory } from '../helpers/question-validator.factory'
 import { Questionnaire } from '../models/questionnaire.schema';
 import { AssessmentStatus } from '../enums/assessment-status.enum';
 import { UserInputError } from 'apollo-server-express';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Assessment } from 'src/modules/assessment/models/assessment.model';
+import { Repository } from 'typeorm';
 
 export class QuestionnaireAssessmentService {
     constructor(
@@ -20,6 +23,8 @@ export class QuestionnaireAssessmentService {
         private answerModel: Model<Answer>,
         @InjectModel(QuestionnaireVersion.name)
         private questionnaireVersionModel: Model<QuestionnaireVersion>,
+        @InjectRepository(Assessment)
+        private assessmentRepository: Repository<Assessment>,
     ) {}
 
     async createNewAssessment(questionnaires: Types.ObjectId[]) {
@@ -150,13 +155,20 @@ export class QuestionnaireAssessmentService {
         }
     }
 
-    changeAssessmentStatus(
+    async changeAssessmentStatus(
         assessmentId: Types.ObjectId,
         status: AssessmentStatus,
     ) {
-        return this.assessmentModel
-            .findByIdAndUpdate(assessmentId, { status })
-            .exec();
+        const assessmentModel = await this.assessmentModel.findById(assessmentId)
+
+        if (assessmentModel.status !== AssessmentStatus.COMPLETED && status === AssessmentStatus.COMPLETED) {
+            let assessment = await this.assessmentRepository.findOne({ where: { questionnaireAssessmentId: assessmentId } })
+            assessment.submissionDate = new Date();
+            await assessment.save();
+        }
+
+        assessmentModel.status = status
+        return assessmentModel.save()
     }
 
     async deleteAssessment(_id: Types.ObjectId, archive = true) {

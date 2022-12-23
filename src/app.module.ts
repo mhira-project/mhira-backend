@@ -17,11 +17,16 @@ import { DepartmentModule } from './modules/department/department.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CaregiverModule } from './modules/caregiver/caregiver.module';
 import { ReportModule } from './modules/report/report.module';
-import { Disclaimer } from './modules/disclaimer/models/disclaimer.model';
 import { DisclaimerModule } from './modules/disclaimer/disclaimer.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { MailModule } from './modules/mail/mail.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
     imports: [
+        ScheduleModule.forRoot(),
+        MailerModule.forRoot(configService.getMailerConfig()),
         MongooseModule.forRoot(configService.getMongoConnectionString(), {
             useFindAndModify: false,
         }),
@@ -68,6 +73,7 @@ import { DisclaimerModule } from './modules/disclaimer/disclaimer.module';
         CaregiverModule,
         ReportModule,
         DisclaimerModule,
+        MailModule,
     ],
     controllers: [],
     providers: [],
