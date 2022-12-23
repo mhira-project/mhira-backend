@@ -155,7 +155,7 @@ export class Patient extends BaseEntity {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @Field({ nullable: true })
+    @FilterableField({ nullable: true })
     @DeleteDateColumn()
     deletedAt?: Date;
 

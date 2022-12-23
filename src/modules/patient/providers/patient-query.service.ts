@@ -14,7 +14,7 @@ import {
     AnsweredQuestions,
     IQuestionGroup,
 } from 'src/modules/questionnaire/models/questionnaire.schema';
-import {AssessmentResponse} from 'src/modules/assessment/models/assessment.model';
+import {Assessment, AssessmentResponse} from 'src/modules/assessment/models/assessment.model';
 import {QuestionnaireScriptService} from 'src/modules/questionnaire/services/questionnaire-script.service';
 
 @QueryService(Patient)
@@ -77,9 +77,10 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
     }
 
     async archiveOnePatient(id: number) {
-        const result = await this.repo
-            .softDelete(id);
-        console.log(result);
+        const result = await this.repo.softDelete(id);
+
+        await Assessment.update({ patientId: id }, { deletedAt: new Date() })
+
         return result;
     }
 
