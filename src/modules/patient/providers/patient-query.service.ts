@@ -76,12 +76,15 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         return patient;
     }
 
-    async archiveOnePatient(id: number) {
-        const result = await this.repo.softDelete(id);
+    async archiveOnePatient(id: number, archive = true) {
+        if (!archive) {
+            await this.repo.restore(id);
+            await Assessment.update({ patientId: id }, { deletedAt: null })
+            return;
+        }
 
+        await this.repo.softDelete(id);
         await Assessment.update({ patientId: id }, { deletedAt: new Date() })
-
-        return result;
     }
 
     async createMany(input: CreatePatientInput[]): Promise<Patient[]> {

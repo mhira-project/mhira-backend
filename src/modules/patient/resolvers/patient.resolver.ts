@@ -214,12 +214,14 @@ export class PatientResolver {
     @UsePermission(PermissionEnum.MANAGE_PATIENTS)
     async archiveOnePatient(
         @Args('input', {type: () => ID}) id: number,
+        @Args('archive', { nullable: true, defaultValue: true })
+        archive: boolean,
         @CurrentUser() currentUser: User,
     ): Promise<Patient> {
         //Get patient if authorized. Throws exception if Not Found
         const patient = await this.service.getOnePatient(currentUser, Number(id))
 
-        await this.service.archiveOnePatient(id);
+        await this.service.archiveOnePatient(id, archive);
         return patient;
     }
 
