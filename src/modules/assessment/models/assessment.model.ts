@@ -95,6 +95,10 @@ export class Assessment extends BaseEntity {
     @DeleteDateColumn()
     deletedAt?: Date;
 
+    @FilterableField({ nullable: true })
+    @Column({ nullable: true })
+    deleted: boolean
+
     @Field(() => Boolean)
     @Column({ type: 'boolean', default: true })
     isActive: boolean;

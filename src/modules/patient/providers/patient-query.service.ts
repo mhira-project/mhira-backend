@@ -1,7 +1,7 @@
 import {QueryService, mergeFilter} from '@nestjs-query/core';
 import {TypeOrmQueryService} from '@nestjs-query/query-typeorm';
 import {InjectRepository} from '@nestjs/typeorm';
-import {getRepository, Repository} from 'typeorm';
+import {createQueryBuilder, getRepository, IsNull, Not, Repository} from 'typeorm';
 import {Patient, PatientReport} from '../models/patient.model';
 import {CreatePatientInput} from '../dto/create-patient.input';
 import {User} from 'src/modules/user/models/user.model';
@@ -76,15 +76,26 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         return patient;
     }
 
-    async archiveOnePatient(id: number, archive = true) {
-        if (!archive) {
-            await this.repo.restore(id);
-            await Assessment.update({ patientId: id }, { deletedAt: null })
-            return;
+    async archiveOnePatient(id: number, restore = false, patient: Patient) {
+        if (restore) {
+            if (!patient.deleted) {
+                throw Error("This patient is not archived!")
+            }
+
+            const restoredPatient = await this.repo.update(id, { deleted: false});
+            await Assessment.update({ patientId: id }, { deleted: false })
+
+            return restoredPatient
         }
 
-        await this.repo.softDelete(id);
-        await Assessment.update({ patientId: id }, { deletedAt: new Date() })
+        if (patient.deleted) {
+            throw Error("This patient is already archived!")
+        }
+
+        const archivedPatient = await this.repo.update(id, { deleted: true });
+        await Assessment.update({ patientId: id }, { deleted: true })
+
+        return archivedPatient;
     }
 
     async createMany(input: CreatePatientInput[]): Promise<Patient[]> {

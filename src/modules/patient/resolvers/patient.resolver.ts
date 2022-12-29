@@ -35,6 +35,7 @@ import {CreateOnePatientStatusInput} from '../dto/update-patient-status.input';
 import {PatientStatusService} from '../providers/patient-status.service';
 import {SoftDeleteQueryBuilder} from "typeorm/query-builder/SoftDeleteQueryBuilder";
 import {UpdateResult} from "typeorm";
+import { Assessment } from 'src/modules/assessment/models/assessment.model';
 
 @ArgsType()
 class PatientQuery extends QueryArgsType(Patient) {
@@ -78,14 +79,15 @@ export class PatientResolver {
         @Args({type: () => PatientQuery}) query: PatientQuery,
         @CurrentUser() currentUser: User,
     ): Promise<ConnectionType<Patient>> {
-        const authorizeFilter = await PatientAuthorizer.authorizePatient(
-            currentUser?.id,
-        );
+        // const authorizeFilter = await PatientAuthorizer.authorizePatient(
+        //     currentUser?.id,
+        // );
 
-        const combinedFilter = mergeFilter(query.filter, authorizeFilter);
+        // const combinedFilter = mergeFilter(query.filter, authorizeFilter);
 
-        // Apply combined authorized filter
-        query.filter = combinedFilter;
+            
+        // // Apply combined authorized filter
+        // query.filter = combinedFilter;
 
         // Apply default sort if not provided
         query.sorting = query.sorting?.length
@@ -207,21 +209,23 @@ export class PatientResolver {
         // Get patient if authorized. Throws exception if Not Found
         await this.service.getOnePatient(currentUser, Number(input.id));
 
-        return this.service.deleteOne(input.id);
+        const deletedPatient = await this.service.deleteOne(input.id);
+        await Assessment.delete({ patientId: Number(input.id) });
+
+        return deletedPatient;
     }
 
     @Mutation(() => Patient)
     @UsePermission(PermissionEnum.MANAGE_PATIENTS)
     async archiveOnePatient(
-        @Args('input', {type: () => ID}) id: number,
-        @Args('archive', { nullable: true, defaultValue: true })
-        archive: boolean,
+        @Args('id', {type: () => ID}) id: number,
+        @Args('restore', { nullable: true, defaultValue: false }) restore: boolean,
         @CurrentUser() currentUser: User,
     ): Promise<Patient> {
         //Get patient if authorized. Throws exception if Not Found
-        const patient = await this.service.getOnePatient(currentUser, Number(id))
+        const patient = await this.service.getOnePatient(currentUser, id)
 
-        await this.service.archiveOnePatient(id, archive);
+        await this.service.archiveOnePatient(id, restore, patient);
         return patient;
     }
 

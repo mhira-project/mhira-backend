@@ -27,6 +27,7 @@ import { Caregiver } from 'src/modules/caregiver/models/caregiver.model';
 import { AssessmentStatus } from 'src/modules/questionnaire/enums/assessment-status.enum';
 import { AssessmentType } from '../models/assessment-type.model';
 import { AssessmentEmailStatus } from '../enums/assessment-emailstatus.enum';
+import { Patient } from 'src/modules/patient/models/patient.model';
 
 @Injectable()
 export class AssessmentService {
@@ -371,26 +372,53 @@ export class AssessmentService {
         return assessment;
     }
 
-    public async deleteAssessment(id: number, archive = true) {
+    public async deleteAssessment(id: number, cancel = true) {
         const assessment = await this.assessmentRepository.findOneOrFail(id);
         const queryRunner = getConnection().createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
 
-        if (!archive) await queryRunner.manager.delete(Assessment, id);
+        if (!cancel) await queryRunner.manager.delete(Assessment, id);
 
         try {
             await this.questionnaireAssessmentService.deleteAssessment(
                 (assessment.questionnaireAssessmentId as any) as Types.ObjectId,
-                archive,
+                cancel,
             );
             await queryRunner.commitTransaction();
         } catch (err) {
             await queryRunner.rollbackTransaction();
             throw err;
         } finally {
-            await queryRunner.release();
+            await queryRunner.release(); 
         }
+    }
+
+    async archiveOneAssessment(id: number, restore = false) {
+        const assessment = await this.assessmentRepository.findOneOrFail(id)
+
+        if (!restore) {
+            if (assessment.deleted) {
+                throw Error("This assessment is already archived!")
+            }
+
+            await this.assessmentRepository.update(id, { deleted: true })
+        }
+        else {
+            const patient = await Patient.findOneOrFail({ id: assessment.patientId })
+    
+            if (patient.deleted) {
+                throw Error("The patient assigned to this assessment is archived!")
+            }
+
+            if (!assessment.deleted) {
+                throw Error("This assessment is not archived!")
+            }
+    
+            await this.assessmentRepository.update(id, { deleted: false })
+        }
+
+        return assessment
     }
 
     async getFullPublicAssessment(uuid: string): Promise<FullAssessment> {
