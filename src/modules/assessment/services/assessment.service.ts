@@ -407,11 +407,13 @@ export class AssessmentService {
     }
 
     async restoreOneAssessment(id: number) {
-        const assessment = await this.assessmentRepository.findOneOrFail(id)
-
-        const patient = await Patient.findOneOrFail({ id: assessment.patientId })
+        const assessment = await this.assessmentRepository
+                .createQueryBuilder("assessment")
+                .leftJoinAndSelect("assessment.patient", "patient")
+                .where("assessment.id = :id", { id })
+                .getOneOrFail();
     
-        if (patient.deleted) {
+        if (assessment.patient.deleted) {
             throw Error("The patient assigned to this assessment is archived!")
         }
 
@@ -420,7 +422,7 @@ export class AssessmentService {
         }
 
         await this.assessmentRepository.update(id, { deleted: false })
-        
+        delete assessment.patient
         return assessment
     }
 
