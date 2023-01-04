@@ -33,8 +33,7 @@ import {Patient, PatientReport} from '../models/patient.model';
 import {PatientStatus} from '../models/patient-status.model';
 import {CreateOnePatientStatusInput} from '../dto/update-patient-status.input';
 import {PatientStatusService} from '../providers/patient-status.service';
-import {SoftDeleteQueryBuilder} from "typeorm/query-builder/SoftDeleteQueryBuilder";
-import {UpdateResult} from "typeorm";
+import { Assessment } from 'src/modules/assessment/models/assessment.model';
 
 @ArgsType()
 class PatientQuery extends QueryArgsType(Patient) {
@@ -69,8 +68,7 @@ class PatientDeleteResponse extends PartialType(Patient) {
 export class PatientResolver {
     @Inject() patientStatusService: PatientStatusService;
 
-    constructor(protected service: PatientQueryService) {
-    }
+    constructor(protected service: PatientQueryService) {}
 
     @Query(() => PatientConnection)
     @UsePermission(PermissionEnum.VIEW_PATIENTS)
@@ -207,20 +205,34 @@ export class PatientResolver {
         // Get patient if authorized. Throws exception if Not Found
         await this.service.getOnePatient(currentUser, Number(input.id));
 
-        return this.service.deleteOne(input.id);
+        const deletedPatient = await this.service.deleteOne(input.id);
+        await Assessment.delete({ patientId: Number(input.id) });
+
+        return deletedPatient;
     }
 
     @Mutation(() => Patient)
     @UsePermission(PermissionEnum.MANAGE_PATIENTS)
     async archiveOnePatient(
-        @Args('input', {type: () => ID}) id: number,
+        @Args('id', {type: () => ID}) id: number,
         @CurrentUser() currentUser: User,
     ): Promise<Patient> {
         //Get patient if authorized. Throws exception if Not Found
-        const patient = await this.service.getOnePatient(currentUser, Number(id))
+        const patient = await this.service.getOnePatient(currentUser, id)
 
-        await this.service.archiveOnePatient(id);
-        return patient;
+        return await this.service.archiveOnePatient(id, patient);
+    }
+
+    @Mutation(() => Patient)
+    @UsePermission(PermissionEnum.MANAGE_PATIENTS)
+    async restoreOnePatient(
+        @Args('id', {type: () => ID}) id: number,
+        @CurrentUser() currentUser: User,
+    ): Promise<Patient> {
+        //Get patient if authorized. Throws exception if Not Found
+        const patient = await this.service.getOnePatient(currentUser, id)
+
+        return await this.service.restoreOnePatient(id, patient);
     }
 
     @Query(() => PatientReport)

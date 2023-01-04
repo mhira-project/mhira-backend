@@ -159,6 +159,10 @@ export class Patient extends BaseEntity {
     @DeleteDateColumn()
     deletedAt?: Date;
 
+    @FilterableField({ nullable: true })
+    @Column({ nullable: true })
+    deleted: boolean;
+
     @ManyToOne(
         () => PatientStatus,
         status => status.patients,
