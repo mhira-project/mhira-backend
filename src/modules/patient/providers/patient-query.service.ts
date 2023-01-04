@@ -81,10 +81,10 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
             throw Error("This patient is already archived!")
         }
 
-        const archivedPatient = await this.repo.update(id, { deleted: true });
+        await this.repo.update(id, { deleted: true });
         await Assessment.update({ patientId: id }, { deleted: true })
 
-        return archivedPatient;
+        return patient;
     }
 
     async restoreOnePatient(id: number, patient: Patient) {
@@ -92,10 +92,10 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
             throw Error("This patient is not archived!")
         }
 
-        const restoredPatient = await this.repo.update(id, { deleted: false});
+        await this.repo.update(id, { deleted: false});
         await Assessment.update({ patientId: id }, { deleted: false })
 
-        return restoredPatient
+        return patient
     }
 
     async createMany(input: CreatePatientInput[]): Promise<Patient[]> {

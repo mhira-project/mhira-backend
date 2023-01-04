@@ -220,8 +220,7 @@ export class PatientResolver {
         //Get patient if authorized. Throws exception if Not Found
         const patient = await this.service.getOnePatient(currentUser, id)
 
-        await this.service.archiveOnePatient(id, patient);
-        return patient;
+        return await this.service.archiveOnePatient(id, patient);
     }
 
     @Mutation(() => Patient)
@@ -233,8 +232,7 @@ export class PatientResolver {
         //Get patient if authorized. Throws exception if Not Found
         const patient = await this.service.getOnePatient(currentUser, id)
 
-        await this.service.restoreOnePatient(id, patient);
-        return patient;
+        return await this.service.restoreOnePatient(id, patient);
     }
 
     @Query(() => PatientReport)
