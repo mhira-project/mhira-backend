@@ -372,18 +372,18 @@ export class AssessmentService {
         return assessment;
     }
 
-    public async deleteAssessment(id: number, cancel = true) {
+    public async deleteAssessment(id: number, statusCancel = true) {
         const assessment = await this.assessmentRepository.findOneOrFail(id);
         const queryRunner = getConnection().createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
 
-        if (!cancel) await queryRunner.manager.delete(Assessment, id);
+        if (!statusCancel) await queryRunner.manager.delete(Assessment, id);
 
         try {
             await this.questionnaireAssessmentService.deleteAssessment(
                 (assessment.questionnaireAssessmentId as any) as Types.ObjectId,
-                cancel,
+                statusCancel,
             );
             await queryRunner.commitTransaction();
         } catch (err) {

@@ -86,11 +86,11 @@ export class AssessmentResolver {
     @UsePermission(PermissionEnum.DELETE_ASSESSMENTS)
     async deleteAssessment(
         @Args('id', { type: () => Int }) id: number,
-        @Args('cancel', { nullable: true, defaultValue: true })
-        cancel: boolean,
+        @Args('statusCancel', { nullable: true, defaultValue: true })
+        statusCancel: boolean,
     ) {
-        await this.assessmentService.deleteAssessment(id, cancel);
-        return cancel;
+        await this.assessmentService.deleteAssessment(id, statusCancel);
+        return statusCancel;
     }
 
     @Mutation(() => Assessment)
