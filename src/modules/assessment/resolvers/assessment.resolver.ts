@@ -96,10 +96,17 @@ export class AssessmentResolver {
     @Mutation(() => Assessment)
     @UsePermission(PermissionEnum.DELETE_ASSESSMENTS)
     async archiveOneAssessment(
-        @Args('id', { type: () => Int }) id: number,
-        @Args('restore', { nullable: true, defaultValue: false })
-        restore: boolean,
+        @Args('id', { type: () => Int }) id: number
     ): Promise<Assessment> {
-        return await this.assessmentService.archiveOneAssessment(id, restore);
+        return await this.assessmentService.archiveOneAssessment(id);
     }
+
+    @Mutation(() => Assessment)
+    @UsePermission(PermissionEnum.DELETE_ASSESSMENTS)
+    async restoreOneAssessment(
+        @Args('id', { type: () => Int }) id: number,
+    ): Promise<Assessment> {
+        return await this.assessmentService.restoreOneAssessment(id);
+    }
+
 }

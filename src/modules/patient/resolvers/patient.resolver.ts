@@ -33,8 +33,6 @@ import {Patient, PatientReport} from '../models/patient.model';
 import {PatientStatus} from '../models/patient-status.model';
 import {CreateOnePatientStatusInput} from '../dto/update-patient-status.input';
 import {PatientStatusService} from '../providers/patient-status.service';
-import {SoftDeleteQueryBuilder} from "typeorm/query-builder/SoftDeleteQueryBuilder";
-import {UpdateResult} from "typeorm";
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
 
 @ArgsType()
@@ -70,8 +68,7 @@ class PatientDeleteResponse extends PartialType(Patient) {
 export class PatientResolver {
     @Inject() patientStatusService: PatientStatusService;
 
-    constructor(protected service: PatientQueryService) {
-    }
+    constructor(protected service: PatientQueryService) {}
 
     @Query(() => PatientConnection)
     @UsePermission(PermissionEnum.VIEW_PATIENTS)
@@ -79,15 +76,14 @@ export class PatientResolver {
         @Args({type: () => PatientQuery}) query: PatientQuery,
         @CurrentUser() currentUser: User,
     ): Promise<ConnectionType<Patient>> {
-        // const authorizeFilter = await PatientAuthorizer.authorizePatient(
-        //     currentUser?.id,
-        // );
+        const authorizeFilter = await PatientAuthorizer.authorizePatient(
+            currentUser?.id,
+        );
 
-        // const combinedFilter = mergeFilter(query.filter, authorizeFilter);
+        const combinedFilter = mergeFilter(query.filter, authorizeFilter);
 
-            
-        // // Apply combined authorized filter
-        // query.filter = combinedFilter;
+        // Apply combined authorized filter
+        query.filter = combinedFilter;
 
         // Apply default sort if not provided
         query.sorting = query.sorting?.length
@@ -219,13 +215,25 @@ export class PatientResolver {
     @UsePermission(PermissionEnum.MANAGE_PATIENTS)
     async archiveOnePatient(
         @Args('id', {type: () => ID}) id: number,
-        @Args('restore', { nullable: true, defaultValue: false }) restore: boolean,
         @CurrentUser() currentUser: User,
     ): Promise<Patient> {
         //Get patient if authorized. Throws exception if Not Found
         const patient = await this.service.getOnePatient(currentUser, id)
 
-        await this.service.archiveOnePatient(id, restore, patient);
+        await this.service.archiveOnePatient(id, patient);
+        return patient;
+    }
+
+    @Mutation(() => Patient)
+    @UsePermission(PermissionEnum.MANAGE_PATIENTS)
+    async restoreOnePatient(
+        @Args('id', {type: () => ID}) id: number,
+        @CurrentUser() currentUser: User,
+    ): Promise<Patient> {
+        //Get patient if authorized. Throws exception if Not Found
+        const patient = await this.service.getOnePatient(currentUser, id)
+
+        await this.service.restoreOnePatient(id, patient);
         return patient;
     }
 

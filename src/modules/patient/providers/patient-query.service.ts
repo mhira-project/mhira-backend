@@ -76,18 +76,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         return patient;
     }
 
-    async archiveOnePatient(id: number, restore = false, patient: Patient) {
-        if (restore) {
-            if (!patient.deleted) {
-                throw Error("This patient is not archived!")
-            }
-
-            const restoredPatient = await this.repo.update(id, { deleted: false});
-            await Assessment.update({ patientId: id }, { deleted: false })
-
-            return restoredPatient
-        }
-
+    async archiveOnePatient(id: number, patient: Patient) {
         if (patient.deleted) {
             throw Error("This patient is already archived!")
         }
@@ -96,6 +85,17 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         await Assessment.update({ patientId: id }, { deleted: true })
 
         return archivedPatient;
+    }
+
+    async restoreOnePatient(id: number, patient: Patient) {
+        if (!patient.deleted) {
+            throw Error("This patient is not archived!")
+        }
+
+        const restoredPatient = await this.repo.update(id, { deleted: false});
+        await Assessment.update({ patientId: id }, { deleted: false })
+
+        return restoredPatient
     }
 
     async createMany(input: CreatePatientInput[]): Promise<Patient[]> {

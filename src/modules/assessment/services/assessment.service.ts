@@ -394,30 +394,33 @@ export class AssessmentService {
         }
     }
 
-    async archiveOneAssessment(id: number, restore = false) {
+    async archiveOneAssessment(id: number) {
         const assessment = await this.assessmentRepository.findOneOrFail(id)
 
-        if (!restore) {
-            if (assessment.deleted) {
-                throw Error("This assessment is already archived!")
-            }
-
-            await this.assessmentRepository.update(id, { deleted: true })
-        }
-        else {
-            const patient = await Patient.findOneOrFail({ id: assessment.patientId })
-    
-            if (patient.deleted) {
-                throw Error("The patient assigned to this assessment is archived!")
-            }
-
-            if (!assessment.deleted) {
-                throw Error("This assessment is not archived!")
-            }
-    
-            await this.assessmentRepository.update(id, { deleted: false })
+        if (assessment.deleted) {
+            throw Error("This assessment is already archived!")
         }
 
+        await this.assessmentRepository.update(id, { deleted: true })
+
+        return assessment
+    }
+
+    async restoreOneAssessment(id: number) {
+        const assessment = await this.assessmentRepository.findOneOrFail(id)
+
+        const patient = await Patient.findOneOrFail({ id: assessment.patientId })
+    
+        if (patient.deleted) {
+            throw Error("The patient assigned to this assessment is archived!")
+        }
+
+        if (!assessment.deleted) {
+            throw Error("This assessment is not archived!")
+        }
+
+        await this.assessmentRepository.update(id, { deleted: false })
+        
         return assessment
     }
 
