@@ -54,7 +54,7 @@ export class SendMailService {
         try {
             const assessment = await this.assessmentRepository.findOneOrFail(id)
 
-            const mailTemplate = await this.mailTemplateRepository.findOne({ module: TemplateModuleEnum.CLIENT })
+            const mailTemplate = await this.mailTemplateRepository.findOne({ module: TemplateModuleEnum.ASSESSMENT })
 
             if (!mailTemplate) {
                 throw new NotFoundException("No email template found!")
