@@ -6,7 +6,7 @@ import {
     QueryArgsType,
     UpdateOneInputType,
 } from '@nestjs-query/query-graphql';
-import {BadRequestException, Inject, UseGuards} from '@nestjs/common';
+import {BadRequestException, Inject, Logger, UseGuards} from '@nestjs/common';
 import {
     Args,
     ArgsType,
@@ -34,6 +34,7 @@ import {PatientStatus} from '../models/patient-status.model';
 import {CreateOnePatientStatusInput} from '../dto/update-patient-status.input';
 import {PatientStatusService} from '../providers/patient-status.service';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
+import { checkIfPropertyExists } from 'src/shared/helpers/object.helper';
 
 @ArgsType()
 class PatientQuery extends QueryArgsType(Patient) {
@@ -82,6 +83,11 @@ export class PatientResolver {
 
         const combinedFilter = mergeFilter(query.filter, authorizeFilter);
 
+        if (!checkIfPropertyExists(combinedFilter, 'deleted')) {
+            combinedFilter.and.push({
+                and: [{ deleted: { is: false } }]
+            })
+        }
         // Apply combined authorized filter
         query.filter = combinedFilter;
 
