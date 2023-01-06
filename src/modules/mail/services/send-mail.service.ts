@@ -68,6 +68,13 @@ export class SendMailService {
     }
 
     async sendEmail(assessmentInfo: Assessment, mailTemplate: MailTemplate) {
+        Handlebars.registerHelper("helperMissing", function(val) {
+            if(val === undefined) {
+                return null;
+            }
+            return val;
+        });
+
         const template = Handlebars.compile(mailTemplate.body)
 
         const url = this.generateAssessmentURL(assessmentInfo.uuid)
