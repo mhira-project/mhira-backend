@@ -56,6 +56,10 @@ export class SendMailService {
         try {
             const assessment = await this.assessmentRepository.findOneOrFail(id)
 
+            if (!assessment.emailReminder || !assessment.receiverEmail) {
+                throw new Error("Email is required!")
+            }
+
             const mailTemplate = await this.mailTemplateRepository.findOne({ module: TemplateModuleEnum.ASSESSMENT })
 
             if (!mailTemplate) {

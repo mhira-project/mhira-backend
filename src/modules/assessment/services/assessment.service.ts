@@ -28,6 +28,7 @@ import { AssessmentStatus } from 'src/modules/questionnaire/enums/assessment-sta
 import { AssessmentType } from '../models/assessment-type.model';
 import { AssessmentEmailStatus } from '../enums/assessment-emailstatus.enum';
 import { Patient } from 'src/modules/patient/models/patient.model';
+import { Validator } from 'src/shared';
 
 @Injectable()
 export class AssessmentService {
@@ -242,8 +243,12 @@ export class AssessmentService {
                     if (!assessmentInput.emailReminder) {
                         assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED;
                         assessment.receiverEmail = null;
-                    } else {
-                        assessment.emailStatus = AssessmentEmailStatus.SCHEDULED;
+                    } else if (Validator.isEmail(assessmentInput.receiverEmail)){
+                        if (!assessmentInput.dates[i].deliveryDate) {
+                            assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED
+                        } else {
+                            assessment.emailStatus = AssessmentEmailStatus.SCHEDULED;
+                        }
                         assessment.receiverEmail = assessmentInput.receiverEmail;
                     }
         
@@ -353,10 +358,14 @@ export class AssessmentService {
             // If emailReminder is not checked then all the other email values will be edited
             assessment.emailReminder = assessmentInput.emailReminder || false;
             if (!assessmentInput.emailReminder) {
-                assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED;
+                if (assessment.emailStatus === AssessmentEmailStatus.SCHEDULED) {
+                    assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED;
+                }
                 assessment.receiverEmail = null;
-            } else {
-                assessment.emailStatus = AssessmentEmailStatus.SCHEDULED;
+            } else if (Validator.isEmail(assessmentInput.receiverEmail)) {
+                if (assessment.emailStatus === AssessmentEmailStatus.NOT_SCHEDULED && assessmentInput.deliveryDate) {
+                    assessment.emailStatus = AssessmentEmailStatus.SCHEDULED;
+                }
                 assessment.receiverEmail = assessmentInput.receiverEmail;
             }
             await assessment.save();
