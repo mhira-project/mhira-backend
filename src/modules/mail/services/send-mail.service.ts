@@ -11,10 +11,13 @@ import Handlebars from 'handlebars';
 import * as CryptoJS from 'crypto-js'
 import { url } from '../../../shared'
 import { configService } from 'src/config/config.service';
+import { QuestionnaireAssessmentService } from 'src/modules/questionnaire/services/questionnaire-assessment.service';
+import { AssessmentStatus } from 'src/modules/questionnaire/enums/assessment-status.enum';
 
 @Injectable()
 export class SendMailService {
     constructor(
+        private questionnaireAssessmentService: QuestionnaireAssessmentService,
         private mailerService: MailerService,
         @InjectRepository(Assessment)
         private assessmentRepository: Repository<Assessment>,
@@ -33,7 +36,6 @@ export class SendMailService {
                     `(Extract(epoch FROM (assessment.deliveryDate - now()))/60)::integer = 0 
                     AND assessment.emailStatus = 'SCHEDULED'`,
                 )
-                .leftJoinAndSelect('assessment.patient', 'patient')
                 .getMany();
 
             //When there is no template all received assessment emails get status failed
@@ -54,6 +56,10 @@ export class SendMailService {
         try {
             const assessment = await this.assessmentRepository.findOneOrFail(id)
 
+            if (!assessment.emailReminder || !assessment.receiverEmail) {
+                throw new Error("Email is required!")
+            }
+
             const mailTemplate = await this.mailTemplateRepository.findOne({ module: TemplateModuleEnum.ASSESSMENT })
 
             if (!mailTemplate) {
@@ -68,6 +74,23 @@ export class SendMailService {
     }
 
     async sendEmail(assessmentInfo: Assessment, mailTemplate: MailTemplate) {
+        const questionnaireAssessment = await this.questionnaireAssessmentService.getById(
+            assessmentInfo.questionnaireAssessmentId.toString(),
+        );
+
+        if (questionnaireAssessment.status === AssessmentStatus.CANCELLED || assessmentInfo.deleted) {
+            return await this.assessmentRepository.update(assessmentInfo.id, {
+                emailStatus: AssessmentEmailStatus.FAILED,
+            });
+        }
+
+        Handlebars.registerHelper("helperMissing", function(val) {
+            if(val === undefined) {
+                return null;
+            }
+            return val;
+        });
+
         const template = Handlebars.compile(mailTemplate.body)
 
         const url = this.generateAssessmentURL(assessmentInfo.uuid)

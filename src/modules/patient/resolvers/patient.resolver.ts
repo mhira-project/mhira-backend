@@ -84,6 +84,9 @@ export class PatientResolver {
         const combinedFilter = mergeFilter(query.filter, authorizeFilter);
 
         if (!checkIfPropertyExists(combinedFilter, 'deleted')) {
+            if(!combinedFilter.and){
+                combinedFilter.and = [];
+            }
             combinedFilter.and.push({
                 and: [{ deleted: { is: false } }]
             })

@@ -4,10 +4,21 @@ import { Module } from '@nestjs/common';
 import { Assessment } from '../assessment/models/assessment.model';
 import { GqlAuthGuard } from '../auth/auth.guard';
 import { PermissionGuard } from '../permission/guards/permission.guard';
+import { QuestionnaireAssessmentService } from '../questionnaire/services/questionnaire-assessment.service';
 import { MailTemplate } from './models/mail-template.model';
 import { MailResolver } from './resolvers/mail.resolver';
 import { MailTemplateService } from './services/mail-template.service';
 import { SendMailService } from './services/send-mail.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import {
+  AssessmentSchema,
+  QuestionnaireAssessment,
+} from '../questionnaire/models/questionnaire-assessment.schema';
+import { Answer, AnswerSchema } from '../questionnaire/models/answer.schema';
+import {
+  QuestionnaireVersion,
+  QuestionnaireVersionSchema,
+} from '../questionnaire/models/questionnaire-version.schema';
 
 @Module({
   imports: [
@@ -16,9 +27,19 @@ import { SendMailService } from './services/send-mail.service';
         NestjsQueryTypeOrmModule.forFeature([
           MailTemplate,
           Assessment
-        ])
+        ]),
+        MongooseModule.forFeature([
+          {
+              name: QuestionnaireAssessment.name,
+              schema: AssessmentSchema,
+          },
+          { name: Answer.name, schema: AnswerSchema },
+          {
+              name: QuestionnaireVersion.name,
+              schema: QuestionnaireVersionSchema,
+          },
+        ]),
       ],
-      services: [MailTemplateService, SendMailService],
       resolvers: [
         {
           DTOClass: MailTemplate,
@@ -32,6 +53,6 @@ import { SendMailService } from './services/send-mail.service';
       ],
     }),
   ],
-  providers: [MailResolver, MailTemplateService, SendMailService]
+  providers: [MailResolver, MailTemplateService, SendMailService, QuestionnaireAssessmentService]
 })
 export class MailModule {}
