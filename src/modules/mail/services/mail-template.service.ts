@@ -70,6 +70,7 @@ export class MailTemplateService {
     }
 
     async deleteEmailTemplate(templateId: number) {
+        throw new Error("You cannot delete templates!")
         try {
             const template = await this.mailTemplateRepository.findOne(
                 templateId,
