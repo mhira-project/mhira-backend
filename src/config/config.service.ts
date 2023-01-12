@@ -91,7 +91,7 @@ class ConfigService {
         return {
             transport: {
               host: this.getValue('MAIL_HOST'),
-              secure: this.getValue('MAIL_SECURE').toLowerCase() === 'true',
+              secure: this.getValue('MAIL_SECURE') && this.getValue('MAIL_SECURE').toLowerCase() === 'true',
               port: this.getValue('MAIL_PORT'),
               auth: {
                 user: this.getValue('MAIL_USER'),

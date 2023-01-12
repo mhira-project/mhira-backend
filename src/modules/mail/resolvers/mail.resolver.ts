@@ -14,6 +14,8 @@ import {
 } from '../dtos/mail-template.query';
 import { ConnectionType } from '@nestjs-query/query-graphql';
 import { SendMailService } from '../services/send-mail.service';
+import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
+import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
 
 @Resolver(() => MailTemplate)
 @UseGuards(GqlAuthGuard, PermissionGuard)
@@ -24,6 +26,7 @@ export class MailResolver {
     ) {}
 
     @Query(() => MailTemplate)
+    @UsePermission(PermissionEnum.VIEW_SETTINGS)
     async getEmailTemplate(
         @Args('id', { type: () => ID }) id: number,
     ): Promise<MailTemplate> {
@@ -31,6 +34,7 @@ export class MailResolver {
     }
 
     @Query(() => MailTemplateConnection)
+    @UsePermission(PermissionEnum.VIEW_SETTINGS)
     async getAllEmailTemplates(
         @Args({ type: () => MailTemplateQuery }) query: MailTemplateQuery,
     ): Promise<ConnectionType<MailTemplate>> {
@@ -39,13 +43,13 @@ export class MailResolver {
 
     @Mutation(() => Boolean)
     async sendAssessmentEmail(
-        @Args('assessmentId', { type: () => ID }) assessmentId: number 
+        @Args('assessmentId', { type: () => ID }) assessmentId: number
     ) {
         return this.sendMailService.sendAssessmentEmail(assessmentId)
     }
 
-
     @Mutation(() => MailTemplate)
+    @UsePermission(PermissionEnum.MANAGE_SETTINGS)
     async createEmailTemplate(
         @Args('input') input: CreateEmailTemplate,
     ): Promise<MailTemplate> {
@@ -53,11 +57,13 @@ export class MailResolver {
     }
 
     @Mutation(() => Boolean)
+    @UsePermission(PermissionEnum.MANAGE_SETTINGS)
     async deleteEmailTemplate(@Args('id') templateId: number) {
         return this.mailService.deleteEmailTemplate(templateId);
     }
 
     @Mutation(() => MailTemplate)
+    @UsePermission(PermissionEnum.MANAGE_SETTINGS)
     async updateEmailTemplate(
         @Args('input') input: UpdateEmailTemplate,
     ): Promise<MailTemplate> {

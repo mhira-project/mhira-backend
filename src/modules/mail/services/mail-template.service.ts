@@ -10,7 +10,6 @@ import {
     MailTemplateConnection,
     MailTemplateQuery,
 } from '../dtos/mail-template.query';
-import { TemplateModuleEnum } from '../enums/template-module.enum';
 import { MailTemplate } from '../models/mail-template.model';
 import {
     InjectQueryService,
@@ -70,6 +69,7 @@ export class MailTemplateService {
     }
 
     async deleteEmailTemplate(templateId: number) {
+        throw new Error("You cannot delete templates!")
         try {
             const template = await this.mailTemplateRepository.findOne(
                 templateId,
