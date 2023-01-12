@@ -10,7 +10,6 @@ import {
     MailTemplateConnection,
     MailTemplateQuery,
 } from '../dtos/mail-template.query';
-import { TemplateModuleEnum } from '../enums/template-module.enum';
 import { MailTemplate } from '../models/mail-template.model';
 import {
     InjectQueryService,
