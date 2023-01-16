@@ -123,7 +123,7 @@ export class SendMailService {
 
         const cryptoId = CryptoJS.AES.encrypt(assesmentUuid, secretKey).toString();
         
-        return url(`assessment/overview?assessment=${cryptoId}`)
+        return url(`assessment/overview?assessment=${encodeURIComponent(cryptoId)}`)
     }
 
 }
