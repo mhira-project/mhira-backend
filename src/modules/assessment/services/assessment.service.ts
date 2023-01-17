@@ -110,36 +110,7 @@ export class AssessmentService {
         for (let i = 0; i < result.edges.length; i++) {
             const assessment = result.edges[i].node;
 
-            const expirationToDate = new Date(assessment?.expirationDate);
-            const deliveryToDate = new Date(assessment?.deliveryDate);
-            const newDate = new Date();
-
-            const questionnaireAssessment = await this.questionnaireAssessmentService.getById(
-                assessment.questionnaireAssessmentId.toString(),
-            );
-
-            if (
-                questionnaireAssessment.status === AssessmentStatus.PLANNED &&
-                assessment?.deliveryDate &&
-                deliveryToDate < newDate
-            ) {
-                await this.questionnaireAssessmentService.changeAssessmentStatus(
-                    assessment.questionnaireAssessmentId,
-                    AssessmentStatus.OPEN_FOR_COMPLETION,
-                );
-            }
-
-            if (
-                assessment?.expirationDate &&
-                expirationToDate < newDate &&
-                questionnaireAssessment?.status !== AssessmentStatus.COMPLETED &&
-                questionnaireAssessment?.status !== AssessmentStatus.PARTIALLY_COMPLETED
-            ) {
-                await this.questionnaireAssessmentService.changeAssessmentStatus(
-                    assessment.questionnaireAssessmentId,
-                    AssessmentStatus.EXPIRED,
-                );
-            }
+            await this.changeQuestionnaireAssessmentStatus(assessment)
         }
 
         return result;
@@ -445,9 +416,46 @@ export class AssessmentService {
                 relations: ['clinician', 'patient', 'assessmentType'],
             },
         )) as FullAssessment;
-        assessment.questionnaireAssessment = await this.questionnaireAssessmentService.getById(
-            assessment.questionnaireAssessmentId,
-        );
+        
+        assessment.questionnaireAssessment = await this.changeQuestionnaireAssessmentStatus(assessment);
+
         return assessment;
+    }
+
+    async changeQuestionnaireAssessmentStatus(assessment: any) {
+        let questionnaireAssessment = await this.questionnaireAssessmentService.getById(
+            assessment.questionnaireAssessmentId.toString(),
+        );
+
+        const expirationToDate = new Date(assessment?.expirationDate);
+        const deliveryToDate = new Date(assessment?.deliveryDate);
+        const newDate = new Date();
+
+        if (
+            questionnaireAssessment.status === AssessmentStatus.PLANNED &&
+            assessment?.deliveryDate &&
+            deliveryToDate < newDate
+        ) {
+            await this.questionnaireAssessmentService.changeAssessmentStatus(
+                assessment.questionnaireAssessmentId,
+                AssessmentStatus.OPEN_FOR_COMPLETION,
+            );
+            questionnaireAssessment.status = AssessmentStatus.OPEN_FOR_COMPLETION
+        }
+
+        if (
+            assessment?.expirationDate &&
+            expirationToDate < newDate &&
+            questionnaireAssessment?.status !== AssessmentStatus.COMPLETED &&
+            questionnaireAssessment?.status !== AssessmentStatus.PARTIALLY_COMPLETED
+        ) {
+            await this.questionnaireAssessmentService.changeAssessmentStatus(
+                assessment.questionnaireAssessmentId,
+                AssessmentStatus.EXPIRED,
+            );
+            questionnaireAssessment.status = AssessmentStatus.EXPIRED
+        }
+
+        return questionnaireAssessment
     }
 }
