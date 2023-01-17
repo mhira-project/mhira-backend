@@ -80,7 +80,7 @@ export class SendMailService {
 
         if (
             questionnaireAssessment.status === AssessmentStatus.CANCELLED || 
-            questionnaireAssessment.status === AssessmentStatus.EXPIRED || 
+            (assessmentInfo.expirationDate && new Date(assessmentInfo.expirationDate) < new Date()) || 
             assessmentInfo.deleted
         ) {
             return await this.assessmentRepository.update(assessmentInfo.id, {
