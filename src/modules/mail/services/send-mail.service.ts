@@ -33,7 +33,7 @@ export class SendMailService {
             const selectAssessment = await this.assessmentRepository
                 .createQueryBuilder('assessment')
                 .where(
-                    `(Extract(epoch FROM (assessment.deliveryDate - now()))/60)::integer = 0 
+                    `(Extract(epoch FROM (assessment.deliveryDate - now()))/60)::integer <= 0 
                     AND assessment.emailStatus = 'SCHEDULED'`,
                 )
                 .getMany();
@@ -78,7 +78,11 @@ export class SendMailService {
             assessmentInfo.questionnaireAssessmentId.toString(),
         );
 
-        if (questionnaireAssessment.status === AssessmentStatus.CANCELLED || assessmentInfo.deleted) {
+        if (
+            questionnaireAssessment.status === AssessmentStatus.CANCELLED || 
+            (assessmentInfo.expirationDate && new Date(assessmentInfo.expirationDate) < new Date()) || 
+            assessmentInfo.deleted
+        ) {
             return await this.assessmentRepository.update(assessmentInfo.id, {
                 emailStatus: AssessmentEmailStatus.FAILED,
             });
@@ -100,7 +104,7 @@ export class SendMailService {
             link: url
         }
 
-        this.mailerService.sendMail({
+        await this.mailerService.sendMail({
             to: assessmentInfo.receiverEmail,
             from: configService.getSenderMail(),
             subject: mailTemplate.subject,
