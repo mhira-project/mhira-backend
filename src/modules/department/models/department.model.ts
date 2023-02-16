@@ -8,10 +8,12 @@ import {
     UpdateDateColumn,
     DeleteDateColumn,
     ManyToMany,
+    OneToMany,
 } from 'typeorm';
 import { FilterableField, FilterableUnPagedRelation, KeySet } from '@nestjs-query/query-graphql';
 import { User } from 'src/modules/user/models/user.model';
 import { Patient } from 'src/modules/patient/models/patient.model';
+import { MailTemplate } from 'src/modules/mail/models/mail-template.model';
 
 @ObjectType()
 @KeySet(['id'])
@@ -53,5 +55,8 @@ export class Department extends BaseEntity {
 
     @ManyToMany(() => Patient, patient => patient.departments)
     patients: User[];
+
+    @OneToMany(() => MailTemplate, mailTemplate => mailTemplate.department)
+    mailTemplates: MailTemplate[]
 
 }

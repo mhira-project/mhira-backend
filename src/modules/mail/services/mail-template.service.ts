@@ -15,7 +15,9 @@ import {
     InjectQueryService,
     QueryService,
     SortDirection,
+    mergeFilter
 } from '@nestjs-query/core';
+import { User } from 'src/modules/user/models/user.model';
 
 @Injectable()
 export class MailTemplateService {
@@ -37,10 +39,21 @@ export class MailTemplateService {
 
     async getAllEmailTemplates(
         query: MailTemplateQuery,
+        currentUser: User
     ): Promise<ConnectionType<MailTemplate>> {
+        const user = await User.findOne({ where: { id: currentUser.id}, relations: ['departments'] })
+
         query.sorting = query.sorting?.length
             ? query.sorting
             : [{ field: 'id', direction: SortDirection.DESC }];
+
+        const combinedFilter = mergeFilter<any>(query.filter, {
+            departmentId: {
+                in: user.departments.map(department => department.id)
+            },
+        });
+
+        query.filter = combinedFilter
 
         const result: any = await MailTemplateConnection.createFromPromise(
             q => this.mailTemplateQueryService.query(q),
@@ -55,13 +68,8 @@ export class MailTemplateService {
         input: CreateEmailTemplate,
     ): Promise<MailTemplate> {
         try {
-            const moduleFound = await this.mailTemplateRepository.findOne({ module: input.module });
-
-            if (moduleFound) {
-                throw new ConflictException("Module already exists!")
-            }
-
             const mail = this.mailTemplateRepository.create(input);
+
             return this.mailTemplateRepository.save(mail);
         } catch (error) {
             return error;
@@ -69,7 +77,6 @@ export class MailTemplateService {
     }
 
     async deleteEmailTemplate(templateId: number) {
-        throw new Error("You cannot delete templates!")
         try {
             const template = await this.mailTemplateRepository.findOne(
                 templateId,

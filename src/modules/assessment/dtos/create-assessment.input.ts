@@ -32,6 +32,9 @@ export class CreateFullAssessmentInput {
     @Field(() => Int)
     clinicianId: number;
 
+    @Field(() => Int, { nullable: true })
+    mailTemplateId: number;
+
     @Field(() => String)
     informantType: string;
 

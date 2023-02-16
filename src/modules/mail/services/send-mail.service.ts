@@ -28,23 +28,17 @@ export class SendMailService {
     @Cron(CronExpression.EVERY_MINUTE)
     async checkAssessmentEmails() {
         try {
-            const mailTemplate = await this.mailTemplateRepository.findOne({ module: TemplateModuleEnum.ASSESSMENT})
-
             const selectAssessment = await this.assessmentRepository
                 .createQueryBuilder('assessment')
+                .leftJoinAndSelect('assessment.mailTemplate', 'mailTemplate')
                 .where(
                     `(Extract(epoch FROM (assessment.deliveryDate - now()))/60)::integer <= 0 
                     AND assessment.emailStatus = 'SCHEDULED'`,
                 )
                 .getMany();
 
-            //When there is no template all received assessment emails get status failed
-            if (!mailTemplate) {
-                return await this.assessmentRepository.update({id: In(selectAssessment.map(({ id }) => id))}, { emailStatus: AssessmentEmailStatus.FAILED })
-            }
-
             selectAssessment.map(async assessmentInfo => {
-                await this.sendEmail(assessmentInfo, mailTemplate)
+                await this.sendEmail(assessmentInfo)
             });
 
         } catch (error) {
@@ -54,26 +48,22 @@ export class SendMailService {
 
     async sendAssessmentEmail(id: number) {
         try {
-            const assessment = await this.assessmentRepository.findOneOrFail(id)
+            const assessment = await this.assessmentRepository.findOneOrFail({ where: { id }, relations: ['mailTemplate']})
 
             if (!assessment.emailReminder || !assessment.receiverEmail) {
                 throw new Error("Email is required!")
             }
 
-            const mailTemplate = await this.mailTemplateRepository.findOne({ module: TemplateModuleEnum.ASSESSMENT })
-
-            if (!mailTemplate) {
-                throw new NotFoundException("No email template found!")
-            }
-
-            await this.sendEmail(assessment, mailTemplate)
+            await this.sendEmail(assessment)
             return true
         } catch (error) {
             return error
         }
     }
 
-    async sendEmail(assessmentInfo: Assessment, mailTemplate: MailTemplate) {
+    async sendEmail(assessmentInfo: Assessment) {
+        const mailTemplate = assessmentInfo.mailTemplate
+
         const questionnaireAssessment = await this.questionnaireAssessmentService.getById(
             assessmentInfo.questionnaireAssessmentId.toString(),
         );

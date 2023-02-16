@@ -15,6 +15,7 @@ import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
 import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
 import { QueryArgsType } from '@nestjs-query/query-graphql';
 import { QuestionnaireVersionService } from '../services/questionnaire-version.service';
+import { SortDirection } from '@nestjs-query/core';
 
 @ArgsType()
 export class QuestionniareVersionQuery extends QueryArgsType(
@@ -71,6 +72,10 @@ export class QuestionnaireResolver {
     @Query(() => QuestionnaireVersionConnection)
     @UsePermission(PermissionEnum.VIEW_QUESTIONNAIRES)
     async questionnaires(@Args() query: QuestionniareVersionQuery) {
+        query.sorting = query.sorting?.length
+            ? query.sorting
+            : [{ field: '_id', direction: SortDirection.DESC }];
+
         const result = await QuestionnaireVersionConnection.createFromPromise(
             q => this.questionnaireService.list(q),
             query,

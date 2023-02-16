@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Types } from 'mongoose';
-import { getConnection, IsNull, Repository } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 import {
     CreateFullAssessmentInput,
     UpdateFullAssessmentInput,
@@ -27,7 +27,6 @@ import { Caregiver } from 'src/modules/caregiver/models/caregiver.model';
 import { AssessmentStatus } from 'src/modules/questionnaire/enums/assessment-status.enum';
 import { AssessmentType } from '../models/assessment-type.model';
 import { AssessmentEmailStatus } from '../enums/assessment-emailstatus.enum';
-import { Patient } from 'src/modules/patient/models/patient.model';
 import { Validator } from 'src/shared';
 
 @Injectable()
@@ -215,6 +214,11 @@ export class AssessmentService {
                         assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED;
                         assessment.receiverEmail = null;
                     } else if (Validator.isEmail(assessmentInput.receiverEmail)){
+                        if (!assessmentInput.mailTemplateId) {
+                            throw new Error("Mail template not found!")
+                        }
+                        assessment.mailTemplateId = assessmentInput.mailTemplateId
+
                         if (!assessmentInput.dates[i].deliveryDate) {
                             assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED
                         } else {
@@ -423,7 +427,7 @@ export class AssessmentService {
     }
 
     async changeQuestionnaireAssessmentStatus(assessment: any) {
-        let questionnaireAssessment = await this.questionnaireAssessmentService.getById(
+        const questionnaireAssessment = await this.questionnaireAssessmentService.getById(
             assessment.questionnaireAssessmentId.toString(),
         );
 

@@ -1,12 +1,16 @@
 import { FilterableField } from '@nestjs-query/query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { AssessmentTypeEnum } from 'src/modules/assessment/enums/assessment-type.enum';
+import { Assessment } from 'src/modules/assessment/models/assessment.model';
+import { Department } from 'src/modules/department/models/department.model';
 import {
     BaseEntity,
     Column,
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
+    ManyToOne,
+    OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
@@ -51,4 +55,14 @@ export class MailTemplate extends BaseEntity {
     @Field({ nullable: true })
     @DeleteDateColumn()
     deletedAt?: Date;
+
+    @Field()
+    @Column()
+    departmentId: number;
+
+    @ManyToOne(() => Department, department => department.mailTemplates)
+    department: Department;
+
+    @OneToMany(() => Assessment, assessment => assessment.mailTemplate)
+    assessments: Assessment[]
 }

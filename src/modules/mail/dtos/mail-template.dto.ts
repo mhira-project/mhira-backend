@@ -18,6 +18,9 @@ export class CreateEmailTemplate {
 
     @Field(() => TemplateModuleEnum)
     module: TemplateModuleEnum;
+
+    @Field(() => Number)
+    departmentId: number
 }
 
 @InputType()
