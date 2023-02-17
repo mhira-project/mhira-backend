@@ -2,6 +2,8 @@ import { Field, InputType, Int } from "@nestjs/graphql";
 import { AssessmentTypeEnum } from "src/modules/assessment/enums/assessment-type.enum";
 import { TemplateModuleEnum } from "../enums/template-module.enum";
 
+
+
 @InputType()
 export class CreateEmailTemplate {
     @Field(() => String)
@@ -19,8 +21,11 @@ export class CreateEmailTemplate {
     @Field(() => TemplateModuleEnum)
     module: TemplateModuleEnum;
 
-    @Field(() => Number)
-    departmentId: number
+    @Field(() => Boolean, { defaultValue: false })
+    isPublic: boolean;
+
+    @Field(() => [Int], { nullable: true })
+    departmentIds: number[];
 }
 
 @InputType()

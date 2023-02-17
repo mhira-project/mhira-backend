@@ -1,4 +1,4 @@
-import { FilterableField } from '@nestjs-query/query-graphql';
+import { FilterableField, FilterableUnPagedRelation } from '@nestjs-query/query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { AssessmentTypeEnum } from 'src/modules/assessment/enums/assessment-type.enum';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
@@ -9,7 +9,7 @@ import {
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
-    ManyToOne,
+    ManyToMany,
     OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
@@ -17,6 +17,7 @@ import {
 import { TemplateModuleEnum } from '../enums/template-module.enum';
 
 @ObjectType()
+@FilterableUnPagedRelation('departments', () => Department)
 @Entity()
 export class MailTemplate extends BaseEntity {
 
@@ -56,12 +57,12 @@ export class MailTemplate extends BaseEntity {
     @DeleteDateColumn()
     deletedAt?: Date;
 
-    @Field()
+    @Field({ defaultValue: false })
     @Column()
-    departmentId: number;
+    isPublic: boolean;
 
-    @ManyToOne(() => Department, department => department.mailTemplates)
-    department: Department;
+    @ManyToMany(() => Department, department => department.mailTemplates)
+    departments: Department;
 
     @OneToMany(() => Assessment, assessment => assessment.mailTemplate)
     assessments: Assessment[]
