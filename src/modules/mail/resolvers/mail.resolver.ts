@@ -28,7 +28,7 @@ export class MailResolver {
     ) {}
 
     @Query(() => MailTemplate)
-    @UsePermission(PermissionEnum.VIEW_SETTINGS)
+    @UsePermission(PermissionEnum.VIEW_TEMPLATES)
     async getEmailTemplate(
         @Args('id', { type: () => ID }) id: number,
     ): Promise<MailTemplate> {
@@ -36,7 +36,7 @@ export class MailResolver {
     }
 
     @Query(() => MailTemplateConnection)
-    @UsePermission(PermissionEnum.VIEW_SETTINGS)
+    @UsePermission(PermissionEnum.VIEW_TEMPLATES)
     async getAllEmailTemplates(
         @Args({ type: () => MailTemplateQuery }) query: MailTemplateQuery,
         @CurrentUser() currentUser: User
@@ -52,7 +52,7 @@ export class MailResolver {
     }
 
     @Mutation(() => MailTemplate)
-    @UsePermission(PermissionEnum.MANAGE_SETTINGS)
+    @UsePermission(PermissionEnum.MANAGE_TEMPLATES)
     async createEmailTemplate(
         @Args('input') input: CreateEmailTemplate,
     ): Promise<MailTemplate> {
@@ -60,13 +60,13 @@ export class MailResolver {
     }
 
     @Mutation(() => Boolean)
-    @UsePermission(PermissionEnum.MANAGE_SETTINGS)
+    @UsePermission(PermissionEnum.DELETE_TEMPLATES)
     async deleteEmailTemplate(@Args('id') templateId: number) {
         return this.mailService.deleteEmailTemplate(templateId);
     }
 
     @Mutation(() => MailTemplate)
-    @UsePermission(PermissionEnum.MANAGE_SETTINGS)
+    @UsePermission(PermissionEnum.MANAGE_TEMPLATES)
     async updateEmailTemplate(
         @Args('input') input: UpdateEmailTemplate,
     ): Promise<MailTemplate> {
