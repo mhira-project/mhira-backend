@@ -1,6 +1,9 @@
 import { Field, InputType, Int } from "@nestjs/graphql";
+import { IsOptional } from "class-validator";
 import { AssessmentTypeEnum } from "src/modules/assessment/enums/assessment-type.enum";
 import { TemplateModuleEnum } from "../enums/template-module.enum";
+
+
 
 @InputType()
 export class CreateEmailTemplate {
@@ -18,6 +21,12 @@ export class CreateEmailTemplate {
 
     @Field(() => TemplateModuleEnum)
     module: TemplateModuleEnum;
+
+    @Field(() => Boolean, { defaultValue: false })
+    isPublic: boolean;
+
+    @Field(() => [Int], { nullable: true })
+    departmentIds: number[];
 }
 
 @InputType()
@@ -25,18 +34,32 @@ export class UpdateEmailTemplate {
     @Field(() => Int)
     id: number
 
-    @Field(() => String, { nullable: true })
+    @IsOptional()
+    @Field(() => String)
     name?: string;
 
-    @Field(() => String, { nullable: true })
+    @IsOptional()
+    @Field(() => String)
     subject?: string;
 
-    @Field(() => String, { nullable: true })
+    @IsOptional()
+    @Field(() => String)
     body?: string;
 
-    @Field(() => AssessmentTypeEnum, { nullable: true })
+    @IsOptional()
+    @Field(() => AssessmentTypeEnum)
     status?: AssessmentTypeEnum;
 
-    @Field(() => TemplateModuleEnum, { nullable: true })
+    @IsOptional()
+    @Field(() => TemplateModuleEnum)
     module?: TemplateModuleEnum;
+
+    @IsOptional()
+    @Field(() => Boolean)
+    isPublic: boolean;
+
+    @IsOptional()
+    @Field(() => [Int], { nullable: true })
+    departmentIds: number[]
+
 }

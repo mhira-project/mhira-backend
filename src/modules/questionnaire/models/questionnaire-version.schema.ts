@@ -85,7 +85,7 @@ export class QuestionnaireVersion extends Document {
     @Prop()
     abbreviation: string;
 
-    @Field(() => Date)
+    @FilterableField(() => Date)
     @Prop()
     createdAt: Date;
 

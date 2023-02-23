@@ -13,16 +13,14 @@ import {
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
-    JoinColumn,
     ManyToOne,
-    OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AssessmentInformant } from '../enums/assessment-informant.enum';
 import { AssessmentType } from './assessment-type.model';
-import { AssessmentEmailStatus } from '../enums/assessment-emailstatus.enum';
+import { MailTemplate } from 'src/modules/mail/models/mail-template.model';
 
 @ObjectType()
 @FilterableRelation('patient', () => Patient)
@@ -119,6 +117,10 @@ export class Assessment extends BaseEntity {
     @Column()
     receiverEmail?: string;
 
+    @Field(() => Int)
+    @Column()
+    mailTemplateId: number
+
     @BeforeInsert()
     private generateUuid() {
         this.uuid = uuidv4();
@@ -141,6 +143,12 @@ export class Assessment extends BaseEntity {
         assessmentType => assessmentType.assessments,
     )
     assessmentType: AssessmentType;
+
+    @ManyToOne(
+        () => MailTemplate,
+        mailTemplate => mailTemplate.assessments,
+    )
+    mailTemplate: MailTemplate
 }
 
 @ObjectType()

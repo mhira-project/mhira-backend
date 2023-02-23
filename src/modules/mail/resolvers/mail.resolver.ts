@@ -16,6 +16,8 @@ import { ConnectionType } from '@nestjs-query/query-graphql';
 import { SendMailService } from '../services/send-mail.service';
 import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
 import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
+import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
+import { User } from 'src/modules/user/models/user.model';
 
 @Resolver(() => MailTemplate)
 @UseGuards(GqlAuthGuard, PermissionGuard)
@@ -26,7 +28,7 @@ export class MailResolver {
     ) {}
 
     @Query(() => MailTemplate)
-    @UsePermission(PermissionEnum.VIEW_SETTINGS)
+    @UsePermission(PermissionEnum.VIEW_TEMPLATES)
     async getEmailTemplate(
         @Args('id', { type: () => ID }) id: number,
     ): Promise<MailTemplate> {
@@ -34,11 +36,12 @@ export class MailResolver {
     }
 
     @Query(() => MailTemplateConnection)
-    @UsePermission(PermissionEnum.VIEW_SETTINGS)
+    @UsePermission(PermissionEnum.VIEW_TEMPLATES)
     async getAllEmailTemplates(
         @Args({ type: () => MailTemplateQuery }) query: MailTemplateQuery,
+        @CurrentUser() currentUser: User
     ): Promise<ConnectionType<MailTemplate>> {
-        return this.mailService.getAllEmailTemplates(query);
+        return this.mailService.getAllEmailTemplates(query, currentUser);
     }
 
     @Mutation(() => Boolean)
@@ -49,7 +52,7 @@ export class MailResolver {
     }
 
     @Mutation(() => MailTemplate)
-    @UsePermission(PermissionEnum.MANAGE_SETTINGS)
+    @UsePermission(PermissionEnum.MANAGE_TEMPLATES)
     async createEmailTemplate(
         @Args('input') input: CreateEmailTemplate,
     ): Promise<MailTemplate> {
@@ -57,13 +60,13 @@ export class MailResolver {
     }
 
     @Mutation(() => Boolean)
-    @UsePermission(PermissionEnum.MANAGE_SETTINGS)
+    @UsePermission(PermissionEnum.DELETE_TEMPLATES)
     async deleteEmailTemplate(@Args('id') templateId: number) {
         return this.mailService.deleteEmailTemplate(templateId);
     }
 
     @Mutation(() => MailTemplate)
-    @UsePermission(PermissionEnum.MANAGE_SETTINGS)
+    @UsePermission(PermissionEnum.MANAGE_TEMPLATES)
     async updateEmailTemplate(
         @Args('input') input: UpdateEmailTemplate,
     ): Promise<MailTemplate> {

@@ -120,6 +120,21 @@ export const systemPermissions = [
         name: 'delete caregivers',
         group: 'Caregiver Management',
     },
+    {
+        key: 'VIEW_TEMPLATES',
+        name: 'view templates',
+        group: 'Mail Templates'
+    },
+    {
+        key: 'MANAGE_TEMPLATES',
+        name: 'manage templates',
+        group: 'Mail Templates'
+    },
+    {
+        key: 'DELETE_TEMPLATES',
+        name: 'delete templates',
+        group: 'Mail Templates'
+    }
 ] as const;
 
 /**

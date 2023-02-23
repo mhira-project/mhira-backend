@@ -1,5 +1,9 @@
 import { ConnectionType } from '@nestjs-query/query-graphql';
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+    Injectable,
+    NotFoundException,
+    ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -15,7 +19,10 @@ import {
     InjectQueryService,
     QueryService,
     SortDirection,
+    mergeFilter,
 } from '@nestjs-query/core';
+import { User } from 'src/modules/user/models/user.model';
+import { Department } from 'src/modules/department/models/department.model';
 
 @Injectable()
 export class MailTemplateService {
@@ -27,20 +34,42 @@ export class MailTemplateService {
     ) {}
 
     async getEmailTemplate(id: number): Promise<MailTemplate> {
-        try {
-            const data = await this.mailTemplateRepository.findOneOrFail(id);
-            return data;
-        } catch (error) {
-            return error;
-        }
+        return this.mailTemplateRepository.findOneOrFail(id);
     }
 
     async getAllEmailTemplates(
         query: MailTemplateQuery,
+        currentUser: User,
     ): Promise<ConnectionType<MailTemplate>> {
+        const user = await User.findOne({
+            where: { id: currentUser.id },
+            relations: ['departments'],
+        });
+
         query.sorting = query.sorting?.length
             ? query.sorting
             : [{ field: 'id', direction: SortDirection.DESC }];
+
+        if (!currentUser.isSuperUser) {
+            const combinedFilter = mergeFilter<any>(query.filter, {
+                or: [
+                    {
+                        departments: {
+                            id: {
+                                in: user.departments.map(
+                                    department => department.id,
+                                ),
+                            },
+                        },
+                    },
+                    {
+                        isPublic: { eq: true },
+                    },
+                ],
+            });
+
+            query.filter = combinedFilter;
+        }
 
         const result: any = await MailTemplateConnection.createFromPromise(
             q => this.mailTemplateQueryService.query(q),
@@ -54,14 +83,21 @@ export class MailTemplateService {
     async createEmailTemplate(
         input: CreateEmailTemplate,
     ): Promise<MailTemplate> {
+        const { departmentIds, ...restInput } = input;
+
+        if (!departmentIds.length && !restInput.isPublic) {
+            throw new Error('Select at least one department!')
+        }
+
         try {
-            const moduleFound = await this.mailTemplateRepository.findOne({ module: input.module });
+            const mail = this.mailTemplateRepository.create(restInput);
 
-            if (moduleFound) {
-                throw new ConflictException("Module already exists!")
-            }
+            const departments: any = await Department.find({
+                where: departmentIds.map(id => ({ id: id })),
+            });
 
-            const mail = this.mailTemplateRepository.create(input);
+            mail.departments = departments;
+
             return this.mailTemplateRepository.save(mail);
         } catch (error) {
             return error;
@@ -69,7 +105,6 @@ export class MailTemplateService {
     }
 
     async deleteEmailTemplate(templateId: number) {
-        throw new Error("You cannot delete templates!")
         try {
             const template = await this.mailTemplateRepository.findOne(
                 templateId,
@@ -88,21 +123,22 @@ export class MailTemplateService {
 
     async updateEmailTemplate(
         input: UpdateEmailTemplate,
-    ):Promise<MailTemplate> {
-        const { id, ...values } = input
+    ): Promise<MailTemplate> {
+        const { id, ...values } = input;
         try {
             const data = await this.mailTemplateRepository
                 .createQueryBuilder()
                 .update(MailTemplate, { ...values })
-                .where("id = :id", { id: id })
-                .returning("*")
+                .where('id = :id', { id: id })
+                .returning('*')
                 .updateEntity(true)
                 .execute();
-            
-            if (!data.affected) throw new NotFoundException("Mail template not found!")
 
-            return data.raw[0]
-            
+            if (!data.affected) {
+                throw new NotFoundException('Mail template not found!');
+            }
+
+            return data.raw[0];
         } catch (error) {
             return error;
         }
