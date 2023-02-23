@@ -84,6 +84,11 @@ export class MailTemplateService {
         input: CreateEmailTemplate,
     ): Promise<MailTemplate> {
         const { departmentIds, ...restInput } = input;
+
+        if (!departmentIds.length && !restInput.isPublic) {
+            throw new Error('Select at least one department!')
+        }
+
         try {
             const mail = this.mailTemplateRepository.create(restInput);
 
