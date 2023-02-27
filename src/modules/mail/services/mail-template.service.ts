@@ -86,7 +86,7 @@ export class MailTemplateService {
         const { departmentIds, ...restInput } = input;
 
         if (!departmentIds.length && !restInput.isPublic) {
-            throw new Error('Select at least one department!')
+            throw new Error('Select at least one department!');
         }
 
         try {
@@ -124,21 +124,31 @@ export class MailTemplateService {
     async updateEmailTemplate(
         input: UpdateEmailTemplate,
     ): Promise<MailTemplate> {
-        const { id, ...values } = input;
-        try {
-            const data = await this.mailTemplateRepository
-                .createQueryBuilder()
-                .update(MailTemplate, { ...values })
-                .where('id = :id', { id: id })
-                .returning('*')
-                .updateEntity(true)
-                .execute();
+        const { id, departmentIds, ...values } = input;
 
-            if (!data.affected) {
-                throw new NotFoundException('Mail template not found!');
+        if (!departmentIds.length && !values.isPublic) {
+            throw new Error('Select at least one department!');
+        }
+
+        try {
+            const mailTemplate = await this.mailTemplateRepository.findOne({
+                where: {
+                    id,
+                },
+                relations: ['departments']
+            });
+
+            for (const [key, value] of Object.entries(values)) {
+                mailTemplate[key] = value
             }
 
-            return data.raw[0];
+            const departments: any = await Department.find({
+                where: departmentIds.map(id => ({ id: id })),
+            });
+
+            mailTemplate.departments = departments;
+
+            return mailTemplate.save()
         } catch (error) {
             return error;
         }
