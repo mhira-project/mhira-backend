@@ -70,7 +70,6 @@ export class QuestionnaireResolver {
     }
 
     @Query(() => QuestionnaireVersionConnection)
-    @UsePermission(PermissionEnum.VIEW_QUESTIONNAIRES)
     async questionnaires(@Args() query: QuestionniareVersionQuery) {
         query.sorting = query.sorting?.length
             ? query.sorting
