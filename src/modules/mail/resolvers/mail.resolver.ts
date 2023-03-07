@@ -36,7 +36,6 @@ export class MailResolver {
     }
 
     @Query(() => MailTemplateConnection)
-    @UsePermission(PermissionEnum.VIEW_TEMPLATES)
     async getAllEmailTemplates(
         @Args({ type: () => MailTemplateQuery }) query: MailTemplateQuery,
         @CurrentUser() currentUser: User
