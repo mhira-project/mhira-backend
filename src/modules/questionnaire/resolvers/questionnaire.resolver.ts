@@ -32,7 +32,6 @@ export class QuestionnaireResolver {
     ) {}
 
     @Query(() => Questionnaire)
-    @UsePermission(PermissionEnum.VIEW_QUESTIONNAIRES)
     getQuestionnaire(
         @Args('_id', { type: () => String }) questionnaireId: Types.ObjectId,
     ): Promise<Questionnaire> {
