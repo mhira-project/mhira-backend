@@ -36,12 +36,6 @@ import { PermissionGuard } from '../permission/guards/permission.guard';
 import { GqlAuthGuard } from '../auth/auth.guard';
 import { QuestionnaireVersionService } from './services/questionnaire-version.service';
 import { Assessment } from '../assessment/models/assessment.model';
-import {
-    QuestionnaireBundle,
-    QuestionnaireBundleSchema,
-} from './models/questionnaire-bundle.schema';
-import { QuestionnaireBundleResolver } from './resolvers/questionnaire-bundle.resolver';
-import { QuestionnaireBundleService } from './services/questionnaire-bundle.service';
 
 const guards = [GqlAuthGuard, PermissionGuard];
 
@@ -49,10 +43,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
     imports: [
         NestjsQueryGraphQLModule.forFeature({
             imports: [
-                NestjsQueryTypeOrmModule.forFeature([
-                    QuestionnaireScript,
-                    Assessment,
-                ]),
+                NestjsQueryTypeOrmModule.forFeature([QuestionnaireScript, Assessment]),
                 NestjsQueryMongooseModule.forFeature([
                     {
                         name: QuestionnaireVersion.name,
@@ -89,11 +80,6 @@ const guards = [GqlAuthGuard, PermissionGuard];
                         schema: AssessmentSchema,
                         document: QuestionnaireAssessment,
                     },
-                    {
-                        name: QuestionnaireBundle.name,
-                        schema: QuestionnaireBundleSchema,
-                        document: QuestionnaireBundle,
-                    },
                 ]),
             ],
             resolvers: [
@@ -119,8 +105,6 @@ const guards = [GqlAuthGuard, PermissionGuard];
         QuestionnaireAssessmentService,
         QuestionnaireVersionService,
         AssessmentResolver,
-        QuestionnaireBundleResolver,
-        QuestionnaireBundleService,
     ],
     exports: [QuestionnaireScriptService],
 })
