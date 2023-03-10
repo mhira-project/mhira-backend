@@ -5,6 +5,8 @@ import { QuestionnaireBundle } from '../models/questionnaire-bundle.schema';
 import { QuestionnaireBundleService } from '../services/questionnaire-bundle.service';
 import { SortDirection } from '@nestjs-query/core';
 import { CreateQuestionnaireBundleInput, UpdateQuestionnaireBundleInput } from '../dtos/questionnaire-bundle.input';
+import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
+import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
 
 @ArgsType()
 export class QuestionniareBundleQuery extends QueryArgsType(
@@ -19,6 +21,7 @@ export class QuestionnaireBundleResolver {
     ) {}
 
     @Query(() => QuestionnaireBundle)
+    @UsePermission(PermissionEnum.VIEW_QUESTIONNAIRES)
     getQuestionnaireBundle(
         @Args('_id', { type: () => String })
         questionnaireBundleId: Types.ObjectId,
@@ -40,6 +43,7 @@ export class QuestionnaireBundleResolver {
     }
 
     @Mutation(() => QuestionnaireBundle)
+    @UsePermission(PermissionEnum.MANAGE_QUESTIONNAIRES)
     createQuestionnaireBundle(
         @Args('input') input: CreateQuestionnaireBundleInput,
     ) {
@@ -47,11 +51,13 @@ export class QuestionnaireBundleResolver {
     }
 
     @Mutation(() => QuestionnaireBundle)
+    @UsePermission(PermissionEnum.DELETE_QUESTIONNAIRES)
     deleteQuestionnaireBundle(@Args('_id', { type: () => String }) id: string) {
         return this.questionnaireBundleService.deleteQuestionnaireBundle(id);
     }
 
     @Mutation(() => QuestionnaireBundle)
+    @UsePermission(PermissionEnum.MANAGE_QUESTIONNAIRES)
     updateQuestionnaireBundle(@Args('input') input: UpdateQuestionnaireBundleInput) {
         return this.questionnaireBundleService.updateQuestionnaireBundle(input)
     }
