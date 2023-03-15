@@ -24,7 +24,7 @@ import { User } from 'src/modules/user/models/user.model';
 export class MailResolver {
     constructor(
         private readonly mailService: MailTemplateService,
-        private readonly sendMailService: SendMailService
+        private readonly sendMailService: SendMailService,
     ) {}
 
     @Query(() => MailTemplate)
@@ -37,16 +37,23 @@ export class MailResolver {
     @Query(() => MailTemplateConnection)
     async getAllEmailTemplates(
         @Args({ type: () => MailTemplateQuery }) query: MailTemplateQuery,
-        @CurrentUser() currentUser: User
     ): Promise<ConnectionType<MailTemplate>> {
-        return this.mailService.getAllEmailTemplates(query, currentUser);
+        return this.mailService.getAllEmailTemplates(query);
+    }
+
+    @Query(() => [MailTemplate])
+    async getPatientEmailTemplates(
+        @Args('patientId', { type: () => ID, nullable: true, defaultValue: null }) patientId: number,
+    ): Promise<MailTemplate[]> {
+        return this.mailService.getPatientEmailTemplates(patientId);
     }
 
     @Mutation(() => Boolean)
+    @UsePermission(PermissionEnum.VIEW_ASSESSMENTS)
     async sendAssessmentEmail(
-        @Args('assessmentId', { type: () => ID }) assessmentId: number
+        @Args('assessmentId', { type: () => ID }) assessmentId: number,
     ) {
-        return this.sendMailService.sendAssessmentEmail(assessmentId)
+        return this.sendMailService.sendAssessmentEmail(assessmentId);
     }
 
     @Mutation(() => MailTemplate)
