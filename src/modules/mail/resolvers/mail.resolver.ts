@@ -28,7 +28,6 @@ export class MailResolver {
     ) {}
 
     @Query(() => MailTemplate)
-    @UsePermission(PermissionEnum.VIEW_TEMPLATES)
     async getEmailTemplate(
         @Args('id', { type: () => ID }) id: number,
     ): Promise<MailTemplate> {
@@ -36,7 +35,6 @@ export class MailResolver {
     }
 
     @Query(() => MailTemplateConnection)
-    @UsePermission(PermissionEnum.VIEW_TEMPLATES)
     async getAllEmailTemplates(
         @Args({ type: () => MailTemplateQuery }) query: MailTemplateQuery,
         @CurrentUser() currentUser: User

@@ -30,36 +30,7 @@ export class CreateEmailTemplate {
 }
 
 @InputType()
-export class UpdateEmailTemplate {
+export class UpdateEmailTemplate extends CreateEmailTemplate {
     @Field(() => Int)
     id: number
-
-    @IsOptional()
-    @Field(() => String)
-    name?: string;
-
-    @IsOptional()
-    @Field(() => String)
-    subject?: string;
-
-    @IsOptional()
-    @Field(() => String)
-    body?: string;
-
-    @IsOptional()
-    @Field(() => AssessmentTypeEnum)
-    status?: AssessmentTypeEnum;
-
-    @IsOptional()
-    @Field(() => TemplateModuleEnum)
-    module?: TemplateModuleEnum;
-
-    @IsOptional()
-    @Field(() => Boolean)
-    isPublic: boolean;
-
-    @IsOptional()
-    @Field(() => [Int], { nullable: true })
-    departmentIds: number[]
-
 }
