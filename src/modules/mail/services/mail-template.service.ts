@@ -23,6 +23,7 @@ import {
 } from '@nestjs-query/core';
 import { User } from 'src/modules/user/models/user.model';
 import { Department } from 'src/modules/department/models/department.model';
+import { Patient } from 'src/modules/patient/models/patient.model';
 
 @Injectable()
 export class MailTemplateService {
@@ -37,39 +38,34 @@ export class MailTemplateService {
         return this.mailTemplateRepository.findOneOrFail(id);
     }
 
-    async getAllEmailTemplates(
-        query: MailTemplateQuery,
-        currentUser: User,
-    ): Promise<ConnectionType<MailTemplate>> {
-        const user = await User.findOne({
-            where: { id: currentUser.id },
+    async getPatientEmailTemplates(patientId: number) {
+        if (!patientId) {
+            return []
+        }
+
+        const patient = await Patient.findOneOrFail({
+            where: { id: patientId },
             relations: ['departments'],
         });
 
+        const mailTemplates = await this.mailTemplateRepository
+            .createQueryBuilder('mailTemplate')
+            .leftJoin('mailTemplate.departments', 'department')
+            .where('department.id IN(:...ids)', {
+                ids: patient.departments.map(department => department.id),
+            })
+            .orWhere('mailTemplate.isPublic = true')
+            .getMany();
+
+        return mailTemplates;
+    }
+
+    async getAllEmailTemplates(
+        query: MailTemplateQuery,
+    ): Promise<ConnectionType<MailTemplate>> {
         query.sorting = query.sorting?.length
             ? query.sorting
             : [{ field: 'id', direction: SortDirection.DESC }];
-
-        if (!currentUser.isSuperUser) {
-            const combinedFilter = mergeFilter<any>(query.filter, {
-                or: [
-                    {
-                        departments: {
-                            id: {
-                                in: user.departments.map(
-                                    department => department.id,
-                                ),
-                            },
-                        },
-                    },
-                    {
-                        isPublic: { eq: true },
-                    },
-                ],
-            });
-
-            query.filter = combinedFilter;
-        }
 
         const result: any = await MailTemplateConnection.createFromPromise(
             q => this.mailTemplateQueryService.query(q),
@@ -135,20 +131,24 @@ export class MailTemplateService {
                 where: {
                     id,
                 },
-                relations: ['departments']
+                relations: ['departments'],
             });
 
             for (const [key, value] of Object.entries(values)) {
-                mailTemplate[key] = value
+                mailTemplate[key] = value;
             }
 
-            const departments: any = await Department.find({
-                where: departmentIds.map(id => ({ id: id })),
-            });
+            let departments: any = [];
+
+            if (!values.isPublic) {
+                departments = await Department.find({
+                    where: departmentIds.map(id => ({ id: id })),
+                });
+            }
 
             mailTemplate.departments = departments;
 
-            return mailTemplate.save()
+            return mailTemplate.save();
         } catch (error) {
             return error;
         }
