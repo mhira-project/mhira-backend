@@ -117,7 +117,7 @@ export class Assessment extends BaseEntity {
     @Column()
     receiverEmail?: string;
 
-    @Field(() => Int)
+    @Field(() => Int, { nullable: true })
     @Column()
     mailTemplateId: number
 
