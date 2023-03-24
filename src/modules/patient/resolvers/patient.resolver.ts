@@ -279,8 +279,10 @@ export class PatientResolver {
                     assessmentStatus,
                     currentUser,
                 );
-
-                questionnaireReports.push(questionnaireReport);
+                
+                if (questionnaireReport instanceof PatientReport) {
+                    questionnaireReports.push(questionnaireReport);
+                }
             }
 
             return questionnaireReports;
