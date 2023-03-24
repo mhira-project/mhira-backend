@@ -333,12 +333,18 @@ export class AssessmentService {
             // If emailReminder is not checked then all the other email values will be edited
             assessment.emailReminder = assessmentInput.emailReminder || false;
             if (!assessmentInput.emailReminder) {
-                if (assessment.emailStatus === AssessmentEmailStatus.SCHEDULED) {
-                    assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED;
-                }
+                assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED;
                 assessment.receiverEmail = null;
-            } else if (Validator.isEmail(assessmentInput.receiverEmail)) {
-                if (assessment.emailStatus === AssessmentEmailStatus.NOT_SCHEDULED && assessmentInput.deliveryDate) {
+                assessment.mailTemplateId = null
+            } else if (Validator.isEmail(assessmentInput.receiverEmail)){
+                if (!assessmentInput.mailTemplateId) {
+                    throw new Error("Mail template not found!")
+                }
+                assessment.mailTemplateId = assessmentInput.mailTemplateId
+
+                if (!assessmentInput.deliveryDate) {
+                    assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED
+                } else {
                     assessment.emailStatus = AssessmentEmailStatus.SCHEDULED;
                 }
                 assessment.receiverEmail = assessmentInput.receiverEmail;
