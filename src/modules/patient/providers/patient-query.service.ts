@@ -1,9 +1,7 @@
 import { QueryService, mergeFilter } from '@nestjs-query/core';
 import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-    Repository,
-} from 'typeorm';
+import { Repository } from 'typeorm';
 import { Patient, PatientReport } from '../models/patient.model';
 import { CreatePatientInput } from '../dto/create-patient.input';
 import { User } from 'src/modules/user/models/user.model';
@@ -21,6 +19,7 @@ import {
     AssessmentResponse,
 } from 'src/modules/assessment/models/assessment.model';
 import { QuestionnaireScriptService } from 'src/modules/questionnaire/services/questionnaire-script.service';
+import { Exception } from 'handlebars';
 
 @QueryService(Patient)
 export class PatientQueryService extends TypeOrmQueryService<Patient> {
@@ -144,7 +143,12 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
                 assessment.questionnaireAssessmentId,
             );
 
-            if (status && singleQuestionnaireAssessment.status != status) {
+            const assessmentStatusFilter = status && singleQuestionnaireAssessment.status != status
+            const questionnaireIdFilter = questionnaireId && !singleQuestionnaireAssessment.questionnaires.some(
+                questionnaire => questionnaire._id == questionnaireId,
+            )
+
+            if (assessmentStatusFilter || questionnaireIdFilter) {
                 continue;
             }
 
@@ -157,6 +161,10 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
                 status: singleQuestionnaireAssessment.status,
                 assessmentId: assessment.questionnaireAssessmentId,
             } as AssessmentResponse);
+        }
+
+        if (!questionnaireAssessment.length) {
+            throw new Exception("No record found!")
         }
 
         for (const assessment of questionnaireAssessment) {
