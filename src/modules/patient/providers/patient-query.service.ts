@@ -1,21 +1,25 @@
-import {QueryService, mergeFilter} from '@nestjs-query/core';
-import {TypeOrmQueryService} from '@nestjs-query/query-typeorm';
-import {InjectRepository} from '@nestjs/typeorm';
-import {createQueryBuilder, getRepository, IsNull, Not, Repository} from 'typeorm';
-import {Patient, PatientReport} from '../models/patient.model';
-import {CreatePatientInput} from '../dto/create-patient.input';
-import {User} from 'src/modules/user/models/user.model';
-import {PatientAuthorizer} from '../authorizers/patient.authorizer';
-import {Inject, NotFoundException} from '@nestjs/common';
-import {QuestionnaireAssessmentService} from 'src/modules/questionnaire/services/questionnaire-assessment.service';
-import {QuestionnaireAssessment} from 'src/modules/questionnaire/models/questionnaire-assessment.schema';
-import {IAnswerMap} from 'src/modules/questionnaire/models/answer.schema';
+import { QueryService, mergeFilter } from '@nestjs-query/core';
+import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Patient, PatientReport } from '../models/patient.model';
+import { CreatePatientInput } from '../dto/create-patient.input';
+import { User } from 'src/modules/user/models/user.model';
+import { PatientAuthorizer } from '../authorizers/patient.authorizer';
+import { Inject, NotFoundException } from '@nestjs/common';
+import { QuestionnaireAssessmentService } from 'src/modules/questionnaire/services/questionnaire-assessment.service';
+import { QuestionnaireAssessment } from 'src/modules/questionnaire/models/questionnaire-assessment.schema';
+import { IAnswerMap } from 'src/modules/questionnaire/models/answer.schema';
 import {
     AnsweredQuestions,
     IQuestionGroup,
 } from 'src/modules/questionnaire/models/questionnaire.schema';
-import {Assessment, AssessmentResponse} from 'src/modules/assessment/models/assessment.model';
-import {QuestionnaireScriptService} from 'src/modules/questionnaire/services/questionnaire-script.service';
+import {
+    Assessment,
+    AssessmentResponse,
+} from 'src/modules/assessment/models/assessment.model';
+import { QuestionnaireScriptService } from 'src/modules/questionnaire/services/questionnaire-script.service';
+import { Exception } from 'handlebars';
 
 @QueryService(Patient)
 export class PatientQueryService extends TypeOrmQueryService<Patient> {
@@ -44,12 +48,12 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         );
 
         const combinedFilter = mergeFilter(
-            {id: {eq: patientId}},
+            { id: { eq: patientId } },
             authorizeFilter,
         );
 
         const patients = await super.query({
-            paging: {limit: 1},
+            paging: { limit: 1 },
             filter: combinedFilter,
         });
 
@@ -78,24 +82,24 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
 
     async archiveOnePatient(id: number, patient: Patient) {
         if (patient.deleted) {
-            throw Error("This patient is already archived!")
+            throw Error('This patient is already archived!');
         }
 
         await this.repo.update(id, { deleted: true });
-        await Assessment.update({ patientId: id }, { deleted: true })
+        await Assessment.update({ patientId: id }, { deleted: true });
 
         return patient;
     }
 
     async restoreOnePatient(id: number, patient: Patient) {
         if (!patient.deleted) {
-            throw Error("This patient is not archived!")
+            throw Error('This patient is not archived!');
         }
 
-        await this.repo.update(id, { deleted: false});
-        await Assessment.update({ patientId: id }, { deleted: false })
+        await this.repo.update(id, { deleted: false });
+        await Assessment.update({ patientId: id }, { deleted: false });
 
-        return patient
+        return patient;
     }
 
     async createMany(input: CreatePatientInput[]): Promise<Patient[]> {
@@ -121,15 +125,12 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         status?: string,
         questionnaireId?: string,
     ): Promise<PatientReport> {
-        const condition = status ? `assessments.status = '${status}'` : 'true';
-        const patient = await this.repo.findOne({
-            relations: ['assessments', 'assessments.assessmentType'],
-            where: qb => {
-                qb.where({
-                    id,
-                }).andWhere(condition);
-            },
-        });
+        const patient = await this.repo
+            .createQueryBuilder('patient')
+            .leftJoinAndSelect('patient.assessments', 'assessment')
+            .leftJoinAndSelect('assessment.assessmentType', 'assessmentType')
+            .where('patient.id = :id', { id })
+            .getOne();
 
         const answeredQuestionnaires = [];
         const answers = [];
@@ -142,14 +143,28 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
                 assessment.questionnaireAssessmentId,
             );
 
-            if (singleQuestionnaireAssessment)
+            const assessmentStatusFilter = status && singleQuestionnaireAssessment.status != status
+            const questionnaireIdFilter = questionnaireId && !singleQuestionnaireAssessment.questionnaires.some(
+                questionnaire => questionnaire._id == questionnaireId,
+            )
+
+            if (assessmentStatusFilter || questionnaireIdFilter) {
+                continue;
+            }
+
+            if (singleQuestionnaireAssessment) {
                 questionnaireAssessment.push(singleQuestionnaireAssessment);
+            }
 
             assessmentResponse.push({
                 ...assessment,
                 status: singleQuestionnaireAssessment.status,
                 assessmentId: assessment.questionnaireAssessmentId,
             } as AssessmentResponse);
+        }
+
+        if (!questionnaireAssessment.length) {
+            throw new Exception("No record found!")
         }
 
         for (const assessment of questionnaireAssessment) {
@@ -231,10 +246,10 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         const map = {} as IAnswerMap;
         for (const answer of answers) {
             answer.combinedDate = null;
-            map[answer.question.toString()] = {...answer['_doc']};
+            map[answer.question.toString()] = { ...answer['_doc'] };
             map[answer.question.toString()][
                 'questionId'
-                ] = answer.question.toString();
+            ] = answer.question.toString();
             if (answer.dateValue && answer.textValue) {
                 const [hours, minutes] = answer.textValue.split(':');
                 map[answer.question.toString()]['combinedDate'] = new Date(
@@ -253,7 +268,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
 
         for (const questionGroup of questionGroups) {
             const questions = questionGroup.questions.map(question => {
-                const {type, name, label, required, choices, hint} = question;
+                const { type, name, label, required, choices, hint } = question;
                 return {
                     type,
                     variable: name,

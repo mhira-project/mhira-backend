@@ -6,13 +6,12 @@ import {
     QueryArgsType,
     UpdateOneInputType,
 } from '@nestjs-query/query-graphql';
-import { BadRequestException, Inject, Logger, UseGuards } from '@nestjs/common';
+import { BadRequestException, Inject, UseGuards } from '@nestjs/common';
 import {
     Args,
     ArgsType,
     ID,
     InputType,
-    Int,
     Mutation,
     ObjectType,
     PartialType,
@@ -273,14 +272,14 @@ export class PatientResolver {
             const questionnaireReports = [];
 
             for (const id of ids) {
-                const questionnaireReport = await this.generatePatientReport(
+                const questionnaireReport: PatientReport = await this.generatePatientReport(
                     id,
                     questionnaireId,
                     assessmentStatus,
                     currentUser,
                 );
-                
-                if (questionnaireReport instanceof PatientReport) {
+
+                if (!(questionnaireReport instanceof Error)) {
                     questionnaireReports.push(questionnaireReport);
                 }
             }
