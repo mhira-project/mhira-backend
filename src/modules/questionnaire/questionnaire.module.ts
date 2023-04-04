@@ -34,6 +34,8 @@ import { QuestionnaireScriptService } from './services/questionnaire-script.serv
 import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { PermissionGuard } from '../permission/guards/permission.guard';
 import { GqlAuthGuard } from '../auth/auth.guard';
+import { QuestionnaireVersionService } from './services/questionnaire-version.service';
+import { Assessment } from '../assessment/models/assessment.model';
 
 const guards = [GqlAuthGuard, PermissionGuard];
 
@@ -41,7 +43,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
     imports: [
         NestjsQueryGraphQLModule.forFeature({
             imports: [
-                NestjsQueryTypeOrmModule.forFeature([QuestionnaireScript]),
+                NestjsQueryTypeOrmModule.forFeature([QuestionnaireScript, Assessment]),
                 NestjsQueryMongooseModule.forFeature([
                     {
                         name: QuestionnaireVersion.name,
@@ -101,6 +103,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
         QuestionnaireScriptService,
         QuestionnaireResolver,
         QuestionnaireAssessmentService,
+        QuestionnaireVersionService,
         AssessmentResolver,
     ],
     exports: [QuestionnaireScriptService],

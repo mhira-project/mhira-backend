@@ -77,15 +77,15 @@ export class QuestionnaireVersion extends Document {
     @Prop({ type: [QuestionGroupSchema] })
     questionGroups: QuestionGroup[];
 
-    @Field(() => String)
+    @FilterableField(() => String)
     @Prop()
     language: string;
 
-    @Field(() => String)
+    @FilterableField(() => String)
     @Prop()
     abbreviation: string;
 
-    @Field(() => Date)
+    @FilterableField(() => Date)
     @Prop()
     createdAt: Date;
 

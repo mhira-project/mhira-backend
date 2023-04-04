@@ -10,21 +10,20 @@ import { Role } from 'src/modules/permission/models/role.model';
 import { RoleCode } from 'src/modules/permission/enums/role-code.enum';
 import { UpdateUserInput } from '../dto/update-user.input';
 import { PermissionService } from 'src/modules/permission/providers/permission.service';
+import {Hash} from "../../../shared";
 
 @QueryService(User)
 export class UserCrudService extends TypeOrmQueryService<User> {
     constructor(@InjectRepository(User) repo: Repository<User>) {
         // pass the use soft delete option to the service.
-        super(repo, { useSoftDelete: true });
+        super(repo);
     }
 
     async createOne(input: CreateUserInput): Promise<User> {
-
         // Check duplicate username exists
-        const exists = await super
-            .query({
-                filter: { username: { iLike: input.username } } // case in-sensitive match username
-            })
+        const exists = await super.query({
+            filter: { username: { iLike: input.username } }, // case in-sensitive match username
+        });
 
         if (exists.length > 0) {
             throw new BadRequestException('Username already exists');
@@ -32,7 +31,9 @@ export class UserCrudService extends TypeOrmQueryService<User> {
 
         const user = await super.createOne(input);
 
-        // attach Default Role
+        user.passwordExpiresAt = moment().toDate();
+        user.password = await Hash.make(user.password);
+
         const defaultRole = await Role.findOne({ code: RoleCode.NO_ROLE });
 
         if (defaultRole) {
@@ -43,24 +44,28 @@ export class UserCrudService extends TypeOrmQueryService<User> {
         return user;
     }
 
-    async updateOneUser(id: number, update: UpdateUserInput, currentUser: User): Promise<User> {
-
+    async updateOneUser(
+        id: number,
+        update: UpdateUserInput,
+        currentUser: User,
+    ): Promise<User> {
         // Validate permission hierachy
-        if (!await PermissionService.compareHierarchy(currentUser.id, +id)) {
-            throw new BadRequestException('Permission denied to modify user! User has higher or equal role than current user');
+        if (!(await PermissionService.compareHierarchy(currentUser.id, +id))) {
+            throw new BadRequestException(
+                'Permission denied to modify user! User has higher or equal role than current user',
+            );
         }
 
         // Check for duplicate username
         if (!!update.username) {
-            const [exists] = await super
-                .query({
-                    filter: {
-                        and: [
-                            { username: { iLike: update.username } },// case in-sensitive match username
-                            { id: { neq: Number(id) } }, // exclude current row from duplicate check
-                        ]
-                    }
-                });
+            const [exists] = await super.query({
+                filter: {
+                    and: [
+                        { username: { iLike: update.username } }, // case in-sensitive match username
+                        { id: { neq: Number(id) } }, // exclude current row from duplicate check
+                    ],
+                },
+            });
 
             if (exists) {
                 throw new BadRequestException('Username already exists');
@@ -70,17 +75,27 @@ export class UserCrudService extends TypeOrmQueryService<User> {
         return super.updateOne(id, update);
     }
 
-    async deleteOneUser(id: number, currentUser: User) {
+    async updateUserAcceptedTerm(
+        id: number,
+        update: UpdateUserInput,
+    ): Promise<User> {
+        // Check for duplicate username
+        update = { acceptedTerm: update.acceptedTerm };
 
-        if (!await PermissionService.compareHierarchy(currentUser.id, +id)) {
-            throw new BadRequestException('Permission denied to delete user! User has higher or equal role than current user');
+        return super.updateOne(id, update);
+    }
+
+    async deleteOneUser(id: number, currentUser: User) {
+        if (!(await PermissionService.compareHierarchy(currentUser.id, +id))) {
+            throw new BadRequestException(
+                'Permission denied to delete user! User has higher or equal role than current user',
+            );
         }
 
         return super.deleteOne(id);
     }
 
     passwordChangeRequired(user: User): boolean {
-
         return user.passwordExpiresAt
             ? moment().isSameOrAfter(user.passwordExpiresAt)
             : true;

@@ -14,8 +14,12 @@ import {
     AnsweredQuestions,
     IQuestionGroup,
 } from 'src/modules/questionnaire/models/questionnaire.schema';
-import { AssessmentResponse } from 'src/modules/assessment/models/assessment.model';
+import {
+    Assessment,
+    AssessmentResponse,
+} from 'src/modules/assessment/models/assessment.model';
 import { QuestionnaireScriptService } from 'src/modules/questionnaire/services/questionnaire-script.service';
+import { Exception } from 'handlebars';
 
 @QueryService(Patient)
 export class PatientQueryService extends TypeOrmQueryService<Patient> {
@@ -23,9 +27,10 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
     questionnaireAssessmentService: QuestionnaireAssessmentService;
     @Inject(QuestionnaireScriptService)
     questionnaireScriptService: QuestionnaireScriptService;
+
     constructor(@InjectRepository(Patient) repo: Repository<Patient>) {
         // pass the use soft delete option to the service.
-        super(repo, { useSoftDelete: true });
+        super(repo);
     }
 
     /**
@@ -75,6 +80,28 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         return patient;
     }
 
+    async archiveOnePatient(id: number, patient: Patient) {
+        if (patient.deleted) {
+            throw Error('This patient is already archived!');
+        }
+
+        await this.repo.update(id, { deleted: true });
+        await Assessment.update({ patientId: id }, { deleted: true });
+
+        return patient;
+    }
+
+    async restoreOnePatient(id: number, patient: Patient) {
+        if (!patient.deleted) {
+            throw Error('This patient is not archived!');
+        }
+
+        await this.repo.update(id, { deleted: false });
+        await Assessment.update({ patientId: id }, { deleted: false });
+
+        return patient;
+    }
+
     async createMany(input: CreatePatientInput[]): Promise<Patient[]> {
         const patients = await super.createMany(input);
 
@@ -98,32 +125,48 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
         status?: string,
         questionnaireId?: string,
     ): Promise<PatientReport> {
-        const condition = status ? `assessments.status = '${status}'` : 'true';
-        const patient = await this.repo.findOne({
-            join: {
-                alias: 'patient',
-                leftJoinAndSelect: { assessments: 'patient.assessments' },
-            },
-            where: qb => {
-                qb.where({
-                    id,
-                }).andWhere(condition);
-            },
-        });
+        const patient = await this.repo
+            .createQueryBuilder('patient')
+            .leftJoinAndSelect('patient.assessments', 'assessment')
+            .leftJoinAndSelect('assessment.assessmentType', 'assessmentType')
+            .where('patient.id = :id', { id })
+            .getOne();
 
-        const queries = [] as Promise<QuestionnaireAssessment>[];
         const answeredQuestionnaires = [];
         const answers = [];
         let questionnaireScripts = [];
+        const assessmentResponse = [] as AssessmentResponse[];
+        const questionnaireAssessment: QuestionnaireAssessment[] = []; //await Promise.all(queries);
 
         for (const assessment of patient.assessments) {
-            queries.push(
-                this.questionnaireAssessmentService.getById(
-                    assessment.questionnaireAssessmentId,
-                ),
+            const singleQuestionnaireAssessment = await this.questionnaireAssessmentService.getById(
+                assessment.questionnaireAssessmentId,
             );
+
+            const assessmentStatusFilter = status && singleQuestionnaireAssessment.status != status
+            const questionnaireIdFilter = questionnaireId && !singleQuestionnaireAssessment.questionnaires.some(
+                questionnaire => questionnaire._id == questionnaireId,
+            )
+
+            if (assessmentStatusFilter || questionnaireIdFilter) {
+                continue;
+            }
+
+            if (singleQuestionnaireAssessment) {
+                questionnaireAssessment.push(singleQuestionnaireAssessment);
+            }
+
+            assessmentResponse.push({
+                ...assessment,
+                status: singleQuestionnaireAssessment.status,
+                assessmentId: assessment.questionnaireAssessmentId,
+            } as AssessmentResponse);
         }
-        const questionnaireAssessment = await Promise.all(queries);
+
+        if (!questionnaireAssessment.length) {
+            throw new Exception("No record found!")
+        }
+
         for (const assessment of questionnaireAssessment) {
             assessment.questionnaires.forEach(entry => {
                 if (
@@ -147,21 +190,28 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
             const questionnaireName = answeredQuestionnaire.abbreviation;
             const questionnaireLanguage = answeredQuestionnaire.language;
 
-            const [
-                questionnaireScriptsData,
-            ] = await this.questionnaireScriptService.getQuestionnaireScriptsById(
-                answeredQuestionnaire?._doc._id.toString(),
+            const existingScript = questionnaireScripts.some(
+                script =>
+                    script.questionnaireId.toString() ===
+                    answeredQuestionnaire?._doc._id.toString(),
             );
 
-            if (questionnaireScriptsData) {
-                questionnaireScripts = [
-                    ...questionnaireScripts,
-                    {
+            if (!existingScript) {
+                const questionnaireScriptsData: any = await this.questionnaireScriptService.getQuestionnaireScriptsById(
+                    answeredQuestionnaire?._doc._id.toString(),
+                );
+
+                if (questionnaireScriptsData.length !== 0) {
+                    questionnaireScriptsData.map(item => {
+                        item.questionnaireName = questionnaireName;
+                        item.questionnaireLanguage = questionnaireLanguage;
+                    });
+
+                    questionnaireScripts = [
+                        ...questionnaireScripts,
                         ...questionnaireScriptsData,
-                        questionnaireName,
-                        questionnaireLanguage,
-                    },
-                ];
+                    ];
+                }
             }
 
             answeredQuestionnaire.abbreviation =
@@ -183,16 +233,6 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
             );
             answeredQuestionnaire.questions = questions;
         }
-        const assessmentResponse = [] as AssessmentResponse[];
-
-        for (const assessment of patient.assessments) {
-            assessmentResponse.push({
-                ...assessment,
-                assessmentId: assessment.questionnaireAssessmentId,
-            } as AssessmentResponse);
-        }
-
-        console.log(questionnaireScripts);
 
         return {
             patient,

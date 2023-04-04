@@ -106,14 +106,10 @@ export class XLSForm {
                             ? QuestionnaireType.OTHER
                             : columnValue;
                     } else {
-                        dataObject[column] =
-                            columnValue === 'yes' || columnValue === 'no'
-                                ? columnValue === 'yes'
-                                : columnValue;
+                        dataObject[column] = columnValue
                     }
                 }
             }
-
             formattedData.push(dataObject);
         }
 

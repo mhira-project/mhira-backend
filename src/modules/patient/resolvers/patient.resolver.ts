@@ -6,7 +6,7 @@ import {
     QueryArgsType,
     UpdateOneInputType,
 } from '@nestjs-query/query-graphql';
-import { BadRequestException, UseGuards } from '@nestjs/common';
+import { BadRequestException, Inject, UseGuards } from '@nestjs/common';
 import {
     Args,
     ArgsType,
@@ -30,6 +30,11 @@ import { CreatePatientInput } from '../dto/create-patient.input';
 import { UpdatePatientInput } from '../dto/update-patient.input';
 import { PatientQueryService } from '../providers/patient-query.service';
 import { Patient, PatientReport } from '../models/patient.model';
+import { PatientStatus } from '../models/patient-status.model';
+import { CreateOnePatientStatusInput } from '../dto/update-patient-status.input';
+import { PatientStatusService } from '../providers/patient-status.service';
+import { Assessment } from 'src/modules/assessment/models/assessment.model';
+import { checkIfPropertyExists } from 'src/shared/helpers/object.helper';
 
 @ArgsType()
 class PatientQuery extends QueryArgsType(Patient) {}
@@ -57,6 +62,8 @@ class PatientDeleteResponse extends PartialType(Patient) {}
 @Resolver(() => Patient)
 @UseGuards(GqlAuthGuard, PermissionGuard)
 export class PatientResolver {
+    @Inject() patientStatusService: PatientStatusService;
+
     constructor(protected service: PatientQueryService) {}
 
     @Query(() => PatientConnection)
@@ -71,6 +78,14 @@ export class PatientResolver {
 
         const combinedFilter = mergeFilter(query.filter, authorizeFilter);
 
+        if (!checkIfPropertyExists(combinedFilter, 'deleted')) {
+            if (!combinedFilter.and) {
+                combinedFilter.and = [];
+            }
+            combinedFilter.and.push({
+                and: [{ deleted: { is: false } }],
+            });
+        }
         // Apply combined authorized filter
         query.filter = combinedFilter;
 
@@ -192,9 +207,36 @@ export class PatientResolver {
         @CurrentUser() currentUser: User,
     ): Promise<PatientDeleteResponse> {
         // Get patient if authorized. Throws exception if Not Found
-        this.service.getOnePatient(currentUser, Number(input.id));
+        await this.service.getOnePatient(currentUser, Number(input.id));
 
-        return this.service.deleteOne(input.id);
+        const deletedPatient = await this.service.deleteOne(input.id);
+        await Assessment.delete({ patientId: Number(input.id) });
+
+        return deletedPatient;
+    }
+
+    @Mutation(() => Patient)
+    @UsePermission(PermissionEnum.MANAGE_PATIENTS)
+    async archiveOnePatient(
+        @Args('id', { type: () => ID }) id: number,
+        @CurrentUser() currentUser: User,
+    ): Promise<Patient> {
+        //Get patient if authorized. Throws exception if Not Found
+        const patient = await this.service.getOnePatient(currentUser, id);
+
+        return await this.service.archiveOnePatient(id, patient);
+    }
+
+    @Mutation(() => Patient)
+    @UsePermission(PermissionEnum.MANAGE_PATIENTS)
+    async restoreOnePatient(
+        @Args('id', { type: () => ID }) id: number,
+        @CurrentUser() currentUser: User,
+    ): Promise<Patient> {
+        //Get patient if authorized. Throws exception if Not Found
+        const patient = await this.service.getOnePatient(currentUser, id);
+
+        return await this.service.restoreOnePatient(id, patient);
     }
 
     @Query(() => PatientReport)
@@ -203,8 +245,11 @@ export class PatientResolver {
         @Args('id', { type: () => ID }) id: number,
         @Args('questionnaireId', { nullable: true }) questionnaireId: string,
         @Args('assessmentStatus', { nullable: true }) assessmentStatus: string,
+        @CurrentUser() currentUser: User,
     ): Promise<PatientReport> {
         try {
+            await this.service.getOnePatient(currentUser, id);
+
             return await this.service.getQuestionnaireReport(
                 id,
                 assessmentStatus,
@@ -213,5 +258,44 @@ export class PatientResolver {
         } catch (error) {
             return error;
         }
+    }
+
+    @Query(() => [PatientReport])
+    @UsePermission(PermissionEnum.VIEW_PATIENTS)
+    async generateMultiplePatientReports(
+        @Args('ids', { type: () => [ID] }) ids: number[],
+        @Args('questionnaireId', { nullable: true }) questionnaireId: string,
+        @Args('assessmentStatus', { nullable: true }) assessmentStatus: string,
+        @CurrentUser() currentUser: User,
+    ): Promise<PatientReport[]> {
+        try {
+            const questionnaireReports = [];
+
+            for (const id of ids) {
+                const questionnaireReport: PatientReport = await this.generatePatientReport(
+                    id,
+                    questionnaireId,
+                    assessmentStatus,
+                    currentUser,
+                );
+
+                if (!(questionnaireReport instanceof Error)) {
+                    questionnaireReports.push(questionnaireReport);
+                }
+            }
+
+            return questionnaireReports;
+        } catch (error) {
+            return error;
+        }
+    }
+
+    @Mutation(() => PatientStatus)
+    @UsePermission(PermissionEnum.MANAGE_SETTINGS)
+    async createOnePatientStatus(
+        @Args('input', { type: () => CreateOnePatientStatusInput })
+        input: CreateOnePatientStatusInput,
+    ): Promise<PatientStatus> {
+        return await this.patientStatusService.create(input);
     }
 }

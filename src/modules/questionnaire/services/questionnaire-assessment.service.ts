@@ -11,6 +11,9 @@ import { QuestionValidatorFactory } from '../helpers/question-validator.factory'
 import { Questionnaire } from '../models/questionnaire.schema';
 import { AssessmentStatus } from '../enums/assessment-status.enum';
 import { UserInputError } from 'apollo-server-express';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Assessment } from 'src/modules/assessment/models/assessment.model';
+import { Repository } from 'typeorm';
 
 export class QuestionnaireAssessmentService {
     constructor(
@@ -20,6 +23,8 @@ export class QuestionnaireAssessmentService {
         private answerModel: Model<Answer>,
         @InjectModel(QuestionnaireVersion.name)
         private questionnaireVersionModel: Model<QuestionnaireVersion>,
+        @InjectRepository(Assessment)
+        private assessmentRepository: Repository<Assessment>,
     ) {}
 
     async createNewAssessment(questionnaires: Types.ObjectId[]) {
@@ -66,7 +71,7 @@ export class QuestionnaireAssessmentService {
         if (
             ![
                 AssessmentStatus.PARTIALLY_COMPLETED,
-                AssessmentStatus.PENDING,
+                AssessmentStatus.OPEN_FOR_COMPLETION,
             ].includes(foundAssessment.status)
         ) {
             throw new Error(
@@ -150,19 +155,31 @@ export class QuestionnaireAssessmentService {
         }
     }
 
-    changeAssessmentStatus(
+    async changeAssessmentStatus(
         assessmentId: Types.ObjectId,
         status: AssessmentStatus,
     ) {
-        return this.assessmentModel
-            .findByIdAndUpdate(assessmentId, { status })
-            .exec();
+        const assessmentModel = await this.assessmentModel.findById(assessmentId)
+
+        if (assessmentModel.status !== AssessmentStatus.COMPLETED && status === AssessmentStatus.COMPLETED) {
+            let assessment = await this.assessmentRepository.findOne({ where: { questionnaireAssessmentId: assessmentId } })
+            assessment.submissionDate = new Date();
+            await assessment.save();
+        }
+
+        assessmentModel.status = status
+        return assessmentModel.save()
     }
 
-    deleteAssessment(_id: Types.ObjectId, archive = true) {
+    async deleteAssessment(_id: Types.ObjectId, archive = true) {
+        const assessment = await this.assessmentModel.findById(_id);
+
         return (archive
             ? this.assessmentModel.findByIdAndUpdate(_id, {
-                  status: AssessmentStatus.ARCHIVED,
+                  status:
+                      assessment?.status !== AssessmentStatus.COMPLETED
+                          ? AssessmentStatus.CANCELLED
+                          : assessment?.status,
               })
             : this.assessmentModel.findByIdAndDelete(_id)
         )

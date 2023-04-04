@@ -23,4 +23,15 @@ export class Validator {
         });
     }
 
+    static isEmail(email: string) {
+        let regex = new RegExp("([!#-'*+/-9=?A-Z^-~-]+(\.[!#-'*+/-9=?A-Z^-~-]+)*|\"\(\[\]!#-[^-~ \t]|(\\[\t -~]))+\")@([!#-'*+/-9=?A-Z^-~-]+(\.[!#-'*+/-9=?A-Z^-~-]+)*|\[[\t -Z^-~]*])");
+
+        const isValid = regex.test(email)
+
+        if (!isValid) {
+            throw new Error("You have entered an invalid email address!")
+        } 
+        return isValid
+    }
+
 }

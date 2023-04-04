@@ -11,8 +11,8 @@ export class CreateAssessmentInput {
     @FilterableField(() => GraphQLISODateTime, { nullable: true })
     date?: Date;
 
-    @Field({ nullable: true })
-    name: string;
+    @Field(() => Int)
+    assessmentTypeId: number;
 
     @FilterableField(() => Int, { nullable: true })
     clinicianId: number;
@@ -23,8 +23,8 @@ export class CreateAssessmentInput {
 
 @InputType()
 export class CreateFullAssessmentInput {
-    @Field(() => String)
-    name: string;
+    @Field(() => Int)
+    assessmentTypeId: number;
 
     @Field(() => Int)
     patientId: number;
@@ -32,16 +32,52 @@ export class CreateFullAssessmentInput {
     @Field(() => Int)
     clinicianId: number;
 
+    @Field(() => Int, { nullable: true })
+    mailTemplateId: number;
+
     @Field(() => String)
-    informant: string;
+    informantType: string;
+
+    @Field(() => String, { nullable: true })
+    note: string;
+
+    @Field(() => Int, { nullable: true })
+    informantClinicianId?: number;
+
+    @Field(() => String, { nullable: true })
+    informantCaregiverRelation?: string;
 
     @Field(() => [String])
     @ArrayNotEmpty()
     questionnaires: Types.ObjectId[];
+
+    @Field(() => [Dates])
+    dates: Dates[]
+
+    @Field(() => Boolean, { nullable: true })
+    emailReminder: boolean;
+
+    @Field(() => String, { nullable: true })
+    receiverEmail: string;
+}
+
+@InputType() 
+export class Dates {
+    @Field(() => GraphQLISODateTime, { nullable: true })
+    expirationDate: Date;
+
+    @Field(() => GraphQLISODateTime, { nullable: true })
+    deliveryDate: Date;
 }
 
 @InputType()
 export class UpdateFullAssessmentInput extends CreateFullAssessmentInput {
     @Field(() => Int)
     assessmentId: number;
+
+    @Field(() => GraphQLISODateTime, { nullable: true })
+    expirationDate: Date;
+
+    @Field(() => GraphQLISODateTime, { nullable: true })
+    deliveryDate: Date;
 }

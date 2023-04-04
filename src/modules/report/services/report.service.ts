@@ -54,8 +54,6 @@ export class ReportService {
             id: In(roles),
         });
 
-        console.log(findRoles);
-
         if (findRoles.length !== roles.length)
             throw new NotFoundException('Role not found!');
 

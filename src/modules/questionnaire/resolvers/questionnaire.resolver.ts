@@ -14,6 +14,8 @@ import { PermissionGuard } from 'src/modules/permission/guards/permission.guard'
 import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
 import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
 import { QueryArgsType } from '@nestjs-query/query-graphql';
+import { QuestionnaireVersionService } from '../services/questionnaire-version.service';
+import { SortDirection } from '@nestjs-query/core';
 
 @ArgsType()
 export class QuestionniareVersionQuery extends QueryArgsType(
@@ -24,14 +26,34 @@ const QuestionnaireVersionConnection = QuestionniareVersionQuery.ConnectionType;
 @Resolver(() => Questionnaire)
 @UseGuards(GqlAuthGuard, PermissionGuard)
 export class QuestionnaireResolver {
-    constructor(private questionnaireService: QuestionnaireService) {}
+    constructor(
+        private questionnaireService: QuestionnaireService,
+        private questionnaireVersionService: QuestionnaireVersionService,
+    ) {}
 
     @Query(() => Questionnaire)
-    @UsePermission(PermissionEnum.VIEW_QUESTIONNAIRES)
     getQuestionnaire(
         @Args('_id', { type: () => String }) questionnaireId: Types.ObjectId,
     ): Promise<Questionnaire> {
         return this.questionnaireService.getById(questionnaireId);
+    }
+
+    @Query(() => QuestionnaireVersion)
+    @UsePermission(PermissionEnum.VIEW_QUESTIONNAIRES)
+    getQuestionnaireVersion(
+        @Args('_id', { type: () => String }) questionnaireId: Types.ObjectId,
+    ): Promise<QuestionnaireVersion> {
+        return this.questionnaireVersionService.getById(questionnaireId);
+    }
+
+    @Query(() => QuestionnaireVersionConnection)
+    @UsePermission(PermissionEnum.VIEW_QUESTIONNAIRES)
+    async getQuestionnaireVersions(@Args() query: QuestionniareVersionQuery) {
+        const result = await QuestionnaireVersionConnection.createFromPromise(
+            q => this.questionnaireVersionService.getAllVersions(q),
+            query,
+        );
+        return result;
     }
 
     @Query(() => QuestionnaireVersion)
@@ -47,8 +69,11 @@ export class QuestionnaireResolver {
     }
 
     @Query(() => QuestionnaireVersionConnection)
-    @UsePermission(PermissionEnum.VIEW_QUESTIONNAIRES)
     async questionnaires(@Args() query: QuestionniareVersionQuery) {
+        query.sorting = query.sorting?.length
+            ? query.sorting
+            : [{ field: '_id', direction: SortDirection.DESC }];
+
         const result = await QuestionnaireVersionConnection.createFromPromise(
             q => this.questionnaireService.list(q),
             query,

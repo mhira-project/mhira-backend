@@ -1,4 +1,4 @@
-import { ObjectType, Int, GraphQLISODateTime } from '@nestjs/graphql';
+import { ObjectType, Int, GraphQLISODateTime, Field } from '@nestjs/graphql';
 import {
     Entity,
     PrimaryGeneratedColumn,
@@ -8,15 +8,18 @@ import {
     UpdateDateColumn,
     DeleteDateColumn,
     ManyToMany,
+    JoinTable,
 } from 'typeorm';
 import { FilterableField, FilterableUnPagedRelation, KeySet } from '@nestjs-query/query-graphql';
 import { User } from 'src/modules/user/models/user.model';
 import { Patient } from 'src/modules/patient/models/patient.model';
+import { MailTemplate } from 'src/modules/mail/models/mail-template.model';
 
 @ObjectType()
 @KeySet(['id'])
 @FilterableUnPagedRelation('users', () => User, { disableUpdate: true, disableRemove: true })
 @FilterableUnPagedRelation('patients', () => Patient, { disableUpdate: true, disableRemove: true })
+@FilterableUnPagedRelation('mailTemplates', () => MailTemplate, { disableUpdate: true, disableRemove: true })
 @Entity()
 export class Department extends BaseEntity {
 
@@ -54,4 +57,7 @@ export class Department extends BaseEntity {
     @ManyToMany(() => Patient, patient => patient.departments)
     patients: User[];
 
+    @ManyToMany(() => MailTemplate, mailTemplate => mailTemplate.departments)
+    @JoinTable({ name: 'department_mail_template' })
+    mailTemplates: MailTemplate[]
 }
