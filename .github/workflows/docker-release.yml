@@ -1,4 +1,4 @@
-name: Release to Docker Hub
+name: Release latest version to Docker Hub
 on:
   push:
     branches: [develop]
