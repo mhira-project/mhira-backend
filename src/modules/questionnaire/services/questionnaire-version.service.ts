@@ -18,7 +18,7 @@ export class QuestionnaireVersionService {
     ) {}
 
     async getAllVersions(query: QuestionniareVersionQuery) {
-        let questionnaireVersions: QuestionnaireVersion[] = await this.questionnaireVersionModel.find();
+        const questionnaireVersions: QuestionnaireVersion[] = await this.questionnaireVersionModel.find();
         const filteredQuestionnaireVersions: QuestionnaireVersion[] = [];
 
         for (let i = 0; i < questionnaireVersions.length; i++) {

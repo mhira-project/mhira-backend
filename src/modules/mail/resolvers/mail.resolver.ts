@@ -16,8 +16,6 @@ import { ConnectionType } from '@nestjs-query/query-graphql';
 import { SendMailService } from '../services/send-mail.service';
 import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
 import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
-import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
-import { User } from 'src/modules/user/models/user.model';
 
 @Resolver(() => MailTemplate)
 @UseGuards(GqlAuthGuard, PermissionGuard)

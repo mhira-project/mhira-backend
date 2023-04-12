@@ -2,10 +2,9 @@ import { ConnectionType } from '@nestjs-query/query-graphql';
 import {
     Injectable,
     NotFoundException,
-    ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import {
     CreateEmailTemplate,
     UpdateEmailTemplate,
@@ -19,11 +18,10 @@ import {
     InjectQueryService,
     QueryService,
     SortDirection,
-    mergeFilter,
 } from '@nestjs-query/core';
-import { User } from 'src/modules/user/models/user.model';
 import { Department } from 'src/modules/department/models/department.model';
 import { Patient } from 'src/modules/patient/models/patient.model';
+import { AssessmentTypeEnum } from 'src/modules/assessment/enums/assessment-type.enum';
 
 @Injectable()
 export class MailTemplateService {
@@ -40,7 +38,7 @@ export class MailTemplateService {
 
     async getPatientEmailTemplates(patientId: number) {
         if (!patientId) {
-            return []
+            return [];
         }
 
         const patient = await Patient.findOneOrFail({
@@ -51,10 +49,19 @@ export class MailTemplateService {
         const mailTemplates = await this.mailTemplateRepository
             .createQueryBuilder('mailTemplate')
             .leftJoin('mailTemplate.departments', 'department')
-            .where('department.id IN(:...ids)', {
-                ids: patient.departments.map(department => department.id),
+            .where('mailTemplate.status = :status', {
+                status: AssessmentTypeEnum.ACTIVE,
             })
-            .orWhere('mailTemplate.isPublic = true')
+            .andWhere(
+                new Brackets(subQb => {
+                    subQb.where('department.id IN(:...ids)', {
+                        ids: patient.departments.map(
+                            department => department.id,
+                        ),
+                    });
+                    subQb.orWhere('mailTemplate.isPublic = true');
+                }),
+            )
             .getMany();
 
         return mailTemplates;
