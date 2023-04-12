@@ -85,6 +85,10 @@ export class QuestionnaireVersion extends Document {
     @Prop()
     abbreviation: string;
 
+    @Field(() => String, { nullable: true })
+    @Prop()
+    description: string;
+
     @FilterableField(() => Date)
     @Prop()
     createdAt: Date;

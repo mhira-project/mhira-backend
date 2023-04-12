@@ -85,14 +85,15 @@ export class UserCrudService extends TypeOrmQueryService<User> {
         return super.updateOne(id, update);
     }
 
-    async deleteOneUser(id: number, currentUser: User) {
+    async deleteOneUser(id: number, currentUser: User): Promise<boolean> {
         if (!(await PermissionService.compareHierarchy(currentUser.id, +id))) {
             throw new BadRequestException(
                 'Permission denied to delete user! User has higher or equal role than current user',
             );
         }
 
-        return super.deleteOne(id);
+        const user = await super.deleteOne(id)
+        return !!user;
     }
 
     passwordChangeRequired(user: User): boolean {
