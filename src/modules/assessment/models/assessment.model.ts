@@ -53,6 +53,10 @@ export class Assessment extends BaseEntity {
     @Column({ nullable: true })
     clinicianId?: number;
 
+    @FilterableField(() => Int, { nullable: true })
+    @Column()
+    assessmentTypeId?: number;
+
     @FilterableField(() => String, { nullable: true })
     @Column({ nullable: true, default: AssessmentInformant.PATIENT })
     informantType?: string;

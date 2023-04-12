@@ -28,6 +28,9 @@ class SharedQuestionnaireInput {
         defaultValue: QuestionnaireStatus.DRAFT,
     })
     status: QuestionnaireStatus;
+
+    @Field(() => String, { nullable: true })
+    description: string;
 }
 
 @InputType()

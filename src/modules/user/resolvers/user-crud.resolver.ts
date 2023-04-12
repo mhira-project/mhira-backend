@@ -79,13 +79,13 @@ export class UserCrudResolver extends CRUDResolver(User, {
         return this.service.updateUserAcceptedTerm(Number(id), update);
     }
 
-    @Mutation(() => User)
+    @Mutation(() => Boolean)
     @UsePermission(PermissionEnum.MANAGE_USERS)
     async deleteOneUser(
         @Args('input', { type: () => DeleteOneUserInput })
         input: DeleteOneUserInput,
         @CurrentUser() currentUser: User,
-    ): Promise<User> {
+    ): Promise<boolean> {
         const { id } = input;
 
         // Delegate further actions to service

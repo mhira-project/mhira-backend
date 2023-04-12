@@ -83,7 +83,7 @@ export class ReportService {
 
         const reports = await this.reportRepository
             .createQueryBuilder('report')
-            .innerJoin(Role, 'roles')
+            .innerJoin('report.roles', 'roles')
             .where('report.resources = :resources', { resources: resource })
             .andWhere('report.status = :status', { status: true })
             .andWhere('roles.id IN (:...roleId)', {

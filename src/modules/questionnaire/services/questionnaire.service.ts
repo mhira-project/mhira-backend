@@ -244,12 +244,13 @@ export class QuestionnaireService {
 
         createdQuestionnaireVersion.language = questionnaireInput.language;
         createdQuestionnaireVersion.abbreviation = settings.form_id;
+        createdQuestionnaireVersion.description = questionnaireInput.description
 
         let currentGroup: QuestionGroup = null;
 
         for (const questionData of xlsFormParsed.getQuestionData()) {
             if (questionData.type === QuestionType.END_GROUP) {
-                createdQuestionnaireVersion.questionGroups.push(currentGroup);
+                currentGroup && createdQuestionnaireVersion.questionGroups.push(currentGroup);
                 currentGroup = null;
             } else {
                 const question = XlsFormQuestionFactory.createQuestion(
