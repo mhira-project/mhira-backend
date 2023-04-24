@@ -1,3 +1,5 @@
+import { QuestionType } from '../models/question.schema';
+
 export interface FileData {
     name: string;
     data: string[][];
@@ -51,6 +53,8 @@ enum QuestionnaireType {
     TREATMENT_MONITORING = 'Treatment Monitoring',
 }
 
+const REQUIRED_COLUMNS = ['type', 'label', 'name']
+
 const isEnumKey = <T>(obj: T, key: any): key is T => {
     return Object.values(obj).includes(key);
 };
@@ -58,7 +62,7 @@ const isEnumKey = <T>(obj: T, key: any): key is T => {
 export class XLSForm {
     private choiceData: Partial<ChoiceData>[];
 
-    constructor(private sheets: FileData[]) { }
+    constructor(private sheets: FileData[]) {}
 
     public getSettings(): Partial<FormSettings> {
         return this.formatData<FormSettings>(XLSFormSheets.SETTINGS)[0];
@@ -84,6 +88,10 @@ export class XLSForm {
         const columns = this.getColumnDefinitions(sheetName);
         const rows = this.getRowData(sheetName);
 
+        if (sheetName == XLSFormSheets.SURVEY) {
+            this.validateData(rows, columns)
+        }
+
         for (const rowObject of rows) {
             if (rowObject.length === 0) {
                 continue;
@@ -106,7 +114,7 @@ export class XLSForm {
                             ? QuestionnaireType.OTHER
                             : columnValue;
                     } else {
-                        dataObject[column] = columnValue
+                        dataObject[column] = columnValue;
                     }
                 }
             }
@@ -115,6 +123,54 @@ export class XLSForm {
 
         return formattedData;
     }
+
+    private validateData(rows: string[][], columns: string[]) {
+        //Column titles validation
+        const missingColumns = [];
+
+        for (const columnName of REQUIRED_COLUMNS) {
+            if (!columns.includes(columnName)) {
+                missingColumns.push(columnName);
+            }
+        }
+
+        if (missingColumns.length) {
+            const errorMessages = missingColumns.map(
+                column => `column "${column}" is missing on spreadsheet survey!`,
+            );
+
+            throw Error(errorMessages.join('\r\n'));
+        }
+
+        //Column fields validation
+        const missingColumnFields = {}
+
+        for (const row of rows) {
+            if (row.includes(QuestionType.END_GROUP) || !row.length) {
+                continue;
+            }
+
+            for (const columnName of REQUIRED_COLUMNS) {
+                if (!row[columns.indexOf(columnName)]) {
+                    if (!missingColumnFields[columnName]) {
+                        missingColumnFields[columnName] = 0;
+                    }
+        
+                    missingColumnFields[columnName] += 1;
+                }
+            }
+        }
+
+        const errorMessages = Object.keys(missingColumnFields).map(key => {
+            const number = missingColumnFields[key]
+            
+            return `${number} ${key}${number > 1 ? "s\rare" : '\ris' } missing on spreadsheet survey!`
+        });
+
+        if (errorMessages.length) {
+            throw new Error(errorMessages.join('\r\n'));
+        }
+    };
 
     private getSheet(sheetName: string = XLSFormSheets.SURVEY) {
         return this.sheets.filter(sheet => sheet.name === sheetName)[0];
