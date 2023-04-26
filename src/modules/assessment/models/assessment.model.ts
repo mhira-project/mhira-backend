@@ -69,15 +69,15 @@ export class Assessment extends BaseEntity {
     @Column({ nullable: true })
     note: string;
 
-    @Field(() => GraphQLISODateTime, { nullable: true })
+    @FilterableField(() => GraphQLISODateTime, { nullable: true })
     @Column({ nullable: true })
     expirationDate?: Date;
 
-    @Field(() => GraphQLISODateTime, { nullable: true })
+    @FilterableField(() => GraphQLISODateTime, { nullable: true })
     @Column({ nullable: true })
     deliveryDate?: Date;
 
-    @Field(() => GraphQLISODateTime, { nullable: true })
+    @FilterableField(() => GraphQLISODateTime, { nullable: true })
     @Column({ nullable: true })
     submissionDate?: Date;
 
