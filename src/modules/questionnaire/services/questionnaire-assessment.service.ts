@@ -160,13 +160,17 @@ export class QuestionnaireAssessmentService {
         status: AssessmentStatus,
     ) {
         const assessmentModel = await this.assessmentModel.findById(assessmentId)
+        const assessment = await this.assessmentRepository.findOne({ where: { questionnaireAssessmentId: assessmentId } })
 
         if (assessmentModel.status !== AssessmentStatus.COMPLETED && status === AssessmentStatus.COMPLETED) {
-            let assessment = await this.assessmentRepository.findOne({ where: { questionnaireAssessmentId: assessmentId } })
             assessment.submissionDate = new Date();
-            await assessment.save();
         }
 
+        if (assessment) {
+            assessment.status = status
+            await assessment.save();
+        }
+        
         assessmentModel.status = status
         return assessmentModel.save()
     }
