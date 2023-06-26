@@ -119,6 +119,9 @@ export class QuestionnaireService {
                 questionGroups: {
                     $last: '$questionGroups',
                 },
+                description: {
+                    $last: '$description'
+                }
             })
         ).map(version => {
             version.questionnaire = version._id;

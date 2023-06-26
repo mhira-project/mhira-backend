@@ -63,7 +63,6 @@ export class AssessmentService {
         const patientAuthorizeFilter = await PatientAuthorizer.authorizePatient(
             currentUser?.id,
         );
-
         /**
          * Get Current User's patients
          *
@@ -91,7 +90,6 @@ export class AssessmentService {
                 in: currentUsersPatients.map(patient => patient.id),
             },
         });
-
         // Apply combined authorized filter
         query.filter = combinedFilter;
 
@@ -109,12 +107,11 @@ export class AssessmentService {
         for (let i = 0; i < result.edges.length; i++) {
             const assessment = result.edges[i].node;
 
-            await this.changeQuestionnaireAssessmentStatus(assessment)
+            await this.changeQuestionnaireAssessmentStatus(assessment);
         }
 
         return result;
     }
-
     /**
      * Get assessment if authorized. Throws exception if Not Found
      *
@@ -150,92 +147,98 @@ export class AssessmentService {
     }
 
     async createNewAssessment(assessmentInput: CreateFullAssessmentInput) {
-        
-        const assessmentLength = assessmentInput.dates.length || 1
+        const assessmentLength = assessmentInput.dates.length || 1;
 
-        const assessmentArray = []
+        const assessmentArray = [];
 
         for (let i = 0; i < assessmentLength; i++) {
             let assessment: Assessment;
-            
+
             const assessmentType = await this.assessmentTypeRepo.findOne(
                 assessmentInput.assessmentTypeId,
-                );
-        
-                if (!assessmentType) {
-                    throw new NotFoundException('Assessment type not found!');
-                }
-        
-                // create mongo assessment
-                const questionnaireAssessment = await this.questionnaireAssessmentService.createNewAssessment(
-                    assessmentInput.questionnaires,
-                );
-                
-                const d1 = new Date(assessmentInput?.dates[i].deliveryDate),
-                d2 = new Date();
-                
-                try {
-                    // create postgres assessment
-                    assessment = new Assessment();
-                    if (!assessmentInput.dates[i].deliveryDate || d1 < d2) {
-                        await this.questionnaireAssessmentService.changeAssessmentStatus(
-                            questionnaireAssessment.id,
-                            AssessmentStatus.OPEN_FOR_COMPLETION,
-                        );
-                    }
-        
-                    assessment.assessmentType = assessmentType;
-                    assessment.patientId = assessmentInput.patientId;
-                    assessment.clinicianId = assessmentInput.clinicianId;
-                    assessment.informantType = assessmentInput.informantType;
-                    assessment.expirationDate = assessmentInput.dates[i].expirationDate;
-                    assessment.note = assessmentInput.note;
-                    assessment.deliveryDate = assessmentInput.dates[i].deliveryDate;
-                    assessment.questionnaireAssessmentId = questionnaireAssessment.id;
-                    if (assessmentInput.informantClinicianId) {
-                        const clinician = await this.userRepository.findOne({
-                            id: assessmentInput.informantClinicianId,
-                        });
-                        if (!clinician)
-                            throw new NotFoundException(
-                                'Informant clinician not found!',
-                            );
-                        assessment.informantClinician = clinician;
-                        // To prevent double informant
-                        assessmentInput.informantCaregiverRelation = null;
-                    }
-                    if (assessmentInput.informantCaregiverRelation) {
-                        assessment.informantCaregiverRelation =
-                            assessmentInput.informantCaregiverRelation;
-                    }
-                    // If emailReminder is not checked then all the other email values will be edited
-                    assessment.emailReminder = assessmentInput.emailReminder || false;
-                    if (!assessmentInput.emailReminder) {
-                        assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED;
-                        assessment.receiverEmail = null;
-                    } else if (Validator.isEmail(assessmentInput.receiverEmail)){
-                        if (!assessmentInput.mailTemplateId) {
-                            throw new Error("Mail template not found!")
-                        }
-                        assessment.mailTemplateId = assessmentInput.mailTemplateId
+            );
 
-                        if (!assessmentInput.dates[i].deliveryDate) {
-                            assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED
-                        } else {
-                            assessment.emailStatus = AssessmentEmailStatus.SCHEDULED;
-                        }
-                        assessment.receiverEmail = assessmentInput.receiverEmail;
+            if (!assessmentType) {
+                throw new NotFoundException('Assessment type not found!');
+            }
+
+            // create mongo assessment
+            const questionnaireAssessment = await this.questionnaireAssessmentService.createNewAssessment(
+                assessmentInput.questionnaires,
+            );
+
+            const d1 = new Date(assessmentInput?.dates[i].deliveryDate),
+                d2 = new Date();
+
+            try {
+                // create postgres assessment
+                assessment = new Assessment();
+                if (!assessmentInput.dates[i].deliveryDate || d1 < d2) {
+                    await this.questionnaireAssessmentService.changeAssessmentStatus(
+                        questionnaireAssessment.id,
+                        AssessmentStatus.OPEN_FOR_COMPLETION,
+                    );
+                }
+
+                assessment.status = AssessmentStatus.OPEN_FOR_COMPLETION;
+                assessment.assessmentType = assessmentType;
+                assessment.patientId = assessmentInput.patientId;
+                assessment.clinicianId = assessmentInput.clinicianId;
+                assessment.informantType = assessmentInput.informantType;
+                assessment.expirationDate =
+                    assessmentInput.dates[i].expirationDate;
+                assessment.note = assessmentInput.note;
+                assessment.deliveryDate = assessmentInput.dates[i].deliveryDate;
+                assessment.questionnaireAssessmentId =
+                    questionnaireAssessment.id;
+                if (assessmentInput.informantClinicianId) {
+                    const clinician = await this.userRepository.findOne({
+                        id: assessmentInput.informantClinicianId,
+                    });
+                    if (!clinician)
+                        throw new NotFoundException(
+                            'Informant clinician not found!',
+                        );
+                    assessment.informantClinician = clinician;
+                    // To prevent double informant
+                    assessmentInput.informantCaregiverRelation = null;
+                }
+                if (assessmentInput.informantCaregiverRelation) {
+                    assessment.informantCaregiverRelation =
+                        assessmentInput.informantCaregiverRelation;
+                }
+                // If emailReminder is not checked then all the other email values will be edited
+                assessment.emailReminder =
+                    assessmentInput.emailReminder || false;
+                if (!assessmentInput.emailReminder) {
+                    assessment.emailStatus =
+                        AssessmentEmailStatus.NOT_SCHEDULED;
+                    assessment.receiverEmail = null;
+                } else if (Validator.isEmail(assessmentInput.receiverEmail)) {
+                    if (!assessmentInput.mailTemplateId) {
+                        throw new Error('Mail template not found!');
                     }
-        
-                    await assessment.save();
-                    assessmentArray.push(assessment)
+                    assessment.mailTemplateId = assessmentInput.mailTemplateId;
+
+                    if (!assessmentInput.dates[i].deliveryDate) {
+                        assessment.emailStatus =
+                            AssessmentEmailStatus.NOT_SCHEDULED;
+                    } else {
+                        assessment.emailStatus =
+                            AssessmentEmailStatus.SCHEDULED;
+                    }
+                    assessment.receiverEmail = assessmentInput.receiverEmail;
+                }
+
+                await assessment.save();
+                assessmentArray.push(assessment);
             } catch (err) {
                 // undo mongo assessment and rethrow
                 await questionnaireAssessment.remove();
                 throw err;
             }
         }
-        
+
         return assessmentArray[0];
     }
 
@@ -335,15 +338,16 @@ export class AssessmentService {
             if (!assessmentInput.emailReminder) {
                 assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED;
                 assessment.receiverEmail = null;
-                assessment.mailTemplateId = null
-            } else if (Validator.isEmail(assessmentInput.receiverEmail)){
+                assessment.mailTemplateId = null;
+            } else if (Validator.isEmail(assessmentInput.receiverEmail)) {
                 if (!assessmentInput.mailTemplateId) {
-                    throw new Error("Mail template not found!")
+                    throw new Error('Mail template not found!');
                 }
-                assessment.mailTemplateId = assessmentInput.mailTemplateId
+                assessment.mailTemplateId = assessmentInput.mailTemplateId;
 
                 if (!assessmentInput.deliveryDate) {
-                    assessment.emailStatus = AssessmentEmailStatus.NOT_SCHEDULED
+                    assessment.emailStatus =
+                        AssessmentEmailStatus.NOT_SCHEDULED;
                 } else {
                     assessment.emailStatus = AssessmentEmailStatus.SCHEDULED;
                 }
@@ -380,40 +384,40 @@ export class AssessmentService {
             await queryRunner.rollbackTransaction();
             throw err;
         } finally {
-            await queryRunner.release(); 
+            await queryRunner.release();
         }
     }
 
     async archiveOneAssessment(id: number) {
-        const assessment = await this.assessmentRepository.findOneOrFail(id)
+        const assessment = await this.assessmentRepository.findOneOrFail(id);
 
         if (assessment.deleted) {
-            throw Error("This assessment is already archived!")
+            throw Error('This assessment is already archived!');
         }
 
-        await this.assessmentRepository.update(id, { deleted: true })
+        await this.assessmentRepository.update(id, { deleted: true });
 
-        return assessment
+        return assessment;
     }
 
     async restoreOneAssessment(id: number) {
         const assessment = await this.assessmentRepository
-                .createQueryBuilder("assessment")
-                .leftJoinAndSelect("assessment.patient", "patient")
-                .where("assessment.id = :id", { id })
-                .getOneOrFail();
-    
+            .createQueryBuilder('assessment')
+            .leftJoinAndSelect('assessment.patient', 'patient')
+            .where('assessment.id = :id', { id })
+            .getOneOrFail();
+
         if (assessment.patient.deleted) {
-            throw Error("The patient assigned to this assessment is archived!")
+            throw Error('The patient assigned to this assessment is archived!');
         }
 
         if (!assessment.deleted) {
-            throw Error("This assessment is not archived!")
+            throw Error('This assessment is not archived!');
         }
 
-        await this.assessmentRepository.update(id, { deleted: false })
-        delete assessment.patient
-        return assessment
+        await this.assessmentRepository.update(id, { deleted: false });
+        delete assessment.patient;
+        return assessment;
     }
 
     async getFullPublicAssessment(uuid: string): Promise<FullAssessment> {
@@ -426,8 +430,10 @@ export class AssessmentService {
                 relations: ['clinician', 'patient', 'assessmentType'],
             },
         )) as FullAssessment;
-        
-        assessment.questionnaireAssessment = await this.changeQuestionnaireAssessmentStatus(assessment);
+
+        assessment.questionnaireAssessment = await this.changeQuestionnaireAssessmentStatus(
+            assessment,
+        );
 
         return assessment;
     }
@@ -450,22 +456,32 @@ export class AssessmentService {
                 assessment.questionnaireAssessmentId,
                 AssessmentStatus.OPEN_FOR_COMPLETION,
             );
-            questionnaireAssessment.status = AssessmentStatus.OPEN_FOR_COMPLETION
+            await this.assessmentRepository.update(
+                { id: assessment.id },
+                { status: AssessmentStatus.OPEN_FOR_COMPLETION },
+            );
+            questionnaireAssessment.status =
+                AssessmentStatus.OPEN_FOR_COMPLETION;
         }
 
         if (
             assessment?.expirationDate &&
             expirationToDate < newDate &&
             questionnaireAssessment?.status !== AssessmentStatus.COMPLETED &&
-            questionnaireAssessment?.status !== AssessmentStatus.PARTIALLY_COMPLETED
+            questionnaireAssessment?.status !==
+                AssessmentStatus.PARTIALLY_COMPLETED
         ) {
             await this.questionnaireAssessmentService.changeAssessmentStatus(
                 assessment.questionnaireAssessmentId,
                 AssessmentStatus.EXPIRED,
             );
-            questionnaireAssessment.status = AssessmentStatus.EXPIRED
+            await this.assessmentRepository.update(
+                { id: assessment.id },
+                { status: AssessmentStatus.EXPIRED },
+            );
+            questionnaireAssessment.status = AssessmentStatus.EXPIRED;
         }
 
-        return questionnaireAssessment
+        return questionnaireAssessment;
     }
 }
