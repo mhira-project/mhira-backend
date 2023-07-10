@@ -11,6 +11,7 @@ export class XlsFormQuestionFactory {
     ): Question | QuestionGroup {
         if (questionRow.type === QuestionType.BEGIN_GROUP) {
             questionGroup.label = questionRow.label;
+            questionGroup.appearance = questionRow.appearance;
             return questionGroup;
         } else {
             question = {
