@@ -14,9 +14,9 @@ import {
 import { Answer, AnswerSchema } from '../questionnaire/models/answer.schema';
 import { QuestionnaireAssessmentService } from '../questionnaire/services/questionnaire-assessment.service';
 import {
-    QuestionnaireVersion,
-    QuestionnaireVersionSchema,
-} from '../questionnaire/models/questionnaire-version.schema';
+    Questionnaire,
+    QuestionnaireSchema,
+} from '../questionnaire/models/questionnaire.schema';
 import { PatientModule } from '../patient/patient.module';
 import { PublicAssessmentResolver } from './resolvers/public.assesment.resolver';
 import { User } from '../user/models/user.model';
@@ -46,8 +46,8 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     },
                     { name: Answer.name, schema: AnswerSchema },
                     {
-                        name: QuestionnaireVersion.name,
-                        schema: QuestionnaireVersionSchema,
+                        name: Questionnaire.name,
+                        schema: QuestionnaireSchema,
                     },
                 ]),
             ],
