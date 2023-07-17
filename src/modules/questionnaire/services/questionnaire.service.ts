@@ -91,6 +91,12 @@ export class QuestionnaireService {
                 },
                 description: {
                     $last: '$description'
+                },
+                language: {
+                    $last: '$language'
+                },
+                abbreviation: {
+                    $last: '$abbreviation'
                 }
             })
         );
