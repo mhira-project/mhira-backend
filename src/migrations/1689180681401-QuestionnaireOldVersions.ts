@@ -35,12 +35,13 @@ export class QuestionnaireOldVersions1689180681401
                         {
                             questionnaire: questionnaireId,
                         },
-                        { sort: { timestamp: -1 } },
+                        { sort: { createdAt: -1 } },
                     );
 
                 if (
                     version._id.toString() !== lastVersion._id.toString() ||
-                    version.status == 'ARCHIVED'
+                    version.status == 'ARCHIVED' ||
+                    version.questionnaire == null
                 ) {
                     oldVersions.push(version._id);
                 }
@@ -57,7 +58,7 @@ export class QuestionnaireOldVersions1689180681401
                     },
                 },
                 {
-                    $setOnInsert: {
+                    $set: {
                         zombie: true,
                     },
                 },
