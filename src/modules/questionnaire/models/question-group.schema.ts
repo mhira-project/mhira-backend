@@ -14,6 +14,10 @@ export class QuestionGroup extends Document {
     @Prop()
     label: string;
 
+    @Field(() => String, { nullable: true })
+    @Prop()
+    appearance: string;
+
     @Field(() => [Question])
     @Prop({ type: [QuestionSchema] })
     questions: Question[] = [];
