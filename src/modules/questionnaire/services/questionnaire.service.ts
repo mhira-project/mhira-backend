@@ -55,7 +55,7 @@ export class QuestionnaireService {
     }
 
     public async getById(questionnaireId: Types.ObjectId) {
-        return this.questionnaireModel.findOne({ questionnaire: questionnaireId })
+        return this.questionnaireModel.findOne({ _id: questionnaireId })
     }
 
     async list(query: QuestionniareQuery) {

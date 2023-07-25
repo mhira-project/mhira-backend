@@ -77,7 +77,7 @@ export class Questionnaire extends Document {
     @Prop()
     description: string;
 
-    @FilterableField(() => Boolean, { defaultValue: false, filterOnly: true })
+    @FilterableField(() => Boolean, { nullable: true, defaultValue: false })
     @Prop()
     zombie: boolean;
 
