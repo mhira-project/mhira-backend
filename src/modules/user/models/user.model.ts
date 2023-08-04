@@ -24,6 +24,7 @@ import {Role} from 'src/modules/permission/models/role.model';
 import {UserPreviousPassword} from './user-previous-password.model';
 import {Department} from 'src/modules/department/models/department.model';
 import {Patient} from 'src/modules/patient/models/patient.model';
+import { Logs } from 'src/modules/logs/logs.model';
 
 @ObjectType()
 @KeySet(['id'])
@@ -165,4 +166,9 @@ export class User extends BaseEntity {
     )
     accessTokens: AccessToken[];
 
+    @OneToMany(
+        () => Logs,
+        log => log.user
+    )
+    logs: Logs[]
 }

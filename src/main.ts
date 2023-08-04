@@ -5,6 +5,8 @@ import { corsConfig } from './config/cors.config';
 import { GqlBadRequestHandler } from './shared/exception/gql-bad-request.handler';
 import { configService } from './config/config.service';
 import { GqlUnauthorizedHandler } from './shared/exception/gql-unauthorized.handler';
+import { LoggingInterceptor } from './modules/logs/logs.interceptor';
+import { LogsModule } from './modules/logs/logs.module';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -16,6 +18,8 @@ async function bootstrap() {
     app.useGlobalFilters(new GqlBadRequestHandler());
     app.useGlobalFilters(new GqlUnauthorizedHandler());
     app.useGlobalPipes(new ValidationPipe());
+    const loggingInterceptor = app.select(LogsModule).get(LoggingInterceptor);
+    app.useGlobalInterceptors(loggingInterceptor);
 
     await app.listen(port);
     logger.log(`Application started on port ${port}`);
