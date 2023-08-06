@@ -174,6 +174,45 @@ export class FullAssessment extends Assessment {
 }
 
 @ObjectType()
+export class FullPublicAssessment {
+    @Field(() => Int)
+    id: number;
+
+    @Field(() => String, { nullable: true })
+    uuid: string;
+
+    @Field(() => GraphQLISODateTime, { nullable: true })
+    date?: Date;
+
+    @Field({ nullable: true })
+    status: string;
+
+    @Field(() => GraphQLISODateTime)
+    createdAt: Date;
+
+    @Field(() => GraphQLISODateTime)
+    updatedAt: Date;
+
+    @Field(() => GraphQLISODateTime, { nullable: true })
+    deletedAt: Date;
+
+    @Field(() => GraphQLISODateTime, { nullable: true })
+    deliveryDate: Date;
+
+    @Field(() => GraphQLISODateTime, { nullable: true })
+    expirationDate: Date;
+    
+    @Field(() => String, { nullable: true })
+    informantType?: string;
+
+    @Field(() => QuestionnaireAssessment)
+    questionnaireAssessment: QuestionnaireAssessment;
+
+    @Field(() => AssessmentType, { nullable: true })
+    assessmentType: AssessmentType;
+}
+
+@ObjectType()
 export class AssessmentResponse extends Assessment {
     @Field(() => String)
     assessmentId: string;
