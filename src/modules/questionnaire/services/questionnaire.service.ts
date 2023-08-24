@@ -15,11 +15,12 @@ import {
     QuestionnaireStatus,
     QuestionnaireVersion,
 } from '../models/questionnaire-version.schema';
-import { FileData, XLSForm } from '../helpers/xlsform-reader.helper';
+import { XLSForm } from '../helpers/xlsform-reader.helper';
 import { XlsFormQuestionFactory } from '../helpers/xlsform-questions.factory';
 import { FileUpload } from 'graphql-upload';
 import { applyQuery } from '@nestjs-query/core';
 import { QuestionniareVersionQuery } from '../resolvers/questionnaire.resolver';
+import { FileData } from '../dtos/xlsform.dto';
 
 @Injectable()
 export class QuestionnaireService {
