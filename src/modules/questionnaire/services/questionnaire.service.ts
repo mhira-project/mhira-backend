@@ -97,6 +97,9 @@ export class QuestionnaireService {
                 },
                 abbreviation: {
                     $last: '$abbreviation'
+                },
+                zombie: {
+                    $last: '$zombie'
                 }
             })
         );

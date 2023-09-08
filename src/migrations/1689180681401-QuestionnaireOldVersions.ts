@@ -22,6 +22,7 @@ export class QuestionnaireOldVersions1689180681401
                 .collection('questionnaire_versions')
                 .find()
                 .toArray();
+            const newVersions = []
             const oldVersions = [];
             const archived = [];
 
@@ -44,6 +45,8 @@ export class QuestionnaireOldVersions1689180681401
                     version.questionnaire == null
                 ) {
                     oldVersions.push(version._id);
+                } else {
+                    newVersions.push(version._id)
                 }
 
                 if (version.status == 'ARCHIVED') {
@@ -60,6 +63,19 @@ export class QuestionnaireOldVersions1689180681401
                 {
                     $set: {
                         zombie: true,
+                    },
+                },
+            );
+
+            await db.collection('questionnaire_versions').updateMany(
+                {
+                    _id: {
+                        $in: newVersions,
+                    },
+                },
+                {
+                    $set: {
+                        zombie: false,
                     },
                 },
             );
