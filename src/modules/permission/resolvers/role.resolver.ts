@@ -15,6 +15,13 @@ import { RoleInput } from '../dtos/role.input';
 import { UpdateOneRoleInput } from '../dtos/update-one-role.input';
 import { RoleCrudService } from '../providers/role-crud.service';
 import { UseOrPermissions } from '../decorators/permission.decorator';
+import {
+    AddPermissionsToRoleInput,
+    RemovePermissionsFromRoleInput,
+} from '../dtos/update-role-permissions.input';
+import { Permission } from '../models/permission.model';
+import { In } from 'typeorm';
+import { PermissionAction } from '../enums/permission-action.enum';
 
 @Resolver(() => Role)
 @UseGuards(GqlAuthGuard, PermissionGuard)
@@ -43,10 +50,10 @@ export class RoleResolver extends CRUDResolver(Role, {
     @Mutation(() => Role)
     @UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS)
     async createOneRole(
-        @Args('input', { type: () => CreateOneRoleInput }) input: CreateOneRoleInput,
+        @Args('input', { type: () => CreateOneRoleInput })
+        input: CreateOneRoleInput,
         @CurrentUser() currentUser: User,
     ): Promise<Role> {
-
         const roleInput = input['role'] as RoleInput;
 
         const exists = await Role.findOne({ name: roleInput.name });
@@ -59,14 +66,16 @@ export class RoleResolver extends CRUDResolver(Role, {
         currentUser = await User.findOne({
             where: { id: currentUser.id },
             relations: ['roles'],
-        })
+        });
         const currentUserMaxRole = currentUser.roles.reduce((prev, current) => {
-            return (prev.hierarchy > current.hierarchy) ? prev : current
+            return prev.hierarchy > current.hierarchy ? prev : current;
         });
 
         if (roleInput.hierarchy <= currentUserMaxRole.hierarchy) {
-            throw new BadRequestException('Cannot create role with higher hierarchy than your own. '
-                + `Please provide hierarchy number greater than ${currentUserMaxRole.hierarchy}`);
+            throw new BadRequestException(
+                'Cannot create role with higher hierarchy than your own. ' +
+                    `Please provide hierarchy number greater than ${currentUserMaxRole.hierarchy}`,
+            );
         }
 
         return this.service.createOne(input['role']);
@@ -75,10 +84,10 @@ export class RoleResolver extends CRUDResolver(Role, {
     @Mutation(() => Role)
     @UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS)
     async updateOneRole(
-        @Args('input', { type: () => UpdateOneRoleInput }) input: UpdateOneRoleInput,
+        @Args('input', { type: () => UpdateOneRoleInput })
+        input: UpdateOneRoleInput,
         @CurrentUser() currentUser: User,
     ): Promise<Role> {
-
         const { id, update } = input;
 
         // Reload current Role with roles
@@ -90,7 +99,9 @@ export class RoleResolver extends CRUDResolver(Role, {
                 .getOne();
 
             if (exists) {
-                throw new BadRequestException('Role with same name already exists');
+                throw new BadRequestException(
+                    'Role with same name already exists',
+                );
             }
         }
 
@@ -100,10 +111,10 @@ export class RoleResolver extends CRUDResolver(Role, {
     @Mutation(() => Role)
     @UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS)
     async deleteOneRole(
-        @Args('input', { type: () => DeleteOneRoleInput }) input: DeleteOneRoleInput,
+        @Args('input', { type: () => DeleteOneRoleInput })
+        input: DeleteOneRoleInput,
         @CurrentUser() currentUser: User,
     ): Promise<Role> {
-
         const { id } = input;
 
         // Reload current Role with roles
@@ -112,17 +123,111 @@ export class RoleResolver extends CRUDResolver(Role, {
         return this.service.deleteOne(id);
     }
 
+    @Mutation(() => Role)
+    @UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS)
+    async removePermissionsFromRole(
+        @Args('input', { type: () => RemovePermissionsFromRoleInput })
+        input: RemovePermissionsFromRoleInput,
+        @CurrentUser() currentUser: User,
+    ) {
+        const { role } = await this.canUpdatePermissions(
+            input,
+            currentUser,
+            PermissionAction.REMOVE,
+        );
+
+        role.permissions = role.permissions.filter(
+            permission => !input.relationIds.includes(permission.id),
+        );
+
+        return role.save();
+    }
+
+    @Mutation(() => Role)
+    @UsePermission(PermissionEnum.MANAGE_ROLES_PERMISSIONS)
+    async addPermissionsToRole(
+        @Args('input', { type: () => AddPermissionsToRoleInput })
+        input: AddPermissionsToRoleInput,
+        @CurrentUser() currentUser: User,
+    ) {
+        const { role, permissions } = await this.canUpdatePermissions(
+            input,
+            currentUser,
+            PermissionAction.ADD,
+        );
+
+        role.permissions.push(...permissions);
+
+        return role.save();
+    }
+
+    private async canUpdatePermissions(
+        input: AddPermissionsToRoleInput,
+        currentUser: User,
+        action: PermissionAction,
+    ): Promise<{ role: Role; permissions: Permission[] }> {
+        const role = await Role.findOneOrFail({
+            where: { id: input.id },
+            relations: ['permissions'],
+        });
+
+        currentUser = await User.findOne({
+            where: { id: currentUser.id },
+            relations: ['roles', 'roles.permissions'],
+        });
+
+        let errorMessage = '';
+
+        const isOwnRole = currentUser.roles.some(role => role.id === input.id);
+        const hasHigherHierarchy = currentUser.roles.some(
+            userRole => userRole.hierarchy < role.hierarchy,
+        );
+        const hasPermission = currentUser.roles.some(userRole =>
+            userRole.permissions.some(permission =>
+                input.relationIds.includes(permission.id),
+            ),
+        );
+
+        if (isOwnRole) {
+            errorMessage = 'You cannot modify your own permissions.';
+        } else if (!hasHigherHierarchy) {
+            errorMessage = 'Your hierarchy is not high enough.';
+        } else if (!hasPermission) {
+            errorMessage =
+                'You cannot modify permissions that you do not have yourself.';
+        }
+
+        const permissions = await Permission.find({
+            where: { id: In(input.relationIds) },
+        });
+
+        const permissionNames = permissions
+            .map(permission => permission.name)
+            .join(', ');
+
+        if (!!errorMessage) {
+            throw new BadRequestException(
+                `Cannot ${action} permission [${permissionNames}] to role [${role.name}]. ${errorMessage}`,
+            );
+        }
+
+        return { role, permissions };
+    }
 
     /**
      * Checks if current user can update/delete the Role.
-     * Throws a BadRequest exception incase of 
+     * Throws a BadRequest exception incase of
      * insufficient previledges.
-     * 
-     * @param roleId 
-     * @param currentUser 
-     * @param update 
+     *
+     * @param roleId
+     * @param currentUser
+     * @param update
      */
-    private async canUpdateRole(roleId: number, currentUser: User, update?: RoleInput): Promise<void> {
+    private async canUpdateRole(
+        roleId: number,
+        currentUser: User,
+        update?: RoleInput,
+    ): Promise<void> {
         const roleInDb = await Role.findOneOrFail({
             where: { id: roleId },
         });
@@ -133,17 +238,21 @@ export class RoleResolver extends CRUDResolver(Role, {
             relations: ['roles'],
         });
         const currentUserMaxRole = currentUser.roles.reduce((prev, current) => {
-            return (prev.hierarchy > current.hierarchy) ? prev : current;
+            return prev.hierarchy > current.hierarchy ? prev : current;
         });
 
         if (roleInDb.hierarchy <= currentUserMaxRole.hierarchy) {
-            throw new BadRequestException('Permission denied! Cannot modify role with a higher hierarchy than your own. '
-                + `Please provide hierarchy number greater than ${currentUserMaxRole.hierarchy}`);
+            throw new BadRequestException(
+                'Permission denied! Cannot modify role with a higher hierarchy than your own. ' +
+                    `Please provide hierarchy number greater than ${currentUserMaxRole.hierarchy}`,
+            );
         }
 
-        if (update && (update.hierarchy <= currentUserMaxRole.hierarchy)) {
-            throw new BadRequestException('Permission denied! Cannot modify role to a higher hierarchy than your own. '
-                + `Please provide hierarchy number greater than ${currentUserMaxRole.hierarchy}`);
+        if (update && update.hierarchy <= currentUserMaxRole.hierarchy) {
+            throw new BadRequestException(
+                'Permission denied! Cannot modify role to a higher hierarchy than your own. ' +
+                    `Please provide hierarchy number greater than ${currentUserMaxRole.hierarchy}`,
+            );
         }
     }
 }
