@@ -1,6 +1,7 @@
 import { QuestionGroup } from '../models/question-group.schema';
 import { Choice, Question, QuestionType } from '../models/question.schema';
-import { QuestionData, XLSForm } from './xlsform-reader.helper';
+import { XLSForm } from './xlsform-reader.helper';
+import { QuestionData } from '../dtos/xlsform.dto';
 
 export class XlsFormQuestionFactory {
     public static createQuestion(
