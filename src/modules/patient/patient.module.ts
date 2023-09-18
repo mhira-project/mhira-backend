@@ -23,16 +23,13 @@ import {
     AssessmentSchema,
     QuestionnaireAssessment,
 } from '../questionnaire/models/questionnaire-assessment.schema';
-import { QuestionnaireScriptService } from '../questionnaire/services/questionnaire-script.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Answer, AnswerSchema } from '../questionnaire/models/answer.schema';
 import {
-    QuestionnaireVersion,
-    QuestionnaireVersionSchema,
-} from '../questionnaire/models/questionnaire-version.schema';
-import { QuestionnaireScript } from '../questionnaire/models/questionnaire-script.model';
+    Questionnaire,
+    QuestionnaireSchema,
+} from '../questionnaire/models/questionnaire.schema';
 import { QuestionnaireModule } from '../questionnaire/questionnaire.module';
-import { CreateOnePatientStatusInput } from './dto/update-patient-status.input';
 import { PatientStatusService } from './providers/patient-status.service';
 import { Assessment } from '../assessment/models/assessment.model';
 
@@ -58,8 +55,8 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     },
                     { name: Answer.name, schema: AnswerSchema },
                     {
-                        name: QuestionnaireVersion.name,
-                        schema: QuestionnaireVersionSchema,
+                        name: Questionnaire.name,
+                        schema: QuestionnaireSchema,
                     },
                 ]),
             ],
