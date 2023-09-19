@@ -16,9 +16,9 @@ import {
 } from '../questionnaire/models/questionnaire-assessment.schema';
 import { Answer, AnswerSchema } from '../questionnaire/models/answer.schema';
 import {
-  QuestionnaireVersion,
-  QuestionnaireVersionSchema,
-} from '../questionnaire/models/questionnaire-version.schema';
+  Questionnaire,
+  QuestionnaireSchema,
+} from '../questionnaire/models/questionnaire.schema';
 
 @Module({
   imports: [
@@ -35,8 +35,8 @@ import {
           },
           { name: Answer.name, schema: AnswerSchema },
           {
-              name: QuestionnaireVersion.name,
-              schema: QuestionnaireVersionSchema,
+              name: Questionnaire.name,
+              schema: QuestionnaireSchema,
           },
         ]),
       ],

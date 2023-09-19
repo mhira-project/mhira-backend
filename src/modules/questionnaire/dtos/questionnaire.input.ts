@@ -1,7 +1,7 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { Exclude } from 'class-transformer';
 import { GraphQLUpload, FileUpload } from 'graphql-upload';
-import { QuestionnaireStatus } from '../models/questionnaire-version.schema';
+import { QuestionnaireStatus } from '../models/questionnaire.schema';
 
 @InputType()
 class SharedQuestionnaireInput {

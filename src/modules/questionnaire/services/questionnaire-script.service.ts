@@ -17,7 +17,7 @@ import {
 import { QuestionnaireScriptConnection } from '../dtos/questionnaire-scripts.args';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
+import { Questionnaire } from '../models/questionnaire.schema';
 
 @Injectable()
 export class QuestionnaireScriptService {
@@ -28,14 +28,14 @@ export class QuestionnaireScriptService {
         private readonly questionnaireScriptQueryService: QueryService<
             QuestionnaireScript
         >,
-        @InjectModel(QuestionnaireVersion.name)
-        private questionnaireVersionModel: Model<QuestionnaireVersion>,
+        @InjectModel(Questionnaire.name)
+        private questionnaireModel: Model<Questionnaire>,
     ) {}
     async createNewScript(input: CreateQuestionnaireScriptInput) {
         const { scriptText, reportIds, questionnaireId, ...rest } = input;
         const scriptTexts = await this.readFileUpload(scriptText);
 
-        const questionnaireVersion = await this.questionnaireVersionModel
+        const questionnaireVersion = await this.questionnaireModel
             .findById(questionnaireId)
             .exec();
 

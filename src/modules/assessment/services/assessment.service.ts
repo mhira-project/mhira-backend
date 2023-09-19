@@ -6,7 +6,7 @@ import {
     CreateFullAssessmentInput,
     UpdateFullAssessmentInput,
 } from '../dtos/create-assessment.input';
-import { Assessment, FullAssessment } from '../models/assessment.model';
+import { Assessment, FullPublicAssessment, FullAssessment } from '../models/assessment.model';
 import { QuestionnaireAssessmentService } from '../../questionnaire/services/questionnaire-assessment.service';
 import {
     Filter,
@@ -420,16 +420,16 @@ export class AssessmentService {
         return assessment;
     }
 
-    async getFullPublicAssessment(uuid: string): Promise<FullAssessment> {
-        const assessment: FullAssessment = (await this.assessmentRepository.findOne(
+    async getFullPublicAssessment(uuid: string): Promise<FullPublicAssessment> {
+        const assessment = (await this.assessmentRepository.findOne(
             {
                 where: {
                     isActive: true,
                     uuid,
                 },
-                relations: ['clinician', 'patient', 'assessmentType'],
+                relations: ['assessmentType'],
             },
-        )) as FullAssessment;
+        ) as unknown as FullPublicAssessment);
 
         assessment.questionnaireAssessment = await this.changeQuestionnaireAssessmentStatus(
             assessment,

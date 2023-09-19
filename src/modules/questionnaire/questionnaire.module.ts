@@ -10,10 +10,6 @@ import {
     Question,
     QuestionSchema,
 } from './models/question.schema';
-import {
-    QuestionnaireVersion,
-    QuestionnaireVersionSchema,
-} from './models/questionnaire-version.schema';
 import { QuestionnaireService } from './services/questionnaire.service';
 import { QuestionnaireResolver } from './resolvers/questionnaire.resolver';
 import { QuestionnaireAssessmentService } from './services/questionnaire-assessment.service';
@@ -34,7 +30,6 @@ import { QuestionnaireScriptService } from './services/questionnaire-script.serv
 import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { PermissionGuard } from '../permission/guards/permission.guard';
 import { GqlAuthGuard } from '../auth/auth.guard';
-import { QuestionnaireVersionService } from './services/questionnaire-version.service';
 import { Assessment } from '../assessment/models/assessment.model';
 import {
     QuestionnaireBundle,
@@ -43,7 +38,7 @@ import {
 import { QuestionnaireBundleResolver } from './resolvers/questionnaire-bundle.resolver';
 import { QuestionnaireBundleService } from './services/questionnaire-bundle.service';
 
-const guards = [GqlAuthGuard, PermissionGuard];
+const guards = [GqlAuthGuard, PermissionGuard]; 
 
 @Module({
     imports: [
@@ -54,11 +49,6 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     Assessment,
                 ]),
                 NestjsQueryMongooseModule.forFeature([
-                    {
-                        name: QuestionnaireVersion.name,
-                        schema: QuestionnaireVersionSchema,
-                        document: QuestionnaireVersion,
-                    },
                     {
                         name: Questionnaire.name,
                         schema: QuestionnaireSchema,
@@ -117,7 +107,6 @@ const guards = [GqlAuthGuard, PermissionGuard];
         QuestionnaireScriptService,
         QuestionnaireResolver,
         QuestionnaireAssessmentService,
-        QuestionnaireVersionService,
         AssessmentResolver,
         QuestionnaireBundleResolver,
         QuestionnaireBundleService,

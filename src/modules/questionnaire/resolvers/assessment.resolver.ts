@@ -13,9 +13,8 @@ import {
     ChangeAssessmentStatusInput,
 } from '../dtos/assessment.input';
 import { QuestionnaireAssessment } from '../models/questionnaire-assessment.schema';
-import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
-import { QuestionnaireAssessmentService } from '../services/questionnaire-assessment.service';
 import { Questionnaire } from '../models/questionnaire.schema';
+import { QuestionnaireAssessmentService } from '../services/questionnaire-assessment.service';
 import { AssessmentStatus } from '../enums/assessment-status.enum';
 
 @Resolver(() => QuestionnaireAssessment)
@@ -69,11 +68,7 @@ export class AssessmentResolver {
             await assessment
                 .populate({
                     path: 'questionnaires',
-                    model: QuestionnaireVersion.name,
-                    populate: {
-                        path: 'questionnaire',
-                        model: Questionnaire.name,
-                    },
+                    model: Questionnaire.name,
                 })
                 .execPopulate();
 
