@@ -14,8 +14,6 @@ export class QuestionnaireBundleService {
     constructor(
         @InjectModel(QuestionnaireBundle.name)
         private questionnaireBundleModel: Model<QuestionnaireBundle>,
-        @InjectModel(Questionnaire.name)
-        private questionnaireModel: Model<Questionnaire>,
     ) {}
 
     getById(_id: Types.ObjectId) {
@@ -32,7 +30,9 @@ export class QuestionnaireBundleService {
         const newQuestionnaireBundle = new this.questionnaireBundleModel();
         newQuestionnaireBundle.name = input.name;
         newQuestionnaireBundle.questionnaires = input.questionnaireIds;
-        return await newQuestionnaireBundle.save();
+        const questionnaire = await newQuestionnaireBundle.save()
+
+        return this.getById(questionnaire._id)
     }
 
     async list(query: QuestionniareBundleQuery) {
@@ -43,21 +43,7 @@ export class QuestionnaireBundleService {
                 model: Questionnaire.name,
             });
 
-        const populatedQuestionnaireBundles = await Promise.all(
-            questionnaireBundles.map(async bundle => {
-                await this.questionnaireModel.populate(
-                    bundle.questionnaires,
-                    {
-                        path: 'questionnaire',
-                        model: Questionnaire.name,
-                    },
-                );
-
-                return bundle;
-            }),
-        );
-
-        return applyQuery(populatedQuestionnaireBundles, query);
+        return applyQuery(questionnaireBundles, query);
     }
 
     deleteQuestionnaireBundle(id: string) {
@@ -79,6 +65,8 @@ export class QuestionnaireBundleService {
         questionnaireBundle.name = restInput.name;
         questionnaireBundle.questionnaires = restInput.questionnaireIds;
 
-        return questionnaireBundle.save();
+        await questionnaireBundle.save();
+
+        return this.getById(id)
     }
 }
