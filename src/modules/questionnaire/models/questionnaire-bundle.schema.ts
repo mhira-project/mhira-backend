@@ -2,7 +2,7 @@ import { FilterableField } from "@nestjs-query/query-graphql";
 import { Field, ObjectType } from "@nestjs/graphql";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Types } from "mongoose";
-import { QuestionnaireVersion } from "./questionnaire-version.schema";
+import { Questionnaire } from "./questionnaire.schema";
 
 @ObjectType()
 @Schema({ collection: "questionnaire_bundle", timestamps: true })
@@ -14,9 +14,9 @@ export class QuestionnaireBundle extends Document {
     @Prop({ type: 'string' })
     name: string;
 
-    @Field(() => [QuestionnaireVersion])
-    @Prop({ type: [Types.ObjectId], ref: QuestionnaireVersion.name })
-    questionnaires: Types.ObjectId[] | QuestionnaireVersion[];
+    @Field(() => [Questionnaire])
+    @Prop({ type: [Types.ObjectId], ref: Questionnaire.name })
+    questionnaires: Types.ObjectId[] | Questionnaire[];
 
     @FilterableField(() => Date)
     @Prop()
