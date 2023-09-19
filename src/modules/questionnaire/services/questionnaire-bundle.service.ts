@@ -5,7 +5,6 @@ import {
     UpdateQuestionnaireBundleInput,
 } from '../dtos/questionnaire-bundle.input';
 import { QuestionnaireBundle } from '../models/questionnaire-bundle.schema';
-import { QuestionnaireVersion } from '../models/questionnaire-version.schema';
 import { Questionnaire } from '../models/questionnaire.schema';
 import { QuestionniareBundleQuery } from '../resolvers/questionnaire-bundle.resolver';
 import { applyQuery } from '@nestjs-query/core';
@@ -15,8 +14,8 @@ export class QuestionnaireBundleService {
     constructor(
         @InjectModel(QuestionnaireBundle.name)
         private questionnaireBundleModel: Model<QuestionnaireBundle>,
-        @InjectModel(QuestionnaireVersion.name)
-        private questionnaireVersionModel: Model<QuestionnaireVersion>,
+        @InjectModel(Questionnaire.name)
+        private questionnaireModel: Model<Questionnaire>,
     ) {}
 
     getById(_id: Types.ObjectId) {
@@ -24,7 +23,7 @@ export class QuestionnaireBundleService {
             .findById(_id)
             .populate({
                 path: 'questionnaires',
-                model: QuestionnaireVersion.name,
+                model: Questionnaire.name,
             })
             .exec();
     }
@@ -41,12 +40,12 @@ export class QuestionnaireBundleService {
             .find()
             .populate({
                 path: 'questionnaires',
-                model: QuestionnaireVersion.name,
+                model: Questionnaire.name,
             });
 
         const populatedQuestionnaireBundles = await Promise.all(
             questionnaireBundles.map(async bundle => {
-                await this.questionnaireVersionModel.populate(
+                await this.questionnaireModel.populate(
                     bundle.questionnaires,
                     {
                         path: 'questionnaire',
