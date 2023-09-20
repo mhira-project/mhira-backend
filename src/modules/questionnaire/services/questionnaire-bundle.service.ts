@@ -48,7 +48,10 @@ export class QuestionnaireBundleService {
 
     deleteQuestionnaireBundle(id: string) {
         const _id = Types.ObjectId(id);
-        return this.questionnaireBundleModel.findByIdAndDelete(_id).exec();
+        return this.questionnaireBundleModel.findByIdAndDelete(_id).populate({
+            path: 'questionnaires',
+            model: Questionnaire.name,
+        }).exec();;
     }
 
     async updateQuestionnaireBundle(input: UpdateQuestionnaireBundleInput) {
