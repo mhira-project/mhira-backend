@@ -13,6 +13,7 @@ import { UserInputError } from 'apollo-server-express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
 import { Repository } from 'typeorm';
+import { QuestionnaireBundle } from '../models/questionnaire-bundle.schema';
 
 export class QuestionnaireAssessmentService {
     constructor(
@@ -26,7 +27,10 @@ export class QuestionnaireAssessmentService {
         private assessmentRepository: Repository<Assessment>,
     ) {}
 
-    async createNewAssessment(questionnaires: Types.ObjectId[]) {
+    async createNewAssessment(
+        questionnaires: Types.ObjectId[],
+        questionnaireBundles?: Types.ObjectId[],
+    ) {
         await Promise.all(
             questionnaires.map(async versionId => {
                 const questionnaireVersion = await this.questionnaireModel.findById(
@@ -48,7 +52,10 @@ export class QuestionnaireAssessmentService {
             }),
         );
 
-        return this.assessmentModel.create({ questionnaires });
+        return this.assessmentModel.create({
+            questionnaires,
+            questionnaireBundles,
+        });
     }
 
     /**
@@ -158,20 +165,27 @@ export class QuestionnaireAssessmentService {
         assessmentId: Types.ObjectId,
         status: AssessmentStatus,
     ) {
-        const assessmentModel = await this.assessmentModel.findById(assessmentId)
-        const assessment = await this.assessmentRepository.findOne({ where: { questionnaireAssessmentId: assessmentId } })
+        const assessmentModel = await this.assessmentModel.findById(
+            assessmentId,
+        );
+        const assessment = await this.assessmentRepository.findOne({
+            where: { questionnaireAssessmentId: assessmentId },
+        });
 
-        if (assessmentModel.status !== AssessmentStatus.COMPLETED && status === AssessmentStatus.COMPLETED) {
+        if (
+            assessmentModel.status !== AssessmentStatus.COMPLETED &&
+            status === AssessmentStatus.COMPLETED
+        ) {
             assessment.submissionDate = new Date();
         }
 
         if (assessment) {
-            assessment.status = status
+            assessment.status = status;
             await assessment.save();
         }
-        
-        assessmentModel.status = status
-        return assessmentModel.save()
+
+        assessmentModel.status = status;
+        return assessmentModel.save();
     }
 
     async deleteAssessment(_id: Types.ObjectId, archive = true) {
@@ -196,10 +210,16 @@ export class QuestionnaireAssessmentService {
         }
 
         return (populate
-            ? this.assessmentModel.findById(_id).populate({
-                  path: 'questionnaires',
-                  model: Questionnaire.name
-              })
+            ? this.assessmentModel.findById(_id).populate(
+                  {
+                      path: 'questionnaires',
+                      model: Questionnaire.name,
+                  },
+                  {
+                      path: 'questionnaireBundles',
+                      model: QuestionnaireBundle.name,
+                  },
+              )
             : this.assessmentModel.findById(_id)
         )
             .orFail()

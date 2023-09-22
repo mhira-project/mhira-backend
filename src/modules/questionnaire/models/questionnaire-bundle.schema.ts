@@ -18,6 +18,14 @@ export class QuestionnaireBundle extends Document {
     @Prop({ type: [Types.ObjectId], ref: Questionnaire.name })
     questionnaires: Types.ObjectId[] | Questionnaire[];
 
+    @Field(() => [Number], { nullable: true })
+    @Prop({ type: [Number] })
+    departmentIds: number[];
+
+    @Field(() => Number)
+    @Prop({ type: Number })
+    author: number;
+
     @FilterableField(() => Date)
     @Prop()
     createdAt: Date;
@@ -25,6 +33,9 @@ export class QuestionnaireBundle extends Document {
     @Field(() => Date)
     @Prop()
     updatedAt: Date;
+
+    @Field(() => Boolean, { defaultValue: false })
+    deleted: boolean;
 }
 
 export const QuestionnaireBundleSchema = SchemaFactory.createForClass(QuestionnaireBundle);

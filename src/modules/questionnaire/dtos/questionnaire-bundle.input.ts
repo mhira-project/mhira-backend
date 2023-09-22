@@ -9,7 +9,10 @@ export class CreateQuestionnaireBundleInput {
 
     @Field(() => [String])
     @ArrayNotEmpty()
-    questionnaireIds: Types.ObjectId[]
+    questionnaireIds: Types.ObjectId[];
+
+    @Field(() => [Number], { nullable: true })
+    departmentIds: number[]
 }
 
 @InputType()

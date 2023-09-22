@@ -108,21 +108,16 @@ export class QuestionnaireService {
         return applyQuery(questionnaires, query);
     }
 
-    async deleteQuestionnaire(_id: Types.ObjectId, softDelete = true) {
-        if (softDelete) {
-            // only create archive version as most recent version.
-            const version = await this.getById(_id)
+    async deleteQuestionnaire(_id: Types.ObjectId) {
+        const version = await this.getById(_id)
 
-            if (version.zombie) {
-                throw new Error('Questionnaire is already discarded.');
-            }
-
-            version.zombie = true;
-
-            return version.save();
+        if (version.zombie) {
+            throw new Error('Questionnaire is already discarded.');
         }
 
-        return this.questionnaireModel.findByIdAndDelete(_id).exec();
+        version.zombie = true;
+
+        return version.save();
     }
 
     private findUniqueQuestionnaire(
