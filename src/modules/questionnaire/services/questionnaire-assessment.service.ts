@@ -209,21 +209,20 @@ export class QuestionnaireAssessmentService {
             _id = Types.ObjectId(_id);
         }
 
-        return (populate
-            ? this.assessmentModel.findById(_id).populate(
-                  {
-                      path: 'questionnaires',
-                      model: Questionnaire.name,
-                  },
-                  {
-                      path: 'questionnaireBundles',
-                      model: QuestionnaireBundle.name,
-                  },
-              )
-            : this.assessmentModel.findById(_id)
-        )
-            .orFail()
-            .exec();
+        const query = this.assessmentModel.findById(_id)
+
+        if (populate) {
+            query.populate({
+                path: 'questionnaires',
+                model: Questionnaire.name,
+            });
+            query.populate({
+                path: 'questionnaireBundles',
+                model: QuestionnaireBundle.name,
+            });
+        }
+        
+        return query.orFail().exec();
     }
 
     async updateAssessment(
