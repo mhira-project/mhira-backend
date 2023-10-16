@@ -5,10 +5,9 @@ import { Answer } from '../models/answer.schema';
 import { QuestionnaireAssessment } from '../models/questionnaire-assessment.schema';
 import {
     QuestionnaireStatus,
-    QuestionnaireVersion,
-} from '../models/questionnaire-version.schema';
+    Questionnaire,
+} from '../models/questionnaire.schema';
 import { QuestionValidatorFactory } from '../helpers/question-validator.factory';
-import { Questionnaire } from '../models/questionnaire.schema';
 import { AssessmentStatus } from '../enums/assessment-status.enum';
 import { UserInputError } from 'apollo-server-express';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,8 +20,8 @@ export class QuestionnaireAssessmentService {
         private assessmentModel: Model<QuestionnaireAssessment>,
         @InjectModel(Answer.name)
         private answerModel: Model<Answer>,
-        @InjectModel(QuestionnaireVersion.name)
-        private questionnaireVersionModel: Model<QuestionnaireVersion>,
+        @InjectModel(Questionnaire.name)
+        private questionnaireModel: Model<Questionnaire>,
         @InjectRepository(Assessment)
         private assessmentRepository: Repository<Assessment>,
     ) {}
@@ -30,7 +29,7 @@ export class QuestionnaireAssessmentService {
     async createNewAssessment(questionnaires: Types.ObjectId[]) {
         await Promise.all(
             questionnaires.map(async versionId => {
-                const questionnaireVersion = await this.questionnaireVersionModel.findById(
+                const questionnaireVersion = await this.questionnaireModel.findById(
                     versionId,
                 );
 
@@ -79,23 +78,23 @@ export class QuestionnaireAssessmentService {
             );
         }
 
-        const questionnaireVersion: QuestionnaireVersion = await this.questionnaireVersionModel.findById(
+        const questionnaire: Questionnaire = await this.questionnaireModel.findById(
             assessmentAnswerInput.questionnaireVersionId,
         );
 
         if (
-            !questionnaireVersion ||
+            !questionnaire ||
             !(foundAssessment.questionnaires as Types.ObjectId[]).includes(
-                questionnaireVersion._id,
+                questionnaire._id,
             ) ||
             ![
                 QuestionnaireStatus.PUBLISHED,
                 QuestionnaireStatus.PRIVATE,
-            ].includes(questionnaireVersion.status)
+            ].includes(questionnaire.status)
         ) {
             throw new Error('Invalid questionnaire linked to this question.');
         }
-        const question = questionnaireVersion.questionGroups
+        const question = questionnaire.questionGroups
             .filter(
                 questionGroups =>
                     questionGroups.questions.filter(
@@ -199,11 +198,7 @@ export class QuestionnaireAssessmentService {
         return (populate
             ? this.assessmentModel.findById(_id).populate({
                   path: 'questionnaires',
-                  model: QuestionnaireVersion.name,
-                  populate: {
-                      path: 'questionnaire',
-                      model: Questionnaire.name,
-                  },
+                  model: Questionnaire.name
               })
             : this.assessmentModel.findById(_id)
         )

@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Answer, AnswerSchema } from './answer.schema';
 import { Document, Types } from 'mongoose';
 import { Field, ObjectType } from '@nestjs/graphql';
-import { QuestionnaireVersion } from './questionnaire-version.schema';
+import { Questionnaire } from './questionnaire.schema';
 import { AssessmentStatus } from '../enums/assessment-status.enum';
 
 @ObjectType()
@@ -23,9 +23,9 @@ export class QuestionnaireAssessment extends Document {
     })
     status: AssessmentStatus;
 
-    @Field(() => [QuestionnaireVersion])
-    @Prop({ type: [Types.ObjectId], ref: QuestionnaireVersion.name })
-    questionnaires: Types.ObjectId[] | QuestionnaireVersion[];
+    @Field(() => [Questionnaire])
+    @Prop({ type: [Types.ObjectId], ref: Questionnaire.name })
+    questionnaires: Types.ObjectId[] | Questionnaire[];
 
     @Field(() => [Answer])
     @Prop({ type: [AnswerSchema] })

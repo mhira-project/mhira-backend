@@ -6,20 +6,16 @@ import {
     CreateQuestionnaireInput,
     UpdateQuestionnaireInput,
 } from '../dtos/questionnaire.input';
-import { Questionnaire } from '../models/questionnaire.schema';
+import { Questionnaire, QuestionnaireStatus } from '../models/questionnaire.schema';
 
 import xlsx from 'node-xlsx';
 import { Question, QuestionType } from '../models/question.schema';
 import { QuestionGroup } from '../models/question-group.schema';
-import {
-    QuestionnaireStatus,
-    QuestionnaireVersion,
-} from '../models/questionnaire-version.schema';
 import { XLSForm } from '../helpers/xlsform-reader.helper';
 import { XlsFormQuestionFactory } from '../helpers/xlsform-questions.factory';
 import { FileUpload } from 'graphql-upload';
 import { applyQuery } from '@nestjs-query/core';
-import { QuestionniareVersionQuery } from '../resolvers/questionnaire.resolver';
+import { QuestionniareQuery } from '../resolvers/questionnaire.resolver';
 import { FileData } from '../dtos/xlsform.dto';
 
 @Injectable()
@@ -27,8 +23,6 @@ export class QuestionnaireService {
     constructor(
         @InjectModel(Questionnaire.name)
         private questionnaireModel: Model<Questionnaire>,
-        @InjectModel(QuestionnaireVersion.name)
-        private questionnaireVersionModel: Model<QuestionnaireVersion>,
         @InjectModel(QuestionGroup.name)
         private questionGroupModel: Model<QuestionGroup>,
         @InjectModel(Question.name)
@@ -47,19 +41,10 @@ export class QuestionnaireService {
         _id: Types.ObjectId,
         xlsForm: UpdateQuestionnaireInput,
     ) {
-        const version = await this.createNewVersion(
-            await this.questionnaireVersionModel.findById(_id),
-        );
+        const version = await this.questionnaireModel.findById(_id)
 
         Object.entries(xlsForm).forEach(
             ([key, value]) => (version[key] = value),
-        );
-
-        await this.questionnaireModel.updateOne(
-            { _id: version.questionnaire },
-            {
-                language: xlsForm.language,
-            },
         );
 
         return (await version.save())
@@ -70,29 +55,14 @@ export class QuestionnaireService {
             .execPopulate();
     }
 
-    getById(_id: Types.ObjectId) {
-        return this.questionnaireModel.findById(_id).exec();
+    public async getById(questionnaireId: Types.ObjectId) {
+        return this.questionnaireModel.findOne({ _id: questionnaireId })
     }
 
-    public async getNewestVersionById(questionnaireId: Types.ObjectId) {
-        return this.questionnaireVersionModel
-            .findOne({
-                questionnaire: questionnaireId,
-            })
-            .sort({
-                createdAt: -1,
-            })
-            .populate({ path: 'questionnaire', model: Questionnaire.name })
-            .exec();
-    }
-
-    async list(query: QuestionniareVersionQuery) {
-        let questionnaireVersions: QuestionnaireVersion[] = (
-            await this.questionnaireVersionModel.aggregate().group({
-                _id: '$questionnaire',
-                id: {
-                    $last: '$_id',
-                },
+    async list(query: QuestionniareQuery) {
+        const questionnaires: Questionnaire[] = (
+            await this.questionnaireModel.aggregate().group({
+                _id: '$_id',
                 createdAt: {
                     $last: '$createdAt',
                 },
@@ -122,79 +92,37 @@ export class QuestionnaireService {
                 },
                 description: {
                     $last: '$description'
+                },
+                language: {
+                    $last: '$language'
+                },
+                abbreviation: {
+                    $last: '$abbreviation'
+                },
+                zombie: {
+                    $last: '$zombie'
                 }
             })
-        ).map(version => {
-            version.questionnaire = version._id;
-            version._id = version.id;
-            delete version.id;
-
-            return version as QuestionnaireVersion;
-        });
-        // only return questionnaireVersions with existing questionnaire... <= cannot delete questionnaireVersions if you want to recreate the questions for statistic purposes
-        questionnaireVersions = questionnaireVersions.filter(
-            version => version.questionnaire !== null,
         );
 
-        const populatedQuestionnaires = await this.questionnaireVersionModel.populate(
-            questionnaireVersions,
-            {
-                path: 'questionnaire',
-                model: Questionnaire.name,
-            },
-        );
-
-        return applyQuery(populatedQuestionnaires, query);
+        return applyQuery(questionnaires, query);
     }
 
     async deleteQuestionnaire(_id: Types.ObjectId, softDelete = true) {
         if (softDelete) {
             // only create archive version as most recent version.
-            const version = await this.createNewVersion(
-                await this.getNewestVersionById(_id),
-            );
+            const version = await this.getById(_id)
 
-            if (version.status === QuestionnaireStatus.ARCHIVED) {
-                throw new Error('QUestionnaire is already archived.');
+            if (version.zombie) {
+                throw new Error('Questionnaire is already discarded.');
             }
 
-            version.status = QuestionnaireStatus.ARCHIVED;
+            version.zombie = true;
 
             return version.save();
         }
 
-        await this.questionnaireVersionModel
-            .updateMany(
-                { questionnaire: _id },
-                {
-                    questionnaire: null,
-                },
-            )
-            .exec();
-
         return this.questionnaireModel.findByIdAndDelete(_id).exec();
-    }
-
-    private async createNewVersion(version: QuestionnaireVersion) {
-        const newestVersionByQuestionnaire = await this.getNewestVersionById(
-            (version.questionnaire as Questionnaire)._id ??
-                (version.questionnaire as Types.ObjectId),
-        );
-
-        if (!version || !newestVersionByQuestionnaire._id.equals(version._id)) {
-            throw new Error(
-                'This version is invalid. Maybe this is not the newest version of questionnaire?',
-            );
-        }
-
-        version._id = Types.ObjectId();
-
-        version.isNew = true;
-
-        version.createdAt = null;
-        version.updatedAt = null;
-
-        return version;
     }
 
     private findUniqueQuestionnaire(
@@ -205,8 +133,9 @@ export class QuestionnaireService {
             .findOne({
                 language: language,
                 abbreviation: abbreviation,
+                zombie: { $ne: true }
             })
-            .exec();
+            .exec()
     }
 
     private async createQuestionnaireFromFileData(
@@ -227,34 +156,32 @@ export class QuestionnaireService {
             );
         }
 
-        const createdQuestionnaireVersion = new this.questionnaireVersionModel();
         const createdQuestionnaire = new this.questionnaireModel();
-        createdQuestionnaire.abbreviation = settings.form_id;
-        createdQuestionnaire.language = questionnaireInput.language;
 
-        createdQuestionnaireVersion.name =
+        createdQuestionnaire.name =
             questionnaireInput.name ?? settings.form_title;
 
-        createdQuestionnaireVersion.license = questionnaireInput.license;
+        createdQuestionnaire.license = questionnaireInput.license;
 
-        createdQuestionnaireVersion.copyright = questionnaireInput.copyright;
-        createdQuestionnaireVersion.timeToComplete =
+        createdQuestionnaire.copyright = questionnaireInput.copyright;
+        createdQuestionnaire.timeToComplete =
             questionnaireInput.timeToComplete;
-        createdQuestionnaireVersion.website = questionnaireInput.website;
-        createdQuestionnaireVersion.status =
+        createdQuestionnaire.website = questionnaireInput.website;
+        createdQuestionnaire.status =
             questionnaireInput.status ?? QuestionnaireStatus.DRAFT;
 
-        createdQuestionnaireVersion.keywords = questionnaireInput.keywords;
+        createdQuestionnaire.keywords = questionnaireInput.keywords;
 
-        createdQuestionnaireVersion.language = questionnaireInput.language;
-        createdQuestionnaireVersion.abbreviation = settings.form_id;
-        createdQuestionnaireVersion.description = questionnaireInput.description
+        createdQuestionnaire.language = questionnaireInput.language;
+        createdQuestionnaire.abbreviation = settings.form_id;
+        createdQuestionnaire.description = questionnaireInput.description;
+        createdQuestionnaire.zombie = false;
 
         let currentGroup: QuestionGroup = null;
 
         for (const questionData of xlsFormParsed.getQuestionData()) {
             if (questionData.type === QuestionType.END_GROUP) {
-                currentGroup && createdQuestionnaireVersion.questionGroups.push(currentGroup);
+                currentGroup && createdQuestionnaire.questionGroups.push(currentGroup);
                 currentGroup = null;
             } else {
                 const question = XlsFormQuestionFactory.createQuestion(
@@ -272,16 +199,7 @@ export class QuestionnaireService {
             }
         }
 
-        await createdQuestionnaire.save();
-
-        createdQuestionnaireVersion.questionnaire = createdQuestionnaire._id;
-
-        // first save the reference to the questionnaire, so no subdocument is created
-        await createdQuestionnaireVersion.save();
-
-        // reassign the questionnaire, so questionnaire fields can be accessed, without populating first. We already have the questionnaire ready.
-        createdQuestionnaireVersion.questionnaire = createdQuestionnaire;
-        return createdQuestionnaireVersion;
+        return createdQuestionnaire.save();
     }
 
     private readFileUpload(xlsForm: FileUpload): Promise<FileData[]> {
