@@ -134,7 +134,22 @@ export const systemPermissions = [
         key: 'DELETE_TEMPLATES',
         name: 'delete templates',
         group: 'Mail Templates'
-    }
+    },
+    {
+        key: 'VIEW_QUESTIONNAIRE_BUNDLES',
+        name: 'view questionnaire bundles',
+        group: 'Questionnaire Bundles',
+    },
+    {
+        key: 'MANAGE_QUESTIONNAIRE_BUNDLES',
+        name: 'manage questionnaire bundles',
+        group: 'Questionnaire Bundles',
+    },
+    {
+        key: 'DELETE_QUESTIONNAIRE_BUNDLES',
+        name: 'delete questionnaire bundles',
+        group: 'Questionnaire Bundles',
+    },
 ] as const;
 
 /**
