@@ -1,5 +1,5 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 import {
     CreateQuestionnaireBundleInput,
 } from '../dtos/questionnaire-bundle.input';
@@ -46,9 +46,15 @@ export class QuestionnaireBundleService {
         return this.getById(questionnaire._id)
     }
 
-    async list(query: QuestionniareBundleQuery) {
+    async list(query: QuestionniareBundleQuery, departmentIds: number[]) {
+        const findQuery: FilterQuery<QuestionnaireBundle> = { deleted: { $ne: true } }
+
+        if (!!departmentIds) {
+            findQuery.departmentIds = { $in: departmentIds }
+        }
+
         const questionnaireBundles: QuestionnaireBundle[] = await this.questionnaireBundleModel
-            .find({ deleted: { $ne: true }})
+            .find(findQuery)
             .populate({
                 path: 'questionnaires',
                 model: Questionnaire.name,

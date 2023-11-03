@@ -35,6 +35,7 @@ export class QuestionnaireBundle extends Document {
     updatedAt: Date;
 
     @Field(() => Boolean, { defaultValue: false })
+    @Prop()
     deleted: boolean;
 }
 
