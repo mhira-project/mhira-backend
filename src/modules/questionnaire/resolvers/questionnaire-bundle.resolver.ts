@@ -4,7 +4,7 @@ import { Types } from 'mongoose';
 import { QuestionnaireBundle } from '../models/questionnaire-bundle.schema';
 import { QuestionnaireBundleService } from '../services/questionnaire-bundle.service';
 import { SortDirection } from '@nestjs-query/core';
-import { CreateQuestionnaireBundleInput } from '../dtos/questionnaire-bundle.input';
+import { CreateQuestionnaireBundleInput, UpdateQuestionnaireBundleInput } from '../dtos/questionnaire-bundle.input';
 import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
 import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
 import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
@@ -71,10 +71,9 @@ export class QuestionnaireBundleResolver {
         return this.questionnaireBundleService.deleteQuestionnaireBundle(id);
     }
 
-    // QUESTIONNAIRE BUNDLE UPDATE
-    // @Mutation(() => QuestionnaireBundle)
-    // @UsePermission(PermissionEnum.MANAGE_QUESTIONNAIRES)
-    // updateQuestionnaireBundle(@Args('input') input: UpdateQuestionnaireBundleInput) {
-    //     return this.questionnaireBundleService.updateQuestionnaireBundle(input)
-    // }
+    @Mutation(() => QuestionnaireBundle)
+    @UsePermission(PermissionEnum.MANAGE_QUESTIONNAIRES)
+    updateQuestionnaireBundle(@Args('input') input: UpdateQuestionnaireBundleInput) {
+        return this.questionnaireBundleService.updateQuestionnaireBundle(input)
+    }
 }
