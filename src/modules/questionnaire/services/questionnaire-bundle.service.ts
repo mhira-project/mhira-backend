@@ -1,7 +1,7 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, Types } from 'mongoose';
 import {
-    CreateQuestionnaireBundleInput,
+    CreateQuestionnaireBundleInput, UpdateQuestionnaireBundleInput,
 } from '../dtos/questionnaire-bundle.input';
 import { QuestionnaireBundle } from '../models/questionnaire-bundle.schema';
 import { Questionnaire } from '../models/questionnaire.schema';
@@ -73,23 +73,22 @@ export class QuestionnaireBundleService {
         return questionnaireBundle.save();
     }
 
-    // QUESTIONNAIRE BUNDLE UPDATE
-    // async updateQuestionnaireBundle(input: UpdateQuestionnaireBundleInput) {
-    //     const { _id, ...restInput } = input;
-    //     const id = Types.ObjectId(_id);
-    //     const questionnaireBundle = await this.questionnaireBundleModel.findById(
-    //         id,
-    //     );
+    async updateQuestionnaireBundle(input: UpdateQuestionnaireBundleInput) {
+        const { _id, ...restInput } = input;
+        const id = Types.ObjectId(_id);
+        const questionnaireBundle = await this.questionnaireBundleModel.findById(
+            id,
+        );
 
-    //     if (!questionnaireBundle) {
-    //         throw new NotFoundException();
-    //     }
+        if (!questionnaireBundle) {
+            throw new NotFoundException();
+        }
 
-    //     questionnaireBundle.name = restInput.name;
-    //     questionnaireBundle.questionnaires = restInput.questionnaireIds;
+        questionnaireBundle.name = restInput.name;
+        questionnaireBundle.questionnaires = restInput.questionnaireIds;
 
-    //     await questionnaireBundle.save();
+        await questionnaireBundle.save();
 
-    //     return this.getById(id)
-    // }
+        return this.getById(id)
+    }
 }
