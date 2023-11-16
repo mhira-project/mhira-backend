@@ -84,8 +84,15 @@ export class QuestionnaireBundleService {
             throw new NotFoundException();
         }
 
+        const departments = await Department.count({ where: { id: In(input.departmentIds) }});
+
+        if (input.departmentIds.length !== departments) {
+            throw new NotFoundException('One of the departments does not exist!')
+        }
+
         questionnaireBundle.name = restInput.name;
         questionnaireBundle.questionnaires = restInput.questionnaireIds;
+        questionnaireBundle.departmentIds = restInput.departmentIds;
 
         await questionnaireBundle.save();
 
