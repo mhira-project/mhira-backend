@@ -79,10 +79,8 @@ export class QuestionnaireResolver {
     @UsePermission(PermissionEnum.DELETE_QUESTIONNAIRES)
     async deleteQuestionnaire(
         @Args('_id', { type: () => String }) questionnaireId: string,
-        @Args('softDelete', { type: () => Boolean, defaultValue: true })
-        softDelete: boolean,
     ) {
         const _id = Types.ObjectId(questionnaireId);
-        return this.questionnaireService.deleteQuestionnaire(_id, softDelete);
+        return this.questionnaireService.deleteQuestionnaire(_id);
     }
 }

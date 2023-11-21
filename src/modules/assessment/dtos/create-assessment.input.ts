@@ -21,6 +21,15 @@ export class CreateAssessmentInput {
     informantId?: number;
 }
 
+@InputType() 
+export class Dates {
+    @Field(() => GraphQLISODateTime, { nullable: true })
+    expirationDate: Date;
+
+    @Field(() => GraphQLISODateTime, { nullable: true })
+    deliveryDate: Date;
+}
+
 @InputType()
 export class CreateFullAssessmentInput {
     @Field(() => Int)
@@ -51,6 +60,9 @@ export class CreateFullAssessmentInput {
     @ArrayNotEmpty()
     questionnaires: Types.ObjectId[];
 
+    @Field(() => [String], { nullable: true })
+    questionnaireBundles: Types.ObjectId[];
+
     @Field(() => [Dates])
     dates: Dates[]
 
@@ -59,15 +71,6 @@ export class CreateFullAssessmentInput {
 
     @Field(() => String, { nullable: true })
     receiverEmail: string;
-}
-
-@InputType() 
-export class Dates {
-    @Field(() => GraphQLISODateTime, { nullable: true })
-    expirationDate: Date;
-
-    @Field(() => GraphQLISODateTime, { nullable: true })
-    deliveryDate: Date;
 }
 
 @InputType()

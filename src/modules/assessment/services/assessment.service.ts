@@ -165,6 +165,7 @@ export class AssessmentService {
             // create mongo assessment
             const questionnaireAssessment = await this.questionnaireAssessmentService.createNewAssessment(
                 assessmentInput.questionnaires,
+                assessmentInput.questionnaireBundles
             );
 
             const d1 = new Date(assessmentInput?.dates[i].deliveryDate),
