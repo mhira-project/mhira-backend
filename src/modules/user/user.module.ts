@@ -7,6 +7,7 @@ import { UserCrudResolver } from './resolvers/user-crud.resolver';
 import { SettingModule } from '../setting/setting.module';
 import { ChangePasswordService } from './providers/change-password.service';
 import { ChangePasswordResolver } from './resolvers/change-password.resolver';
+import { TenantModule } from 'src/tenant/tenant.module';
 
 @Injectable()
 export class UserAuthorizer implements Authorizer<User> {
@@ -29,6 +30,7 @@ export class UserAuthorizer implements Authorizer<User> {
             // describe the resolvers you want to expose
             resolvers: [],
         }),
+        TenantModule,
     ],
     providers: [
         UserCrudService,

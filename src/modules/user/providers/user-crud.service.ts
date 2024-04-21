@@ -1,24 +1,31 @@
 import { QueryService } from '@nestjs-query/core';
 import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository,Connection } from 'typeorm';
 import { User } from '../models/user.model';
 import * as moment from 'moment';
 import { CreateUserInput } from '../dto/create-user.input';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, Inject } from '@nestjs/common';
 import { Role } from 'src/modules/permission/models/role.model';
 import { RoleCode } from 'src/modules/permission/enums/role-code.enum';
 import { UpdateUserInput } from '../dto/update-user.input';
 import { PermissionService } from 'src/modules/permission/providers/permission.service';
 import {Hash} from "../../../shared";
+import { CONNECTION } from 'src/tenant/tenant.module';
 
 @QueryService(User)
 export class UserCrudService extends TypeOrmQueryService<User> {
-    constructor(@InjectRepository(User) repo: Repository<User>) {
-        // pass the use soft delete option to the service.
-        super(repo);
+    public readonly repo : Repository<User>;
+    constructor(
+        @Inject(CONNECTION) private connection: Connection,
+        @InjectRepository(User) private readonly userRepository: Repository<User>,
+        ) {
+           
+            super(connection.getRepository(User));
+            this.repo = connection.getRepository(User)
+            
     }
-
+    
     async createOne(input: CreateUserInput): Promise<User> {
         // Check duplicate username exists
         const exists = await super.query({

@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Injectable, MiddlewareConsumer, Module, NestMiddleware, NestModule } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { join } from 'path';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -22,6 +22,25 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MailModule } from './modules/mail/mail.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TenantModule } from './tenant/tenant.module';
+import { NextFunction } from 'express';
+
+
+@Injectable()
+export class SubdomainMiddleware implements NestMiddleware {
+  use(req: Request, res: Response, next: NextFunction) {
+    const hostHeader = req.headers['host'] as string;
+    console.log('hostHeader', hostHeader)
+    // Extract subdomain from the host
+    const subdomain = hostHeader.split('.')[0];
+
+    // Inject the subdomain into the request object
+    req['subdomain'] = subdomain;
+
+    next();
+  }
+}
+
 
 @Module({
     imports: [
@@ -61,6 +80,7 @@ import { ScheduleModule } from '@nestjs/schedule';
                 );
             },
         }),
+        TenantModule,
         UserModule,
         AuthModule,
         SharedModule,
@@ -81,5 +101,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
         consumer.apply(graphqlUploadExpress()).forRoutes('graphql');
+        consumer.apply(SubdomainMiddleware).forRoutes('*');
     }
 }
