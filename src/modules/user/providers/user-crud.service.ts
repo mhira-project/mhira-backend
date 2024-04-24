@@ -1,22 +1,28 @@
 import { QueryService } from '@nestjs-query/core';
 import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 import { User } from '../models/user.model';
 import * as moment from 'moment';
 import { CreateUserInput } from '../dto/create-user.input';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Scope } from '@nestjs/common';
 import { Role } from 'src/modules/permission/models/role.model';
 import { RoleCode } from 'src/modules/permission/enums/role-code.enum';
 import { UpdateUserInput } from '../dto/update-user.input';
 import { PermissionService } from 'src/modules/permission/providers/permission.service';
-import {Hash} from "../../../shared";
+import { Hash } from "../../../shared";
+import { CONNECTION } from 'src/tenant/tenant.module';
 
 @QueryService(User)
+@Injectable({ scope: Scope.REQUEST })
 export class UserCrudService extends TypeOrmQueryService<User> {
-    constructor(@InjectRepository(User) repo: Repository<User>) {
-        // pass the use soft delete option to the service.
-        super(repo);
+    private roleRepository: Repository<Role>;
+    private userRepository: Repository<User>;
+
+    constructor(@Inject(CONNECTION) private connection: Connection) {
+        super(connection.getRepository(User));
+        this.roleRepository = connection.getRepository(Role);
+        this.userRepository = connection.getRepository(User);
     }
 
     async createOne(input: CreateUserInput): Promise<User> {
@@ -25,6 +31,10 @@ export class UserCrudService extends TypeOrmQueryService<User> {
             filter: { username: { iLike: input.username } }, // case in-sensitive match username
         });
 
+        console.log('connection.name', this.connection.name)
+        console.log('connection.name', this.repo.manager.connection.name)
+
+        console.log(this.repo.manager.connection.name)
         if (exists.length > 0) {
             throw new BadRequestException('Username already exists');
         }
@@ -34,7 +44,7 @@ export class UserCrudService extends TypeOrmQueryService<User> {
         user.passwordExpiresAt = moment().toDate();
         user.password = await Hash.make(user.password);
 
-        const defaultRole = await Role.findOne({ code: RoleCode.NO_ROLE });
+        const defaultRole = await this.roleRepository.findOne({ code: RoleCode.NO_ROLE });
 
         if (defaultRole) {
             user.roles = [defaultRole];
@@ -94,6 +104,15 @@ export class UserCrudService extends TypeOrmQueryService<User> {
 
         const user = await super.deleteOne(id)
         return !!user;
+    }
+
+    async findOneUser(username: string): Promise<User> {
+        return this.userRepository.findOne({
+            relations: ['roles'],
+            where: {
+                username: username,
+            },
+        });
     }
 
     passwordChangeRequired(user: User): boolean {
