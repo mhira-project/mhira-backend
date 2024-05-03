@@ -125,6 +125,22 @@ export class Assessment extends BaseEntity {
     @Column()
     mailTemplateId: number
 
+    @Field(() => String, { nullable: true })
+    @Column()
+    consentDescription?: string;
+
+    @Field(() => String, { nullable: true })
+    @Column()
+    consentCheckbox1?: string;
+
+    @Field(() => String, { nullable: true })
+    @Column()
+    consentCheckbox2?: string;
+
+    @Field(() => String, { nullable: true })
+    @Column()
+    submitContent?: string;
+
     @BeforeInsert()
     private generateUuid() {
         this.uuid = uuidv4();
@@ -201,7 +217,7 @@ export class FullPublicAssessment {
 
     @Field(() => GraphQLISODateTime, { nullable: true })
     expirationDate: Date;
-    
+
     @Field(() => String, { nullable: true })
     informantType?: string;
 
@@ -210,6 +226,18 @@ export class FullPublicAssessment {
 
     @Field(() => AssessmentType, { nullable: true })
     assessmentType: AssessmentType;
+
+    @Field(() => String, { nullable: true })
+    consentDescription?: string;
+
+    @Field(() => String, { nullable: true })
+    consentCheckbox1?: string;
+
+    @Field(() => String, { nullable: true })
+    consentCheckbox2?: string;
+
+    @Field(() => String, { nullable: true })
+    submitContent?: string;
 }
 
 @ObjectType()
@@ -217,6 +245,6 @@ export class AssessmentResponse extends Assessment {
     @Field(() => String)
     assessmentId: string;
 
-     @Field(() => AssessmentType, { nullable: true })
+    @Field(() => AssessmentType, { nullable: true })
     assessmentType: AssessmentType;
 }

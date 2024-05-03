@@ -25,7 +25,7 @@ export class QuestionnaireAssessmentService {
         private questionnaireModel: Model<Questionnaire>,
         @InjectRepository(Assessment)
         private assessmentRepository: Repository<Assessment>,
-    ) {}
+    ) { }
 
     async createNewAssessment(
         questionnaires: Types.ObjectId[],
@@ -188,16 +188,38 @@ export class QuestionnaireAssessmentService {
         return assessmentModel.save();
     }
 
+    async setAssessmentAcceptedConsentDate(
+        assessmentId: Types.ObjectId
+    ) {
+        const assessmentMongo = await this.assessmentModel.findById(assessmentId);
+
+        const assessment = await this.assessmentRepository.findOne({
+            where: { questionnaireAssessmentId: assessmentId },
+        });
+
+        if (!assessment) {
+            throw new Error('Assessment not found');
+        }
+
+        assessmentMongo.consentTimestamp = new Date();
+        assessmentMongo.acceptedConsentContent = {
+            description: assessment.consentDescription,
+            checkbox1: assessment.consentCheckbox1,
+            checkbox2: assessment.consentCheckbox2,
+        }
+        return assessmentMongo.save();
+    }
+
     async deleteAssessment(_id: Types.ObjectId, archive = true) {
         const assessment = await this.assessmentModel.findById(_id);
 
         return (archive
             ? this.assessmentModel.findByIdAndUpdate(_id, {
-                  status:
-                      assessment?.status !== AssessmentStatus.COMPLETED
-                          ? AssessmentStatus.CANCELLED
-                          : assessment?.status,
-              })
+                status:
+                    assessment?.status !== AssessmentStatus.COMPLETED
+                        ? AssessmentStatus.CANCELLED
+                        : assessment?.status,
+            })
             : this.assessmentModel.findByIdAndDelete(_id)
         )
             .orFail()
@@ -221,7 +243,7 @@ export class QuestionnaireAssessmentService {
                 model: QuestionnaireBundle.name,
             });
         }
-        
+
         return query.orFail().exec();
     }
 

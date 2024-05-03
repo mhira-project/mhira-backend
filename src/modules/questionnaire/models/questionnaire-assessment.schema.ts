@@ -5,6 +5,7 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { Questionnaire } from './questionnaire.schema';
 import { AssessmentStatus } from '../enums/assessment-status.enum';
 import { QuestionnaireBundle } from './questionnaire-bundle.schema';
+import { ConsentContent } from './consent-content.schema';
 
 @ObjectType()
 @Schema({ collection: 'assessments', timestamps: true })
@@ -35,6 +36,14 @@ export class QuestionnaireAssessment extends Document {
     @Field(() => [Answer])
     @Prop({ type: [AnswerSchema] })
     answers: Answer[];
+
+    @Field(() => Date, { nullable: true })
+    @Prop()
+    consentTimestamp?: Date;
+
+    @Field(() => ConsentContent, { nullable: true })
+    @Prop()
+    acceptedConsentContent?: ConsentContent;
 }
 
 export const AssessmentSchema = SchemaFactory.createForClass(
