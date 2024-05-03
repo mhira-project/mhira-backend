@@ -19,7 +19,7 @@ import { AssessmentStatus } from '../enums/assessment-status.enum';
 
 @Resolver(() => QuestionnaireAssessment)
 export class AssessmentResolver {
-    constructor(private assessmentService: QuestionnaireAssessmentService) {}
+    constructor(private assessmentService: QuestionnaireAssessmentService) { }
 
     @Query(() => QuestionnaireAssessment)
     getAssessment(
@@ -47,6 +47,15 @@ export class AssessmentResolver {
         return this.assessmentService.changeAssessmentStatus(
             assessmentId,
             status,
+        );
+    }
+
+    @Mutation(() => QuestionnaireAssessment)
+    setAssessmentAcceptedConsentDate(
+        @Args('_id', { type: () => String }) assessmentId: Types.ObjectId,
+    ): Promise<QuestionnaireAssessment> {
+        return this.assessmentService.setAssessmentAcceptedConsentDate(
+            assessmentId,
         );
     }
 

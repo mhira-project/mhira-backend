@@ -43,7 +43,7 @@ export class AssessmentService {
         @InjectRepository(AssessmentType)
         private readonly assessmentTypeRepo: Repository<AssessmentType>,
         private readonly patientQueryService: PatientQueryService,
-    ) {}
+    ) { }
 
     getQuestionnaireAssessment(id: string) {
         return this.questionnaireAssessmentService.getById(id);
@@ -189,6 +189,10 @@ export class AssessmentService {
                 assessment.expirationDate =
                     assessmentInput.dates[i].expirationDate;
                 assessment.note = assessmentInput.note;
+                assessment.consentCheckbox1 = assessmentInput.consentCheckbox1;
+                assessment.consentCheckbox2 = assessmentInput.consentCheckbox2;
+                assessment.consentDescription = assessmentInput.consentDescription;
+                assessment.submitContent = assessmentInput.submitContent;
                 assessment.deliveryDate = assessmentInput.dates[i].deliveryDate;
                 assessment.questionnaireAssessmentId =
                     questionnaireAssessment.id;
@@ -318,6 +322,11 @@ export class AssessmentService {
             assessment.note = assessmentInput.note;
             assessment.informantCaregiverRelation = null;
             assessment.informantClinician = null;
+            assessment.consentCheckbox1 = assessmentInput.consentCheckbox1;
+            assessment.consentCheckbox2 = assessmentInput.consentCheckbox2;
+            assessment.consentDescription = assessmentInput.consentDescription;
+            assessment.submitContent = assessmentInput.submitContent;
+
             if (assessmentInput.informantClinicianId) {
                 const clinician = await this.userRepository.findOne({
                     id: assessmentInput.informantClinicianId,
@@ -470,7 +479,7 @@ export class AssessmentService {
             expirationToDate < newDate &&
             questionnaireAssessment?.status !== AssessmentStatus.COMPLETED &&
             questionnaireAssessment?.status !==
-                AssessmentStatus.PARTIALLY_COMPLETED
+            AssessmentStatus.PARTIALLY_COMPLETED
         ) {
             await this.questionnaireAssessmentService.changeAssessmentStatus(
                 assessment.questionnaireAssessmentId,
