@@ -14,6 +14,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
 import { Repository } from 'typeorm';
 import { QuestionnaireBundle } from '../models/questionnaire-bundle.schema';
+import { Consent } from 'src/modules/consent/models/consent.model';
 
 export class QuestionnaireAssessmentService {
     constructor(
@@ -25,6 +26,8 @@ export class QuestionnaireAssessmentService {
         private questionnaireModel: Model<Questionnaire>,
         @InjectRepository(Assessment)
         private assessmentRepository: Repository<Assessment>,
+        @InjectRepository(Consent)
+        private consentRepository: Repository<Consent>,
     ) { }
 
     async createNewAssessment(
@@ -200,12 +203,14 @@ export class QuestionnaireAssessmentService {
         if (!assessment) {
             throw new Error('Assessment not found');
         }
+        const consentId = assessment.consentId;
+        const consent = await this.consentRepository.findOne(consentId);
 
         assessmentMongo.consentTimestamp = new Date();
         assessmentMongo.acceptedConsentContent = {
-            description: assessment.consentDescription,
-            checkbox1: assessment.consentCheckbox1,
-            checkbox2: assessment.consentCheckbox2,
+            description: consent.description,
+            checkbox1: consent.consent1,
+            checkbox2: consent.consent2,
         }
         return assessmentMongo.save();
     }

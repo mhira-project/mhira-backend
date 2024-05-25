@@ -37,8 +37,10 @@ import {
 } from './models/questionnaire-bundle.schema';
 import { QuestionnaireBundleResolver } from './resolvers/questionnaire-bundle.resolver';
 import { QuestionnaireBundleService } from './services/questionnaire-bundle.service';
+import { Consent } from '../consent/models/consent.model';
+import { ConsentService } from '../consent/providers/consent.service';
 
-const guards = [GqlAuthGuard, PermissionGuard]; 
+const guards = [GqlAuthGuard, PermissionGuard];
 
 @Module({
     imports: [
@@ -47,6 +49,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
                 NestjsQueryTypeOrmModule.forFeature([
                     QuestionnaireScript,
                     Assessment,
+                    Consent,
                 ]),
                 NestjsQueryMongooseModule.forFeature([
                     {
@@ -110,7 +113,8 @@ const guards = [GqlAuthGuard, PermissionGuard];
         AssessmentResolver,
         QuestionnaireBundleResolver,
         QuestionnaireBundleService,
+        ConsentService,
     ],
     exports: [QuestionnaireScriptService],
 })
-export class QuestionnaireModule {}
+export class QuestionnaireModule { }

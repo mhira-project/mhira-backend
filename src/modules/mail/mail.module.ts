@@ -19,6 +19,8 @@ import {
   Questionnaire,
   QuestionnaireSchema,
 } from '../questionnaire/models/questionnaire.schema';
+import { ConsentService } from '../consent/providers/consent.service';
+import { Consent } from '../consent/models/consent.model';
 
 @Module({
   imports: [
@@ -26,17 +28,18 @@ import {
       imports: [
         NestjsQueryTypeOrmModule.forFeature([
           MailTemplate,
-          Assessment
+          Assessment,
+          Consent,
         ]),
         MongooseModule.forFeature([
           {
-              name: QuestionnaireAssessment.name,
-              schema: AssessmentSchema,
+            name: QuestionnaireAssessment.name,
+            schema: AssessmentSchema,
           },
           { name: Answer.name, schema: AnswerSchema },
           {
-              name: Questionnaire.name,
-              schema: QuestionnaireSchema,
+            name: Questionnaire.name,
+            schema: QuestionnaireSchema,
           },
         ]),
       ],
@@ -55,4 +58,4 @@ import {
   ],
   providers: [MailResolver, MailTemplateService, SendMailService, QuestionnaireAssessmentService]
 })
-export class MailModule {}
+export class MailModule { }
