@@ -24,7 +24,7 @@ export class Consent extends BaseEntity {
     @Column()
     consent1: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Column()
     consent2: string;
 
@@ -32,7 +32,7 @@ export class Consent extends BaseEntity {
     @Column()
     description: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Column()
     submitContent: string;
 
