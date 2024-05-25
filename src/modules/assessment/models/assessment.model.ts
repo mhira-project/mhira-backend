@@ -21,6 +21,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { AssessmentInformant } from '../enums/assessment-informant.enum';
 import { AssessmentType } from './assessment-type.model';
 import { MailTemplate } from 'src/modules/mail/models/mail-template.model';
+import { Consent } from 'src/modules/consent/models/consent.model';
 
 @ObjectType()
 @FilterableRelation('patient', () => Patient)
@@ -141,6 +142,10 @@ export class Assessment extends BaseEntity {
     @Column()
     submitContent?: string;
 
+    @FilterableField(() => Int, { nullable: true })
+    @Column()
+    consentId?: number;
+
     @BeforeInsert()
     private generateUuid() {
         this.uuid = uuidv4();
@@ -238,6 +243,9 @@ export class FullPublicAssessment {
 
     @Field(() => String, { nullable: true })
     submitContent?: string;
+
+    @Field(() => Number, { nullable: true })
+    consentId?: number;
 }
 
 @ObjectType()
@@ -247,4 +255,7 @@ export class AssessmentResponse extends Assessment {
 
     @Field(() => AssessmentType, { nullable: true })
     assessmentType: AssessmentType;
+
+    @Field(() => Consent, { nullable: true })
+    consent: Consent;
 }

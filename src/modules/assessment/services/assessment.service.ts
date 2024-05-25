@@ -183,6 +183,7 @@ export class AssessmentService {
 
                 assessment.status = AssessmentStatus.OPEN_FOR_COMPLETION;
                 assessment.assessmentType = assessmentType;
+                assessment.consentId = assessmentInput.consentId
                 assessment.patientId = assessmentInput.patientId;
                 assessment.clinicianId = assessmentInput.clinicianId;
                 assessment.informantType = assessmentInput.informantType;
@@ -313,6 +314,7 @@ export class AssessmentService {
         try {
             // update postgres assessment
             assessment.assessmentType = assessmentType;
+            assessment.consentId = assessmentInput.consentId;
             assessment.patientId = assessmentInput.patientId;
             assessment.clinicianId = assessmentInput.clinicianId;
             assessment.informantType = assessmentInput.informantType;

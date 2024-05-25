@@ -24,6 +24,7 @@ import { Caregiver } from '../caregiver/models/caregiver.model';
 import { AssessmentTypeService } from './services/assessment-type.service';
 import { AssessmentTypeResolver } from './resolvers/assessment-type.resolver';
 import { AssessmentType } from './models/assessment-type.model';
+import { Consent } from '../consent/models/consent.model';
 
 const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
@@ -37,6 +38,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     User,
                     Caregiver,
                     AssessmentType,
+                    Consent,
                 ]),
 
                 MongooseModule.forFeature([
@@ -76,4 +78,4 @@ const guards = [GqlAuthGuard, PermissionGuard];
         PublicAssessmentResolver,
     ],
 })
-export class AssessmentModule {}
+export class AssessmentModule { }

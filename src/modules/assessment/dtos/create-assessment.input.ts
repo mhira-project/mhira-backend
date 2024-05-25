@@ -83,6 +83,9 @@ export class CreateFullAssessmentInput {
 
     @Field(() => String, { nullable: true })
     submitContent?: string;
+
+    @Field(() => Int, { nullable: true })
+    consentId?: number;
 }
 
 @InputType()

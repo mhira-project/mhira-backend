@@ -18,6 +18,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CaregiverModule } from './modules/caregiver/caregiver.module';
 import { ReportModule } from './modules/report/report.module';
 import { DisclaimerModule } from './modules/disclaimer/disclaimer.module';
+import { ConsentModule } from './modules/consent/consent.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MailModule } from './modules/mail/mail.module';
@@ -73,6 +74,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         CaregiverModule,
         ReportModule,
         DisclaimerModule,
+        ConsentModule,
         MailModule,
     ],
     controllers: [],

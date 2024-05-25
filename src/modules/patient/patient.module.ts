@@ -32,6 +32,7 @@ import {
 import { QuestionnaireModule } from '../questionnaire/questionnaire.module';
 import { PatientStatusService } from './providers/patient-status.service';
 import { Assessment } from '../assessment/models/assessment.model';
+import { Consent } from '../consent/models/consent.model';
 
 const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
@@ -47,6 +48,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     Informant,
                     EmergencyContact,
                     PatientStatus,
+                    Consent,
                 ]),
                 MongooseModule.forFeature([
                     {
@@ -165,4 +167,4 @@ const guards = [GqlAuthGuard, PermissionGuard];
     ],
     exports: [PatientQueryService],
 })
-export class PatientModule {}
+export class PatientModule { }
