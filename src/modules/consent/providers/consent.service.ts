@@ -6,7 +6,6 @@ import { CreateOneConsentInput, DeleteOneConsentInput, UpdateOneConsentInput } f
 export class ConsentService {
     async getConsents(): Promise<Consent[]> {
         const data = await Consent.find();
-        console.log('data', data)
         return data;
     }
 
@@ -21,6 +20,8 @@ export class ConsentService {
         consent.consent1 = input.consent1;
         consent.consent2 = input.consent2;
         consent.submitContent = input.submitContent;
+        consent.title = input.title;
+        consent.acceptLabel = input.acceptLabel;
 
         await consent.save();
 
@@ -35,6 +36,8 @@ export class ConsentService {
         consent.consent1 = input.consent1;
         consent.consent2 = input.consent2;
         consent.submitContent = input.submitContent;
+        consent.title = input.title;
+        consent.acceptLabel = input.acceptLabel;
 
         await consent.save();
 
