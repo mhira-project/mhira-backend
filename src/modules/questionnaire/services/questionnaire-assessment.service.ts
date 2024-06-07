@@ -211,6 +211,7 @@ export class QuestionnaireAssessmentService {
             description: consent.description,
             checkbox1: consent.consent1,
             checkbox2: consent.consent2,
+            name: consent.name,
         }
         return assessmentMongo.save();
     }

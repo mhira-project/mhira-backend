@@ -28,6 +28,14 @@ export class Consent extends BaseEntity {
     @Column()
     consent2: string;
 
+    @Field(() => String, { nullable: true })
+    @Column()
+    title: string;
+
+    @Field(() => String, { nullable: true })
+    @Column()
+    acceptLabel: string;
+
     @Field(() => String)
     @Column()
     description: string;

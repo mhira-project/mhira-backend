@@ -16,6 +16,12 @@ export class CreateOneConsentInput {
 
     @Field(() => String, { nullable: true })
     submitContent: string;
+
+    @Field(() => String, { nullable: true })
+    title: string;
+
+    @Field(() => String, { nullable: true })
+    acceptLabel: string;
 }
 
 @InputType()
@@ -37,6 +43,12 @@ export class UpdateOneConsentInput {
 
     @Field(() => String, { nullable: true })
     submitContent: string;
+
+    @Field(() => String, { nullable: true })
+    title: string;
+
+    @Field(() => String, { nullable: true })
+    acceptLabel: string;
 }
 
 @InputType()
