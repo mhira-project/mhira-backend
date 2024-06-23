@@ -15,6 +15,21 @@ export class CreateOneConsentInput {
     consent2: string;
 
     @Field(() => String, { nullable: true })
+    consent3: string;
+
+    @Field(() => String, { nullable: true })
+    consent4: string;
+
+    @Field(() => String, { nullable: true })
+    consent5: string;
+
+    @Field(() => String, { nullable: true })
+    consent6: string;
+
+    @Field(() => String, { nullable: true })
+    consent7: string;
+
+    @Field(() => String, { nullable: true })
     submitContent: string;
 
     @Field(() => String, { nullable: true })
@@ -22,6 +37,9 @@ export class CreateOneConsentInput {
 
     @Field(() => String, { nullable: true })
     acceptLabel: string;
+
+    @Field(() => String, { nullable: true })
+    submitLabel: string;
 }
 
 @InputType()
@@ -42,6 +60,21 @@ export class UpdateOneConsentInput {
     consent2: string;
 
     @Field(() => String, { nullable: true })
+    consent3: string;
+
+    @Field(() => String, { nullable: true })
+    consent4: string;
+
+    @Field(() => String, { nullable: true })
+    consent5: string;
+
+    @Field(() => String, { nullable: true })
+    consent6: string;
+
+    @Field(() => String, { nullable: true })
+    consent7: string;
+
+    @Field(() => String, { nullable: true })
     submitContent: string;
 
     @Field(() => String, { nullable: true })
@@ -49,6 +82,9 @@ export class UpdateOneConsentInput {
 
     @Field(() => String, { nullable: true })
     acceptLabel: string;
+
+    @Field(() => String, { nullable: true })
+    submitLabel: string;
 }
 
 @InputType()
