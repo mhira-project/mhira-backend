@@ -19,9 +19,15 @@ export class ConsentService {
         consent.description = input.description;
         consent.consent1 = input.consent1;
         consent.consent2 = input.consent2;
+        consent.consent3 = input.consent3;
+        consent.consent4 = input.consent4;
+        consent.consent5 = input.consent5;
+        consent.consent6 = input.consent6;
+        consent.consent7 = input.consent7;
         consent.submitContent = input.submitContent;
         consent.title = input.title;
         consent.acceptLabel = input.acceptLabel;
+        consent.submitLabel = input.submitLabel;
 
         await consent.save();
 
@@ -35,9 +41,15 @@ export class ConsentService {
         consent.description = input.description;
         consent.consent1 = input.consent1;
         consent.consent2 = input.consent2;
+        consent.consent3 = input.consent3;
+        consent.consent4 = input.consent4;
+        consent.consent5 = input.consent5;
+        consent.consent6 = input.consent6;
+        consent.consent7 = input.consent7;
         consent.submitContent = input.submitContent;
         consent.title = input.title;
         consent.acceptLabel = input.acceptLabel;
+        consent.submitLabel = input.submitLabel;
 
         await consent.save();
 

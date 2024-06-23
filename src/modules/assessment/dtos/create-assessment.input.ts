@@ -72,18 +72,6 @@ export class CreateFullAssessmentInput {
     @Field(() => String, { nullable: true })
     receiverEmail: string;
 
-    @Field(() => String, { nullable: true })
-    consentCheckbox1?: string;
-
-    @Field(() => String, { nullable: true })
-    consentCheckbox2?: string;
-
-    @Field(() => String, { nullable: true })
-    consentDescription?: string;
-
-    @Field(() => String, { nullable: true })
-    submitContent?: string;
-
     @Field(() => Int, { nullable: true })
     consentId?: number;
 }

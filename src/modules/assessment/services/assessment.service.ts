@@ -190,10 +190,6 @@ export class AssessmentService {
                 assessment.expirationDate =
                     assessmentInput.dates[i].expirationDate;
                 assessment.note = assessmentInput.note;
-                assessment.consentCheckbox1 = assessmentInput.consentCheckbox1;
-                assessment.consentCheckbox2 = assessmentInput.consentCheckbox2;
-                assessment.consentDescription = assessmentInput.consentDescription;
-                assessment.submitContent = assessmentInput.submitContent;
                 assessment.deliveryDate = assessmentInput.dates[i].deliveryDate;
                 assessment.questionnaireAssessmentId =
                     questionnaireAssessment.id;
@@ -324,10 +320,6 @@ export class AssessmentService {
             assessment.note = assessmentInput.note;
             assessment.informantCaregiverRelation = null;
             assessment.informantClinician = null;
-            assessment.consentCheckbox1 = assessmentInput.consentCheckbox1;
-            assessment.consentCheckbox2 = assessmentInput.consentCheckbox2;
-            assessment.consentDescription = assessmentInput.consentDescription;
-            assessment.submitContent = assessmentInput.submitContent;
 
             if (assessmentInput.informantClinicianId) {
                 const clinician = await this.userRepository.findOne({

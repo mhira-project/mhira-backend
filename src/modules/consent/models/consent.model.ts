@@ -30,11 +30,35 @@ export class Consent extends BaseEntity {
 
     @Field(() => String, { nullable: true })
     @Column()
+    consent3: string;
+
+    @Field(() => String, { nullable: true })
+    @Column()
+    consent4: string;
+
+    @Field(() => String, { nullable: true })
+    @Column()
+    consent5: string;
+
+    @Field(() => String, { nullable: true })
+    @Column()
+    consent6: string;
+
+    @Field(() => String, { nullable: true })
+    @Column()
+    consent7: string;
+
+    @Field(() => String, { nullable: true })
+    @Column()
     title: string;
 
     @Field(() => String, { nullable: true })
     @Column()
     acceptLabel: string;
+
+    @Field(() => String, { nullable: true })
+    @Column()
+    submitLabel: string;
 
     @Field(() => String)
     @Column()
