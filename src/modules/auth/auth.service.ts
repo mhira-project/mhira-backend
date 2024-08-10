@@ -1,31 +1,39 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Scope } from '@nestjs/common';
 import { User } from 'src/modules/user/models/user.model';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { LoginRequestDto } from './dto/login-request.dto';
 import { Hash } from 'src/shared/helpers/hash.helper';
 import { AuthenticationError } from 'apollo-server-express';
 import { Permission } from '../permission/models/permission.model';
-import { Any } from 'typeorm';
+import { Any, Connection, Repository } from 'typeorm';
 import { Role } from '../permission/models/role.model';
 import { SettingService } from '../setting/providers/setting.service';
 import { SettingKey } from '../setting/enums/setting-name.enum';
 import { AccessTokenService } from './providers/access-token.service';
 import { CacheService } from 'src/shared';
 import * as moment from 'moment';
+import { CONNECTION } from '../tenancy/tenancy.symbols';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class AuthService {
     private readonly logger = new Logger('AuthService');
+    private userRepository: Repository<User>;
+    private roleRepository: Repository<Role>;
 
     constructor(
+        @Inject(CONNECTION) private connection: Connection,
         private readonly settingService: SettingService,
         private readonly tokenService: AccessTokenService,
         private readonly cacheService: CacheService,
-    ) {}
+    ) {
+        console.log('connection', connection)
+
+        this.userRepository = this.connection.getRepository(User);
+        this.roleRepository = this.connection.getRepository(Role);
+    }
 
     async login(loginDto: LoginRequestDto): Promise<LoginResponseDto> {
         const user = await this.validateUserCredentials(loginDto);
-
         const accessToken: string = await this.tokenService.generateToken(user);
 
         return {
@@ -41,7 +49,7 @@ export class AuthService {
         const identifier = loginDto.identifier?.toLowerCase();
         const password = loginDto.password;
 
-        const user = await User.findOne({
+        const user = await this.userRepository.findOne({
             relations: ['roles'],
             where: {
                 username: identifier,
@@ -141,7 +149,7 @@ export class AuthService {
 
     async userPermissionGrants(userInput: User): Promise<Permission[]> {
         // re-select the user
-        const user = await User.findOne({
+        const user = await this.userRepository.findOne({
             relations: ['permissions', 'roles'],
             where: { id: userInput.id },
         });
@@ -150,7 +158,7 @@ export class AuthService {
 
         const roleIds = user.roles.map(role => role.id);
 
-        const roles = await Role.find({
+        const roles = await this.roleRepository.find({
             relations: ['permissions'],
             where: { id: Any(roleIds) },
         });

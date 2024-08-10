@@ -11,7 +11,7 @@ import { RoleCode } from 'src/modules/permission/enums/role-code.enum';
 import { UpdateUserInput } from '../dto/update-user.input';
 import { PermissionService } from 'src/modules/permission/providers/permission.service';
 import { Hash } from "../../../shared";
-import { CONNECTION } from 'src/tenant/tenant.module';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
 
 @QueryService(User)
 @Injectable({ scope: Scope.REQUEST })

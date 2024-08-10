@@ -1,4 +1,4 @@
-import { Injectable, MiddlewareConsumer, Module, NestMiddleware, NestModule } from '@nestjs/common';
+import { Injectable, MiddlewareConsumer, Module, NestMiddleware, NestModule, RequestMethod } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { join } from 'path';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -19,38 +19,11 @@ import { CaregiverModule } from './modules/caregiver/caregiver.module';
 import { ReportModule } from './modules/report/report.module';
 import { DisclaimerModule } from './modules/disclaimer/disclaimer.module';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MailModule } from './modules/mail/mail.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { NextFunction } from 'express';
-import { ConnectionProvider, TenantModule } from './tenant/tenant.module';
+import { TenancyModule } from './modules/tenancy/tenancy.module';
+import { tenancyMiddleware } from './modules/tenancy/tenancy.middleware';
 
-@Injectable()
-export class SubdomainMiddleware implements NestMiddleware {
-    use(req: Request, res: Response, next: NextFunction) {
-        const hostHeader = req.headers['host'] as string;
-        // Extract subdomain from the host
-        const subdomain = hostHeader.split('.')[0];
-        console.log('subdomain', subdomain)
-
-        // Inject the subdomain into the request object
-        req['subdomain'] = subdomain;
-
-        next();
-    }
-}
-
-@Injectable()
-export class TenantConnectionMiddleware implements NestMiddleware {
-    constructor(private connectionProvider: ConnectionProvider) { }
-
-    async use(req: Request, res: Response, next: NextFunction) {
-        const hostHeader = req.headers['host'] as string;
-        const subdomain = hostHeader.split('.')[0];
-        req['connection'] = await this.connectionProvider.getTenantConnection(subdomain);
-        next();
-    }
-}
 
 @Module({
     imports: [
@@ -60,7 +33,7 @@ export class TenantConnectionMiddleware implements NestMiddleware {
             useFindAndModify: false,
         }),
         TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
-        TenantModule.forRoot(),
+        TenancyModule,
         GraphQLModule.forRoot({
             introspection: configService.isGraphqlPlaygroundEnabled(),
             playground: configService.isGraphqlPlaygroundEnabled(),
@@ -111,7 +84,7 @@ export class TenantConnectionMiddleware implements NestMiddleware {
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
         consumer.apply(graphqlUploadExpress()).forRoutes('graphql');
-        consumer.apply(SubdomainMiddleware).forRoutes('*');
-        // consumer.apply(TenantConnectionMiddleware).forRoutes('*');
+        // consumer.apply(TenancyMiddleware).forRoutes({ path: '*', method: RequestMethod.ALL });
+        consumer.apply(tenancyMiddleware).forRoutes('*');
     }
 }
