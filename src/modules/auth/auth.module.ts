@@ -7,11 +7,9 @@ import { JwtStrategy } from './jwt.strategy';
 import { AuthResolver } from './auth.resolver';
 import { SettingModule } from '../setting/setting.module';
 import { AccessTokenService } from './providers/access-token.service';
-import { TenancyModule } from '../tenancy/tenancy.module';
 
 @Module({
     imports: [
-        TenancyModule,
         SettingModule,
         PassportModule.register({ defaultStrategy: 'jwt' }),
         JwtModule.register({

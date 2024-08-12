@@ -21,8 +21,8 @@ import { DisclaimerModule } from './modules/disclaimer/disclaimer.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { MailModule } from './modules/mail/mail.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { TenancyModule } from './modules/tenancy/tenancy.module';
-import { tenancyMiddleware } from './modules/tenancy/tenancy.middleware';
+// import { TenancyModule } from './modules/tenancy/tenancy.module';
+// import { tenancyMiddleware } from './modules/tenancy/tenancy.middleware';
 
 
 @Module({

@@ -15,12 +15,11 @@ import * as moment from 'moment';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class AuthService {
     private readonly logger = new Logger('AuthService');
 
     constructor(
-        @Inject(REQUEST) private request: Request,
         private readonly settingService: SettingService,
         private readonly tokenService: AccessTokenService,
         private readonly cacheService: CacheService,

@@ -92,15 +92,6 @@ export class UserCrudService extends TypeOrmQueryService<User> {
         return !!user;
     }
 
-    async findOneUser(username: string): Promise<User> {
-        return User.findOne({
-            relations: ['roles'],
-            where: {
-                username: username,
-            },
-        });
-    }
-
     passwordChangeRequired(user: User): boolean {
         return user.passwordExpiresAt
             ? moment().isSameOrAfter(user.passwordExpiresAt)

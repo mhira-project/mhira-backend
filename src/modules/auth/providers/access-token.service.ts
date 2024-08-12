@@ -9,7 +9,7 @@ import { Str } from 'src/shared/helpers/string.helper';
 import { JwtPayload } from '../jwt-payload.interface';
 import { AccessToken } from '../models/access-token.model';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class AccessTokenService {
     constructor(
         private jwtService: JwtService,
