@@ -1,9 +1,9 @@
 import { Connection, createConnection, getConnectionManager } from 'typeorm';
 
 export function getTenantConnection(tenantId: string): Promise<Connection> {
-    const connectionName = 'mhira' || tenantId;
+    const connectionName = tenantId;
     const connectionManager = getConnectionManager();
-    console.log('connectionName', connectionName)
+    console.log('connectionName', tenantId)
     if (connectionManager.has(connectionName)) {
         const connection = connectionManager.get(connectionName);
         return Promise.resolve(connection.isConnected ? connection : connection.connect());

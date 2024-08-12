@@ -11,19 +11,9 @@ import { RoleCode } from 'src/modules/permission/enums/role-code.enum';
 import { UpdateUserInput } from '../dto/update-user.input';
 import { PermissionService } from 'src/modules/permission/providers/permission.service';
 import { Hash } from "../../../shared";
-import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
 
 @QueryService(User)
-@Injectable({ scope: Scope.REQUEST })
 export class UserCrudService extends TypeOrmQueryService<User> {
-    private roleRepository: Repository<Role>;
-    private userRepository: Repository<User>;
-
-    constructor(@Inject(CONNECTION) private connection: Connection) {
-        super(connection.getRepository(User));
-        this.roleRepository = connection.getRepository(Role);
-        this.userRepository = connection.getRepository(User);
-    }
 
     async createOne(input: CreateUserInput): Promise<User> {
         // Check duplicate username exists
@@ -31,10 +21,6 @@ export class UserCrudService extends TypeOrmQueryService<User> {
             filter: { username: { iLike: input.username } }, // case in-sensitive match username
         });
 
-        console.log('connection.name', this.connection.name)
-        console.log('connection.name', this.repo.manager.connection.name)
-
-        console.log(this.repo.manager.connection.name)
         if (exists.length > 0) {
             throw new BadRequestException('Username already exists');
         }
@@ -44,7 +30,7 @@ export class UserCrudService extends TypeOrmQueryService<User> {
         user.passwordExpiresAt = moment().toDate();
         user.password = await Hash.make(user.password);
 
-        const defaultRole = await this.roleRepository.findOne({ code: RoleCode.NO_ROLE });
+        const defaultRole = await Role.findOne({ code: RoleCode.NO_ROLE });
 
         if (defaultRole) {
             user.roles = [defaultRole];
@@ -107,7 +93,7 @@ export class UserCrudService extends TypeOrmQueryService<User> {
     }
 
     async findOneUser(username: string): Promise<User> {
-        return this.userRepository.findOne({
+        return User.findOne({
             relations: ['roles'],
             where: {
                 username: username,

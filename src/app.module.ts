@@ -33,7 +33,7 @@ import { tenancyMiddleware } from './modules/tenancy/tenancy.middleware';
             useFindAndModify: false,
         }),
         TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
-        TenancyModule,
+        // TenancyModule,
         GraphQLModule.forRoot({
             introspection: configService.isGraphqlPlaygroundEnabled(),
             playground: configService.isGraphqlPlaygroundEnabled(),
@@ -85,6 +85,6 @@ export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
         consumer.apply(graphqlUploadExpress()).forRoutes('graphql');
         // consumer.apply(TenancyMiddleware).forRoutes({ path: '*', method: RequestMethod.ALL });
-        consumer.apply(tenancyMiddleware).forRoutes('*');
+        // consumer.apply(tenancyMiddleware).forRoutes('*');
     }
 }

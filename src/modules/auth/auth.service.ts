@@ -5,31 +5,26 @@ import { LoginRequestDto } from './dto/login-request.dto';
 import { Hash } from 'src/shared/helpers/hash.helper';
 import { AuthenticationError } from 'apollo-server-express';
 import { Permission } from '../permission/models/permission.model';
-import { Any, Connection, Repository } from 'typeorm';
+import { Any } from 'typeorm';
 import { Role } from '../permission/models/role.model';
 import { SettingService } from '../setting/providers/setting.service';
 import { SettingKey } from '../setting/enums/setting-name.enum';
 import { AccessTokenService } from './providers/access-token.service';
 import { CacheService } from 'src/shared';
 import * as moment from 'moment';
-import { CONNECTION } from '../tenancy/tenancy.symbols';
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthService {
     private readonly logger = new Logger('AuthService');
-    private userRepository: Repository<User>;
-    private roleRepository: Repository<Role>;
 
     constructor(
-        @Inject(CONNECTION) private connection: Connection,
+        @Inject(REQUEST) private request: Request,
         private readonly settingService: SettingService,
         private readonly tokenService: AccessTokenService,
         private readonly cacheService: CacheService,
     ) {
-        console.log('connection', connection)
-
-        this.userRepository = this.connection.getRepository(User);
-        this.roleRepository = this.connection.getRepository(Role);
     }
 
     async login(loginDto: LoginRequestDto): Promise<LoginResponseDto> {
@@ -49,7 +44,7 @@ export class AuthService {
         const identifier = loginDto.identifier?.toLowerCase();
         const password = loginDto.password;
 
-        const user = await this.userRepository.findOne({
+        const user = await User.findOne({
             relations: ['roles'],
             where: {
                 username: identifier,
@@ -149,7 +144,7 @@ export class AuthService {
 
     async userPermissionGrants(userInput: User): Promise<Permission[]> {
         // re-select the user
-        const user = await this.userRepository.findOne({
+        const user = await User.findOne({
             relations: ['permissions', 'roles'],
             where: { id: userInput.id },
         });
@@ -158,7 +153,7 @@ export class AuthService {
 
         const roleIds = user.roles.map(role => role.id);
 
-        const roles = await this.roleRepository.find({
+        const roles = await Role.find({
             relations: ['permissions'],
             where: { id: Any(roleIds) },
         });

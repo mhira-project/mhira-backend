@@ -35,7 +35,6 @@ export class AuthResolver {
   @Query(() => [Permission], { description: 'Get User Permission Grants. ' })
   @UseGuards(GqlAuthGuard)
   userPermissionGrants(@CurrentUser() user: User): Promise<Permission[]> {
-
     return this.authService.userPermissionGrants(user);
   }
 
