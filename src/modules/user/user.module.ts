@@ -2,7 +2,7 @@ import { Injectable, Module } from '@nestjs/common';
 import { Authorizer, NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
 import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
 import { User } from './models/user.model';
-import { UserCrudService } from './providers/user-crud.service';
+import { DynamicUserQueryService, UserCrudService } from './providers/user-crud.service';
 import { UserCrudResolver } from './resolvers/user-crud.resolver';
 import { SettingModule } from '../setting/setting.module';
 import { ChangePasswordService } from './providers/change-password.service';
@@ -28,6 +28,7 @@ export class UserAuthorizer implements Authorizer<User> {
             imports: [NestjsQueryTypeOrmModule.forFeature([User])],
             // describe the resolvers you want to expose
             resolvers: [],
+            services: [DynamicUserQueryService],
         }),
     ],
     providers: [
@@ -36,6 +37,7 @@ export class UserAuthorizer implements Authorizer<User> {
         ChangePasswordService,
         ChangePasswordResolver,
         UserAuthorizer,
+        DynamicUserQueryService,
     ],
 })
 export class UserModule { }

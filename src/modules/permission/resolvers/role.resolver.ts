@@ -1,6 +1,6 @@
 import { SortDirection } from '@nestjs-query/core';
 import { CRUDResolver } from '@nestjs-query/query-graphql';
-import { BadRequestException, UseGuards } from '@nestjs/common';
+import { BadRequestException, Inject, UseGuards } from '@nestjs/common';
 import { Resolver, Args, Mutation } from '@nestjs/graphql';
 import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
@@ -20,8 +20,9 @@ import {
     RemovePermissionsFromRoleInput,
 } from '../dtos/update-role-permissions.input';
 import { Permission } from '../models/permission.model';
-import { In } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { PermissionAction } from '../enums/permission-action.enum';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
 
 @Resolver(() => Role)
 @UseGuards(GqlAuthGuard, PermissionGuard)
@@ -43,8 +44,14 @@ export class RoleResolver extends CRUDResolver(Role, {
     update: { disabled: true }, // overriden with custom implementation
     delete: { disabled: true }, // overriden with custom implementation
 }) {
-    constructor(readonly service: RoleCrudService) {
+    private roleRepository: Repository<Role>;
+    private userRepository: Repository<User>;
+    private permissionRepository: Repository<Permission>;
+    constructor(readonly service: RoleCrudService, @Inject(CONNECTION) private readonly connection) {
         super(service);
+        this.roleRepository = connection.getRepository(Role);
+        this.userRepository = connection.getRepository(User);
+        this.permissionRepository = connection.getRepository(Permission);
     }
 
     @Mutation(() => Role)
@@ -56,14 +63,14 @@ export class RoleResolver extends CRUDResolver(Role, {
     ): Promise<Role> {
         const roleInput = input['role'] as RoleInput;
 
-        const exists = await Role.findOne({ name: roleInput.name });
+        const exists = await this.roleRepository.findOne({ name: roleInput.name });
 
         if (exists) {
             throw new BadRequestException('Role with same name already exists');
         }
 
         // reload current user with roles
-        currentUser = await User.findOne({
+        currentUser = await this.userRepository.findOne({
             where: { id: currentUser.id },
             relations: ['roles'],
         });
@@ -74,7 +81,7 @@ export class RoleResolver extends CRUDResolver(Role, {
         if (roleInput.hierarchy <= currentUserMaxRole.hierarchy) {
             throw new BadRequestException(
                 'Cannot create role with higher hierarchy than your own. ' +
-                    `Please provide hierarchy number greater than ${currentUserMaxRole.hierarchy}`,
+                `Please provide hierarchy number greater than ${currentUserMaxRole.hierarchy}`,
             );
         }
 
@@ -94,7 +101,7 @@ export class RoleResolver extends CRUDResolver(Role, {
         await this.canUpdateRole(id as number, currentUser, update);
 
         if (!!update.name) {
-            const exists = await Role.createQueryBuilder()
+            const exists = await this.roleRepository.createQueryBuilder()
                 .where('name = :name AND id <> :id', { name: update.name, id })
                 .getOne();
 
@@ -140,7 +147,7 @@ export class RoleResolver extends CRUDResolver(Role, {
             permission => !input.relationIds.includes(permission.id),
         );
 
-        return role.save();
+        return this.roleRepository.save(role);
     }
 
     @Mutation(() => Role)
@@ -158,7 +165,7 @@ export class RoleResolver extends CRUDResolver(Role, {
 
         role.permissions.push(...permissions);
 
-        return role.save();
+        return this.roleRepository.save(role);
     }
 
     private async canUpdatePermissions(
@@ -171,7 +178,7 @@ export class RoleResolver extends CRUDResolver(Role, {
             relations: ['permissions'],
         });
 
-        currentUser = await User.findOne({
+        currentUser = await this.userRepository.findOne({
             where: { id: currentUser.id },
             relations: ['roles', 'roles.permissions'],
         });
@@ -197,7 +204,7 @@ export class RoleResolver extends CRUDResolver(Role, {
                 'You cannot modify permissions that you do not have yourself.';
         }
 
-        const permissions = await Permission.find({
+        const permissions = await this.permissionRepository.find({
             where: { id: In(input.relationIds) },
         });
 
@@ -233,7 +240,7 @@ export class RoleResolver extends CRUDResolver(Role, {
         });
 
         // reload current user with roles
-        currentUser = await User.findOne({
+        currentUser = await this.userRepository.findOne({
             where: { id: currentUser.id },
             relations: ['roles'],
         });
@@ -244,14 +251,14 @@ export class RoleResolver extends CRUDResolver(Role, {
         if (roleInDb.hierarchy <= currentUserMaxRole.hierarchy) {
             throw new BadRequestException(
                 'Permission denied! Cannot modify role with a higher hierarchy than your own. ' +
-                    `Please provide hierarchy number greater than ${currentUserMaxRole.hierarchy}`,
+                `Please provide hierarchy number greater than ${currentUserMaxRole.hierarchy}`,
             );
         }
 
         if (update && update.hierarchy <= currentUserMaxRole.hierarchy) {
             throw new BadRequestException(
                 'Permission denied! Cannot modify role to a higher hierarchy than your own. ' +
-                    `Please provide hierarchy number greater than ${currentUserMaxRole.hierarchy}`,
+                `Please provide hierarchy number greater than ${currentUserMaxRole.hierarchy}`,
             );
         }
     }

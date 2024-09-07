@@ -1,5 +1,5 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
@@ -11,15 +11,19 @@ import { url } from '../../../shared';
 import { configService } from 'src/config/config.service';
 import { QuestionnaireAssessmentService } from 'src/modules/questionnaire/services/questionnaire-assessment.service';
 import { AssessmentStatus } from 'src/modules/questionnaire/enums/assessment-status.enum';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
 
 @Injectable()
 export class SendMailService {
+    private assessmentRepository: Repository<Assessment>
+
     constructor(
+        @Inject(CONNECTION) private readonly connection,
         private questionnaireAssessmentService: QuestionnaireAssessmentService,
         private mailerService: MailerService,
-        @InjectRepository(Assessment)
-        private assessmentRepository: Repository<Assessment>,
-    ) {}
+    ) {
+        this.assessmentRepository = this.connection.getRepository(Assessment);
+    }
 
     @Cron(CronExpression.EVERY_MINUTE)
     async checkAssessmentEmails() {
@@ -81,7 +85,7 @@ export class SendMailService {
             });
         }
 
-        Handlebars.registerHelper('helperMissing', function(val) {
+        Handlebars.registerHelper('helperMissing', function (val) {
             if (val === undefined) {
                 return null;
             }

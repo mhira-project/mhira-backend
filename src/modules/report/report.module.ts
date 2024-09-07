@@ -5,7 +5,7 @@ import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
 import { SortDirection } from '@nestjs-query/core';
 import { Report } from './models/report.model';
-import { ReportService } from './services/report.service';
+import { DynamicReportsQueryService, ReportService } from './services/report.service';
 import { ReportResolver } from './resolvers/report.resolver';
 import { ReportInput } from './dtos/report-input';
 import { Role } from '../permission/models/role.model';
@@ -15,11 +15,13 @@ const guards = [GqlAuthGuard, PermissionGuard];
     imports: [
         NestjsQueryGraphQLModule.forFeature({
             imports: [NestjsQueryTypeOrmModule.forFeature([Report, Role])],
+            services: [DynamicReportsQueryService],
             resolvers: [
                 {
                     DTOClass: Report,
                     EntityClass: Report,
                     CreateDTOClass: ReportInput,
+                    ServiceClass: DynamicReportsQueryService,
                     guards: guards,
                     read: {
                         disabled: true,
@@ -31,7 +33,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
             ],
         }),
     ],
-    providers: [ReportService, ReportResolver],
+    providers: [ReportService, ReportResolver, DynamicReportsQueryService],
     exports: [ReportService],
 })
-export class ReportModule {}
+export class ReportModule { }

@@ -2,6 +2,7 @@ import {
     Injectable,
     UnauthorizedException,
     BadRequestException,
+    Inject,
 } from '@nestjs/common';
 import { User } from '../models/user.model';
 import { Hash } from 'src/shared/helpers/hash.helper';
@@ -12,10 +13,17 @@ import { ChangeOwnPasswordInput } from '../dto/change-own-password.input';
 import { ChangePasswordInput } from '../dto/change-password.input';
 import { SettingKey } from 'src/modules/setting/enums/setting-name.enum';
 import { PermissionService } from '../../permission/providers/permission.service';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
+import { Connection, Repository } from 'typeorm';
 
 @Injectable()
 export class ChangePasswordService {
-    constructor(private readonly setting: SettingService) { }
+    private userRepository: Repository<User>;
+    private userPreviousPasswordRepository: Repository<UserPreviousPassword>;
+
+    constructor(@Inject(CONNECTION) private readonly connection: Connection, private readonly setting: SettingService) {
+        this.userRepository = connection.getRepository(User);
+    }
 
     async changeOwnPassword(
         input: ChangeOwnPasswordInput,
@@ -49,12 +57,12 @@ export class ChangePasswordService {
         targetUserId: number,
         currentUserId: number,
     ): Promise<boolean> {
-        const targetUser = await User.findOneOrFail({
+        const targetUser = await this.userRepository.findOneOrFail({
             where: { id: targetUserId },
             relations: ['roles'],
         });
 
-        if (!await PermissionService.compareHierarchy(currentUserId, targetUser)) {
+        if (!await PermissionService.compareHierarchy(currentUserId, targetUser, this.connection)) {
             throw new BadRequestException(
                 'Permission denied to modify user! User has higher role than current user',
             );
@@ -111,7 +119,7 @@ export class ChangePasswordService {
             .subtract(cutOffDays, 'days')
             .format('YYYY-MM-DD');
 
-        const prevPasswords = await UserPreviousPassword.createQueryBuilder(
+        const prevPasswords = await this.userPreviousPasswordRepository.createQueryBuilder(
             'passwords',
         )
             .where(
@@ -137,7 +145,7 @@ export class ChangePasswordService {
         /**
          * Save last password in previous passwords
          */
-        await UserPreviousPassword.insert({
+        await this.userPreviousPasswordRepository.insert({
             password: targetUser.password,
             userId: targetUser.id,
         });
@@ -159,7 +167,7 @@ export class ChangePasswordService {
 
         // save password
         targetUser.passwordExpiresAt = passwordExpiresAt;
-        await targetUser.save();
+        await this.userRepository.save(targetUser);
 
         return true;
     }

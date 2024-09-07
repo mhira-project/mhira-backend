@@ -1,14 +1,22 @@
 import { TypeOrmQueryService } from "@nestjs-query/query-typeorm";
-import { ConflictException, Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { ConflictException, Inject, Injectable } from "@nestjs/common";
+import { Connection, Repository } from "typeorm";
 import { PatientCaregiverInput } from "../dtos/patient.caregiver.input";
 import { PatientCaregiver } from "../models/patient-caregiver.model";
+import { CONNECTION } from "src/modules/tenancy/tenancy.symbols";
+
+@Injectable()
+export class DynamicPatientCaregiverQueryService extends TypeOrmQueryService<PatientCaregiver> {
+    constructor(@Inject(CONNECTION) connection: Connection) {
+        super(connection.getRepository(PatientCaregiver));
+    }
+}
+
 @Injectable()
 export class PatientCaregiverService extends TypeOrmQueryService<PatientCaregiver> {
-
-    constructor(@InjectRepository(PatientCaregiver) repo: Repository<PatientCaregiver>) {
-        super(repo, { useSoftDelete: true });
+    public repo: Repository<PatientCaregiver>;
+    constructor(@Inject(CONNECTION) private connection: Connection) {
+        super(connection.getRepository(PatientCaregiver), { useSoftDelete: true });
     }
 
     async insert(patientCaregiver: PatientCaregiverInput) {

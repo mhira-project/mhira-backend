@@ -9,11 +9,10 @@ import {
     Parent,
     ID,
 } from '@nestjs/graphql';
-import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
 import { Assessment, FullAssessment } from '../models/assessment.model';
 import { AssessmentService } from '../services/assessment.service';
-import { UsePermission } from '../../permission/decorators/permission.decorator';
+import { UseOrPermissions, UsePermission } from '../../permission/decorators/permission.decorator';
 import { PermissionEnum } from '../../permission/enums/permission.enum';
 import {
     CreateFullAssessmentInput,
@@ -27,11 +26,12 @@ import {
     AssessmentQuery,
     AssessmentConnection,
 } from '../dtos/assessment.query';
+import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 
 @Resolver(() => Assessment)
 @UseGuards(GqlAuthGuard, PermissionGuard)
 export class AssessmentResolver {
-    constructor(private readonly assessmentService: AssessmentService) {}
+    constructor(private assessmentService: AssessmentService) { }
 
     @Query(() => AssessmentConnection)
     @UsePermission(PermissionEnum.VIEW_ASSESSMENTS)
@@ -79,6 +79,7 @@ export class AssessmentResolver {
     updateAssessment(
         @Args('assessment') assessmentInput: UpdateFullAssessmentInput,
     ) {
+        console.log('updateeeeee')
         return this.assessmentService.updateAssessment(assessmentInput);
     }
 

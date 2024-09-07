@@ -1,7 +1,8 @@
-import { mergeFilter, SortDirection } from '@nestjs-query/core';
+import { mergeFilter, SortDirection, InjectQueryService } from '@nestjs-query/core';
 import {
     ConnectionType,
     CreateOneInputType,
+    CRUDResolver,
     DeleteOneInputType,
     QueryArgsType,
     UpdateOneInputType,
@@ -33,11 +34,13 @@ import { Patient, PatientReport } from '../models/patient.model';
 import { PatientStatus } from '../models/patient-status.model';
 import { CreateOnePatientStatusInput } from '../dto/update-patient-status.input';
 import { PatientStatusService } from '../providers/patient-status.service';
-import { Assessment } from 'src/modules/assessment/models/assessment.model';
 import { checkIfPropertyExists } from 'src/shared/helpers/object.helper';
+import { AssessmentService } from 'src/modules/assessment/services/assessment.service';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
+import { Repository } from 'typeorm';
 
 @ArgsType()
-class PatientQuery extends QueryArgsType(Patient) {}
+class PatientQuery extends QueryArgsType(Patient) { }
 
 const PatientConnection = PatientQuery.ConnectionType;
 
@@ -45,26 +48,30 @@ const PatientConnection = PatientQuery.ConnectionType;
 export class CreateOnePatientInput extends CreateOneInputType(
     'patient',
     CreatePatientInput,
-) {}
+) { }
 
 @InputType()
 class UpdateOnePatientInput extends UpdateOneInputType(
     Patient,
     UpdatePatientInput,
-) {}
+) { }
 
 @InputType()
-class DeleteOnePatientInput extends DeleteOneInputType(Patient) {}
-
-@ObjectType()
-class PatientDeleteResponse extends PartialType(Patient) {}
+class DeleteOnePatientInput extends DeleteOneInputType(Patient) { }
 
 @Resolver(() => Patient)
 @UseGuards(GqlAuthGuard, PermissionGuard)
 export class PatientResolver {
     @Inject() patientStatusService: PatientStatusService;
+    private patientRepository: Repository<Patient>;
+    private userRepository: Repository<User>;
 
-    constructor(protected service: PatientQueryService) {}
+    constructor(readonly service: PatientQueryService,
+        protected assessmentService: AssessmentService,
+        @Inject(CONNECTION) private connection) {
+        this.patientRepository = this.connection.getRepository(Patient);
+        this.userRepository = this.connection.getRepository(User);
+    }
 
     @Query(() => PatientConnection)
     @UsePermission(PermissionEnum.VIEW_PATIENTS)
@@ -72,8 +79,10 @@ export class PatientResolver {
         @Args({ type: () => PatientQuery }) query: PatientQuery,
         @CurrentUser() currentUser: User,
     ): Promise<ConnectionType<Patient>> {
+
         const authorizeFilter = await PatientAuthorizer.authorizePatient(
             currentUser?.id,
+            this.connection
         );
 
         const combinedFilter = mergeFilter(query.filter, authorizeFilter);
@@ -121,7 +130,7 @@ export class PatientResolver {
         const patientInput = input['patient'] as CreatePatientInput;
 
         // Reload current user with departments
-        currentUser = await User.findOne({
+        currentUser = await this.userRepository.findOne({
             where: { id: currentUser.id },
             relations: ['departments'],
         });
@@ -132,6 +141,7 @@ export class PatientResolver {
         const canViewAllPatients = await PermissionService.userCan(
             currentUser.id,
             PermissionEnum.VIEW_ALL_PATIENTS,
+            this.connection,
         );
 
         if (!canViewAllPatients) {
@@ -154,7 +164,7 @@ export class PatientResolver {
             patientInput.medicalRecordNo = null; // coalesce '' to NULL, as field is nullable
 
         if (patientInput.medicalRecordNo) {
-            const exists = await Patient.findOne({
+            const exists = await this.patientRepository.findOne({
                 medicalRecordNo: patientInput.medicalRecordNo,
             });
             if (exists) {
@@ -182,35 +192,24 @@ export class PatientResolver {
         if (update.medicalRecordNo === '') update.medicalRecordNo = null; // coalesce '' to NULL, as field is nullable
 
         if (!!update.medicalRecordNo) {
-            const exists = await Patient.createQueryBuilder('patient')
-                .where(
-                    'patient.medicalRecordNo = :medicalRecordNo AND patient.id <> :id',
-                    { medicalRecordNo: update.medicalRecordNo, id },
-                )
-                .getOne();
-
-            if (exists) {
-                throw new BadRequestException(
-                    'Patient with same Medical Record No. already exists',
-                );
-            }
+            await this.service.getPatientByMedicalRecordNo(update.medicalRecordNo, id)
         }
 
         return this.service.updateOne(input.id, input.update);
     }
 
-    @Mutation(() => PatientDeleteResponse)
+    @Mutation(() => Patient)
     @UsePermission(PermissionEnum.DELETE_PATIENTS)
     async deleteOnePatient(
         @Args('input', { type: () => DeleteOnePatientInput })
         input: DeleteOnePatientInput,
         @CurrentUser() currentUser: User,
-    ): Promise<PatientDeleteResponse> {
+    ): Promise<Patient> {
         // Get patient if authorized. Throws exception if Not Found
         await this.service.getOnePatient(currentUser, Number(input.id));
 
         const deletedPatient = await this.service.deleteOne(input.id);
-        await Assessment.delete({ patientId: Number(input.id) });
+        await this.assessmentService.deleteAssessmentByPatientId(Number(input.id));
 
         return deletedPatient;
     }

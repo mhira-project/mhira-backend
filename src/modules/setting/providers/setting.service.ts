@@ -1,13 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { SettingDto } from '../dtos/setting.dto';
 import { UpdateSettingInput } from '../dtos/update-setting.input';
 import { Setting } from '../models/setting.model';
 import { defaultConfig } from '../config/default-config';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class SettingService {
+    private settingsRepository: Repository<Setting>;
+    constructor(@Inject(CONNECTION) private readonly connection) {
+        this.settingsRepository = this.connection.getRepository(Setting);
+    }
+
     async get<K extends keyof SettingDto>(): Promise<SettingDto> {
-        const storedSettings = await Setting.find();
+        const storedSettings = await this.settingsRepository.find();
 
         const settingDto = new SettingDto();
         for (const key in defaultConfig) {
@@ -24,7 +31,7 @@ export class SettingService {
     }
 
     async getKey<K extends keyof SettingDto>(key?: K): Promise<SettingDto[K]> {
-        const storedSetting = await Setting.findOne({ key });
+        const storedSetting = await this.settingsRepository.findOne({ key });
 
         const value: SettingDto[K] = storedSetting
             ? (storedSetting.value as SettingDto[K])
@@ -54,14 +61,14 @@ export class SettingService {
     ): Promise<boolean> {
         const stringValue = value.toString();
 
-        const storedSetting = await Setting.findOne({ key });
+        const storedSetting = await this.settingsRepository.findOne({ key });
 
         // Update existing setting entry
         if (storedSetting) {
             // Update only if value has changed
             if (storedSetting.value !== stringValue) {
                 storedSetting.value = value.toString();
-                await storedSetting.save();
+                await this.settingsRepository.save(storedSetting);
             }
 
             return true;
@@ -72,7 +79,7 @@ export class SettingService {
         setting.key = key;
         setting.value = value.toString();
 
-        await setting.save();
+        await this.settingsRepository.save(setting);
 
         return true;
     }

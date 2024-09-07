@@ -4,7 +4,7 @@ import { Module } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
 import { Caregiver } from './models/caregiver.model';
-import { CaregiverService } from './services/caregiver.service';
+import { CaregiverService, DynamicCaregiverQueryService } from './services/caregiver.service';
 import { SortDirection } from '@nestjs-query/core';
 import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
 import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
@@ -12,7 +12,7 @@ import { PatientCaregiver } from './models/patient-caregiver.model';
 import { CaregiverResolver } from './resolvers/caregiver.resolver';
 import { CaregiverInput } from './dtos/caregiver.input';
 import { PatientCaregiverResolver } from './resolvers/patient-caregiver.resolver';
-import { PatientCaregiverService } from './services/patient.caregiver.service';
+import { DynamicPatientCaregiverQueryService, PatientCaregiverService } from './services/patient.caregiver.service';
 import { PatientCaregiverInput } from './dtos/patient.caregiver.input';
 
 const guards = [GqlAuthGuard, PermissionGuard];
@@ -23,11 +23,13 @@ const guards = [GqlAuthGuard, PermissionGuard];
                 Caregiver,
                 PatientCaregiver
             ])],
+            services: [DynamicCaregiverQueryService, DynamicPatientCaregiverQueryService],
             resolvers: [
                 {
                     DTOClass: Caregiver,
                     EntityClass: Caregiver,
                     CreateDTOClass: CaregiverInput,
+                    ServiceClass: DynamicCaregiverQueryService,
                     guards: guards,
                     read: {
                         defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
@@ -40,6 +42,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     DTOClass: PatientCaregiver,
                     EntityClass: PatientCaregiver,
                     CreateDTOClass: PatientCaregiverInput,
+                    ServiceClass: DynamicPatientCaregiverQueryService,
                     guards: guards,
                     read: {
                         defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
@@ -57,6 +60,8 @@ const guards = [GqlAuthGuard, PermissionGuard];
         CaregiverResolver,
         PatientCaregiverResolver,
         PatientCaregiverService,
+        DynamicCaregiverQueryService,
+        DynamicPatientCaregiverQueryService,
     ],
     exports: [
         CaregiverService

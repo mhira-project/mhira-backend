@@ -4,7 +4,7 @@ import { Module } from '@nestjs/common';
 import { GqlAuthGuard } from '../auth/auth.guard';
 import { Assessment } from './models/assessment.model';
 import { PermissionGuard } from '../permission/guards/permission.guard';
-import { AssessmentService } from './services/assessment.service';
+import { AssessmentService, DynamicAssessmentQueryService } from './services/assessment.service';
 import { AssessmentResolver } from './resolvers/assessment.resolver';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
@@ -21,7 +21,7 @@ import { PatientModule } from '../patient/patient.module';
 import { PublicAssessmentResolver } from './resolvers/public.assesment.resolver';
 import { User } from '../user/models/user.model';
 import { Caregiver } from '../caregiver/models/caregiver.model';
-import { AssessmentTypeService } from './services/assessment-type.service';
+import { AssessmentTypeService, DynamicAssessmentTypeQueryService } from './services/assessment-type.service';
 import { AssessmentTypeResolver } from './resolvers/assessment-type.resolver';
 import { AssessmentType } from './models/assessment-type.model';
 import { Consent } from '../consent/models/consent.model';
@@ -53,11 +53,13 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     },
                 ]),
             ],
+            services: [DynamicAssessmentQueryService, DynamicAssessmentTypeQueryService],
             // describe the resolvers you want to expose
             resolvers: [
                 {
                     DTOClass: Assessment,
                     EntityClass: Assessment,
+                    ServiceClass: DynamicAssessmentQueryService,
                     guards,
                     // handled by assessment resolver
                     read: { disabled: true },
@@ -76,6 +78,8 @@ const guards = [GqlAuthGuard, PermissionGuard];
         AssessmentResolver,
         QuestionnaireAssessmentService,
         PublicAssessmentResolver,
+        DynamicAssessmentQueryService,
+        DynamicAssessmentTypeQueryService,
     ],
 })
 export class AssessmentModule { }

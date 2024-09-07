@@ -13,7 +13,7 @@ import {
 import { QuestionnaireService } from './services/questionnaire.service';
 import { QuestionnaireResolver } from './resolvers/questionnaire.resolver';
 import { QuestionnaireAssessmentService } from './services/questionnaire-assessment.service';
-import { AssessmentResolver } from './resolvers/assessment.resolver';
+import { QuestionnaireAssessmentResolver } from './resolvers/assessment.resolver';
 import {
     Questionnaire,
     QuestionnaireSchema,
@@ -110,7 +110,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
         QuestionnaireScriptService,
         QuestionnaireResolver,
         QuestionnaireAssessmentService,
-        AssessmentResolver,
+        QuestionnaireAssessmentResolver,
         QuestionnaireBundleResolver,
         QuestionnaireBundleService,
         ConsentService,

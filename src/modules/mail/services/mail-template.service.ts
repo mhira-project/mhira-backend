@@ -1,5 +1,6 @@
 import { ConnectionType } from '@nestjs-query/query-graphql';
 import {
+    Inject,
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
@@ -22,15 +23,23 @@ import {
 import { Department } from 'src/modules/department/models/department.model';
 import { Patient } from 'src/modules/patient/models/patient.model';
 import { AssessmentTypeEnum } from 'src/modules/assessment/enums/assessment-type.enum';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
 
 @Injectable()
 export class MailTemplateService {
+    private mailTemplateRepository: Repository<MailTemplate>;
+    private departmentRepository: Repository<Department>;
+    private patientRepository: Repository<Patient>;
     constructor(
+        @Inject(CONNECTION) private readonly connection,
         @InjectRepository(MailTemplate)
-        private mailTemplateRepository: Repository<MailTemplate>,
         @InjectQueryService(MailTemplate)
         private readonly mailTemplateQueryService: QueryService<MailTemplate>,
-    ) {}
+    ) {
+        this.mailTemplateRepository = this.connection.getRepository(MailTemplate);
+        this.departmentRepository = this.connection.getRepository(Department);
+        this.patientRepository = this.connection.getRepository(Patient);
+    }
 
     async getEmailTemplate(id: number): Promise<MailTemplate> {
         return this.mailTemplateRepository.findOneOrFail(id);
@@ -41,7 +50,7 @@ export class MailTemplateService {
             return [];
         }
 
-        const patient = await Patient.findOneOrFail({
+        const patient = await this.patientRepository.findOneOrFail({
             where: { id: patientId },
             relations: ['departments'],
         });
@@ -74,6 +83,7 @@ export class MailTemplateService {
             ? query.sorting
             : [{ field: 'id', direction: SortDirection.DESC }];
 
+        // @TODO check tenant
         const result: any = await MailTemplateConnection.createFromPromise(
             q => this.mailTemplateQueryService.query(q),
             query,
@@ -95,7 +105,7 @@ export class MailTemplateService {
         try {
             const mail = this.mailTemplateRepository.create(restInput);
 
-            const departments: any = await Department.find({
+            const departments: any = await this.departmentRepository.find({
                 where: departmentIds.map(id => ({ id: id })),
             });
 
@@ -148,14 +158,14 @@ export class MailTemplateService {
             let departments: any = [];
 
             if (!values.isPublic) {
-                departments = await Department.find({
+                departments = await this.departmentRepository.find({
                     where: departmentIds.map(id => ({ id: id })),
                 });
             }
 
             mailTemplate.departments = departments;
 
-            return mailTemplate.save();
+            return this.mailTemplateRepository.save(mailTemplate);
         } catch (error) {
             return error;
         }
