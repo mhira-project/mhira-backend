@@ -17,6 +17,7 @@ export class PatientCaregiverService extends TypeOrmQueryService<PatientCaregive
     public repo: Repository<PatientCaregiver>;
     constructor(@Inject(CONNECTION) private connection: Connection) {
         super(connection.getRepository(PatientCaregiver), { useSoftDelete: true });
+        this.repo = connection.getRepository(PatientCaregiver);
     }
 
     async insert(patientCaregiver: PatientCaregiverInput) {

@@ -17,6 +17,7 @@ export class CaregiverService extends TypeOrmQueryService<Caregiver> {
     public repo: Repository<Caregiver>;
     constructor(@Inject(CONNECTION) private connection: Connection) {
         super(connection.getRepository(Caregiver), { useSoftDelete: true });
+        this.repo = connection.getRepository(Caregiver);
     }
 
     async insert(caregiver: CaregiverInput) {
@@ -25,6 +26,6 @@ export class CaregiverService extends TypeOrmQueryService<Caregiver> {
 
         let newCaregiver = this.repo.create();
         newCaregiver = this.repo.merge(newCaregiver, caregiver);
-        return this.repo.save(newCaregiver)
+        return this.repo.save(newCaregiver);
     }
 }
