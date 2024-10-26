@@ -1,18 +1,23 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { UserConnectionDto } from "src/modules/user/dto/user-connection.model";
 import { User } from "src/modules/user/models/user.model";
 import { applySearchQuery } from "src/shared/helpers/search.helper";
 import { paginate } from "src/shared/pagination/services/paginate";
-import { createQueryBuilder, getManager } from "typeorm";
+import { Connection, createQueryBuilder, getManager, Repository } from "typeorm";
 import { CaseManagerFilter } from "../dto/case-manager.filter";
+import { CONNECTION } from "src/modules/tenancy/tenancy.symbols";
 
 
 @Injectable()
 export class CaseManagerService {
+    private userRepo: Repository<User>;
+    constructor(@Inject(CONNECTION) private readonly connection: Connection) {
+        this.userRepo = connection.getRepository(User);
+    }
 
     getPatientCaseManagers(caseManagerFilter: CaseManagerFilter): Promise<UserConnectionDto> {
 
-        const query = User
+        const query = this.userRepo
             .createQueryBuilder('caseManager');
 
         // apply global search
@@ -51,7 +56,7 @@ export class CaseManagerService {
 
     async unassignPatientCaseManager(patientId: number, userId: number): Promise<boolean> {
 
-        const result = await createQueryBuilder()
+        const result = await getManager(this.connection.name).createQueryBuilder()
             .delete()
             .from('patient_case_manager')
             .where({ patientId, userId })
@@ -63,7 +68,7 @@ export class CaseManagerService {
 
     async assignPatientCaseManager(patientId: number, userId: number): Promise<boolean> {
 
-        const caseManager = await getManager()
+        const caseManager = await getManager(this.connection.name)
             .createQueryBuilder()
             .from('patient_case_manager', 'patient_case_manager')
             .where({ patientId, userId })
@@ -73,7 +78,8 @@ export class CaseManagerService {
             return true;
         }
 
-        const result = await createQueryBuilder()
+
+        const result = await getManager(this.connection.name).createQueryBuilder()
             .insert()
             .into('patient_case_manager')
             .values([

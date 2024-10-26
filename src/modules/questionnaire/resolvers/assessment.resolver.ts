@@ -18,7 +18,7 @@ import { QuestionnaireAssessmentService } from '../services/questionnaire-assess
 import { AssessmentStatus } from '../enums/assessment-status.enum';
 
 @Resolver(() => QuestionnaireAssessment)
-export class AssessmentResolver {
+export class QuestionnaireAssessmentResolver {
     constructor(private assessmentService: QuestionnaireAssessmentService) { }
 
     @Query(() => QuestionnaireAssessment)

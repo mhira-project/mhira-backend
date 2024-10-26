@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from 'src/modules/permission/models/role.model';
-import { In, Repository } from 'typeorm';
+import { Connection, In, Repository } from 'typeorm';
 import { ReportInput, UpdateOneReportInput } from '../dtos/report-input';
 import { InjectQueryService, QueryService } from '@nestjs-query/core';
 import { ConnectionType } from '@nestjs-query/query-graphql';
@@ -9,23 +9,34 @@ import { ConnectionType } from '@nestjs-query/query-graphql';
 import { Report } from '../models/report.model';
 import { ReportQueryConnection } from '../dtos/report-args';
 import { User } from 'src/modules/user/models/user.model';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
+import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
 
 @Injectable()
-export class ReportService {
-    constructor(
-        @InjectRepository(Report)
-        private readonly reportRepository: Repository<Report>,
-        @InjectRepository(Role)
-        private readonly roleRepository: Repository<Role>,
-        @InjectQueryService(Report)
-        private readonly reportQueryService: QueryService<Report>,
-    ) {}
+export class DynamicReportsQueryService extends TypeOrmQueryService<Report> {
+    constructor(@Inject(CONNECTION) connection: Connection) {
+        super(connection.getRepository(Report));
+    }
+}
+
+@Injectable()
+export class ReportService extends TypeOrmQueryService<Report> {
+    private reportRepository: Repository<Report>;
+    private roleRepository: Repository<Role>;
+    private userRepository: Repository<User>;
+
+    constructor(@Inject(CONNECTION) private readonly connection: Connection) {
+        super(connection.getRepository(Report));
+        this.reportRepository = this.connection.getRepository(Report);
+        this.roleRepository = this.connection.getRepository(Role);
+        this.userRepository = this.connection.getRepository(User);
+    }
 
     getReports(query): Promise<ConnectionType<Report>> {
         return ReportQueryConnection.createFromPromise(
-            q => this.reportQueryService.query(q),
+            q => this.query(q),
             query,
-            q => this.reportQueryService.count(q),
+            q => this.count(q),
         );
     }
 
@@ -74,7 +85,7 @@ export class ReportService {
         resource: string,
         currentUser: User,
     ): Promise<Report[]> {
-        const user = await User.findOne({
+        const user = await this.userRepository.findOne({
             relations: ['roles'],
             where: { id: currentUser.id },
         });

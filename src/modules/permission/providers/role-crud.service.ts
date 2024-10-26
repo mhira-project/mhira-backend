@@ -1,13 +1,14 @@
 import { QueryService } from '@nestjs-query/core';
 import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Connection } from 'typeorm';
 import { Role } from '../models/role.model';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
+import { Inject } from '@nestjs/common';
 
 @QueryService(Role)
 export class RoleCrudService extends TypeOrmQueryService<Role> {
-    constructor(@InjectRepository(Role) repo: Repository<Role>) {
+    constructor(@Inject(CONNECTION) private readonly connection: Connection) {
         // pass the use soft delete option to the service.
-        super(repo, { useSoftDelete: true });
+        super(connection.getRepository(Role), { useSoftDelete: true });
     }
 }

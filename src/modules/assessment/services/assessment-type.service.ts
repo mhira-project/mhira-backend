@@ -1,19 +1,15 @@
 import {
     ConflictException,
+    Inject,
     Injectable,
     NotFoundException,
+    Scope,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Types } from 'mongoose';
-import { getConnection, IsNull, Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 import {
-    Filter,
-    InjectQueryService,
-    mergeFilter,
-    QueryService,
     SortDirection,
 } from '@nestjs-query/core';
-import { Assessment, FullAssessment } from '../models/assessment.model';
+import { Assessment } from '../models/assessment.model';
 import { ConnectionType } from '@nestjs-query/query-graphql';
 import { AssessmentType } from '../models/assessment-type.model';
 import {
@@ -25,19 +21,31 @@ import {
     UpdateAssessmentTypeInput,
 } from '../dtos/create-assessment-type.input';
 import { AssessmentTypeEnum } from '../enums/assessment-type.enum';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
+import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
+import { QueryService } from '@nestjs-query/core';
 
 @Injectable()
-export class AssessmentTypeService {
+export class DynamicAssessmentTypeQueryService extends TypeOrmQueryService<AssessmentType> {
+    constructor(@Inject(CONNECTION) connection: Connection) {
+        super(connection.getRepository(AssessmentType));
+    }
+}
+
+@QueryService(AssessmentType)
+export class AssessmentTypeService extends TypeOrmQueryService<AssessmentType> {
+    private assessmentRepository: Repository<Assessment>;
+    private assessmentTypeRepository: Repository<AssessmentType>;
+
     constructor(
-        @InjectRepository(Assessment)
-        private assessmentRepository: Repository<Assessment>,
-        @InjectRepository(AssessmentType)
-        private assessmentTypeRepository: Repository<AssessmentType>,
-        @InjectQueryService(AssessmentType)
-        private readonly assessmentTypeQueryService: QueryService<
-            AssessmentType
-        >,
-    ) {}
+        @Inject(CONNECTION) private readonly connection: Connection,
+    ) {
+        super(connection.getRepository(AssessmentType));
+        this.assessmentRepository = this.connection.getRepository(Assessment);
+        this.assessmentTypeRepository = this.connection.getRepository(
+            AssessmentType,
+        );
+    }
 
     async getAssessmentTypes(
         query: AssessmentTypeQuery,
@@ -50,9 +58,9 @@ export class AssessmentTypeService {
             : [{ field: 'id', direction: SortDirection.DESC }];
 
         const result: any = await AssessmentTypeConnection.createFromPromise(
-            q => this.assessmentTypeQueryService.query(q),
+            q => this.query(q),
             query,
-            q => this.assessmentTypeQueryService.count(q),
+            q => this.count(q),
         );
 
         return result;

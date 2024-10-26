@@ -1,7 +1,7 @@
 import { SortDirection } from '@nestjs-query/core';
 import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
-import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
-import { Module } from '@nestjs/common';
+import { NestjsQueryTypeOrmModule, TypeOrmQueryService } from '@nestjs-query/query-typeorm';
+import { Inject, Injectable, Module } from '@nestjs/common';
 import { GqlAuthGuard } from '../auth/auth.guard';
 import { UsePermission } from '../permission/decorators/permission.decorator';
 import { PermissionEnum } from '../permission/enums/permission.enum';
@@ -17,7 +17,7 @@ import { CaseManagerService } from './providers/case-manager.service';
 import { CaseManagerResolver } from './resolvers/case-manager.resolver';
 import { EmergencyContactResolver } from './resolvers/emergency-contact.resolver';
 import { PatientResolver } from './resolvers/patient.resolver';
-import { PatientQueryService } from './providers/patient-query.service';
+import { CustomPatientQueryService, PatientQueryService } from './providers/patient-query.service';
 import { QuestionnaireAssessmentService } from '../questionnaire/services/questionnaire-assessment.service';
 import {
     AssessmentSchema,
@@ -33,8 +33,12 @@ import { QuestionnaireModule } from '../questionnaire/questionnaire.module';
 import { PatientStatusService } from './providers/patient-status.service';
 import { Assessment } from '../assessment/models/assessment.model';
 import { Consent } from '../consent/models/consent.model';
+import { EmergencyContactService } from './providers/emergency-contact.service';
+import { AssessmentService } from '../assessment/services/assessment.service';
 
 const guards = [GqlAuthGuard, PermissionGuard];
+
+
 @Module({
     imports: [
         QuestionnaireModule,
@@ -63,6 +67,8 @@ const guards = [GqlAuthGuard, PermissionGuard];
                 ]),
             ],
 
+            services: [CustomPatientQueryService],
+
             // describe the resolvers you want to expose
             resolvers: [
                 {
@@ -70,6 +76,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     EntityClass: Patient,
                     CreateDTOClass: CreatePatientInput,
                     UpdateDTOClass: UpdatePatientInput,
+                    ServiceClass: CustomPatientQueryService,
                     guards: guards,
                     read: { disabled: true },
                     create: { disabled: true },
@@ -157,13 +164,16 @@ const guards = [GqlAuthGuard, PermissionGuard];
         }),
     ],
     providers: [
+        PatientResolver,
         CaseManagerService,
         CaseManagerResolver,
-        PatientResolver,
         EmergencyContactResolver,
         PatientQueryService,
+        CustomPatientQueryService,
         QuestionnaireAssessmentService,
         PatientStatusService,
+        EmergencyContactService,
+        AssessmentService,
     ],
     exports: [PatientQueryService],
 })

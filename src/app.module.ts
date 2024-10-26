@@ -23,6 +23,9 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MailModule } from './modules/mail/mail.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TenancyMiddleware } from './modules/tenancy/tenancy.middleware';
+import { TenancyModule } from './modules/tenancy/tenancy.module';
+import { TenantController } from './modules/tenancy/controllers/tenant.controller';
 
 @Module({
     imports: [
@@ -62,26 +65,28 @@ import { ScheduleModule } from '@nestjs/schedule';
                 );
             },
         }),
+        TenancyModule,
         UserModule,
         AuthModule,
         SharedModule,
         PermissionModule,
         PatientModule,
-        AssessmentModule,
         SettingModule,
         DepartmentModule,
         QuestionnaireModule,
         CaregiverModule,
+        AssessmentModule,
         ReportModule,
         DisclaimerModule,
         ConsentModule,
         MailModule,
     ],
-    controllers: [],
+    controllers: [TenantController],
     providers: [],
 })
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
+        consumer.apply(TenancyMiddleware).forRoutes('*');
         consumer.apply(graphqlUploadExpress()).forRoutes('graphql');
     }
 }

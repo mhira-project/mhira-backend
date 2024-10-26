@@ -1,23 +1,33 @@
-import { Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { User } from 'src/modules/user/models/user.model';
 import { Hash } from 'src/shared';
-import { Any } from 'typeorm';
+import { Any, Connection, Repository } from 'typeorm';
 import { MAX_ROLE_HIERARCHY, MIN_ROLE_HIERARCHY } from '../constants';
 import { PermissionEnum, systemPermissions as PermissionsMaster } from '../enums/permission.enum';
 import { RoleCode } from '../enums/role-code.enum';
 import { Permission } from '../models/permission.model';
 import { Role } from '../models/role.model';
-
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
+@Injectable()
 export class PermissionService implements OnModuleInit {
     private readonly logger = new Logger(PermissionService.name);
+    private permissionRepository: Repository<Permission>;
+    private roleRepository: Repository<Role>;
+    private userRepository: Repository<User>;
+
+    constructor(@Inject(CONNECTION) private connection: Connection) {
+        this.permissionRepository = this.connection.getRepository(Permission);
+        this.roleRepository = this.connection.getRepository(Role);
+        this.userRepository = this.connection.getRepository(User);
+    }
 
     async onModuleInit() {
         // Keep database permissions up-to-date
         await this.populatePermissionsInDB();
     }
 
-    private async populatePermissionsInDB() {
-        const dbPermissions = (await Permission.find()).map(
+    public async populatePermissionsInDB() {
+        const dbPermissions = (await this.permissionRepository.find()).map(
             permission => permission.name,
         );
 
@@ -38,7 +48,7 @@ export class PermissionService implements OnModuleInit {
                 permissionsToDelete.join(','),
             );
 
-            await Permission.createQueryBuilder()
+            await this.permissionRepository.createQueryBuilder()
                 .delete()
                 .where({ name: Any(permissionsToDelete) })
                 .execute();
@@ -49,7 +59,8 @@ export class PermissionService implements OnModuleInit {
                 'Adding missing permissions: ' + permissionsToCreate.join(','),
             );
 
-            await Permission.createQueryBuilder()
+            // @TODO tenancy check if correct 
+            await this.permissionRepository.createQueryBuilder()
                 .insert()
                 .into(Permission)
                 .values(
@@ -63,7 +74,7 @@ export class PermissionService implements OnModuleInit {
         }
 
         // Auto Create Super-admin role if not exists
-        let superAdminRole = await Role.findOne({ code: RoleCode.SUPER_ADMIN });
+        let superAdminRole = await this.roleRepository.findOne({ code: RoleCode.SUPER_ADMIN });
         if (!superAdminRole) {
             this.logger.log(
                 'Role Super Admin not found in DB. System seeding it',
@@ -73,11 +84,11 @@ export class PermissionService implements OnModuleInit {
             superAdminRole.name = 'Super Admin';
             superAdminRole.code = RoleCode.SUPER_ADMIN;
             superAdminRole.hierarchy = MIN_ROLE_HIERARCHY;
-            await superAdminRole.save();
+            await this.roleRepository.save(superAdminRole);
         }
 
         // Auto Create No-Role role if not exists
-        let noRole = await Role.findOne({ code: RoleCode.NO_ROLE });
+        let noRole = await this.roleRepository.findOne({ code: RoleCode.NO_ROLE });
         if (!noRole) {
             this.logger.log('Role No-Role not found in DB. System seeding it');
 
@@ -85,16 +96,16 @@ export class PermissionService implements OnModuleInit {
             noRole.name = 'Default';
             noRole.code = RoleCode.NO_ROLE;
             noRole.hierarchy = MAX_ROLE_HIERARCHY;
-            await noRole.save();
+            await this.roleRepository.save(noRole);
         }
 
         // Assign all permissions to Super Admin
-        const allPermissions = await Permission.find();
+        const allPermissions = await this.permissionRepository.find();
         superAdminRole.permissions = allPermissions;
-        await superAdminRole.save();
+        await this.roleRepository.save(superAdminRole);
 
         // Refetch super admin role from DB with its users
-        superAdminRole = await Role.findOne({
+        superAdminRole = await this.roleRepository.findOne({
             where: { code: RoleCode.SUPER_ADMIN },
             relations: ['users'],
         });
@@ -121,13 +132,14 @@ export class PermissionService implements OnModuleInit {
 
             this.logger.verbose(`User ${username} created with default password=${password}`);
 
-            await superAdminUser.save();
+            await this.userRepository.save(superAdminUser);
         }
     }
 
-    static async userPermissionGrants(userId: number): Promise<Permission[]> {
+    static async userPermissionGrants(userId: number, connection: Connection): Promise<Permission[]> {
         // re-select the user
-        const user = await User.findOne({
+        // @TODO tenancy update to use connection
+        const user = await connection.getRepository(User).findOne({
             relations: ['permissions', 'roles'],
             where: { id: userId },
         });
@@ -136,7 +148,7 @@ export class PermissionService implements OnModuleInit {
 
         const roleIds = user.roles.map(role => role.id);
 
-        const roles = await Role.find({
+        const roles = await connection.getRepository(Role).find({
             relations: ['permissions'],
             where: { id: Any(roleIds) },
         });
@@ -151,9 +163,9 @@ export class PermissionService implements OnModuleInit {
         ];
     }
 
-    static async userCan(userId: number, action: string) {
+    static async userCan(userId: number, action: string, connection: Connection) {
 
-        const userPermissions = await PermissionService.userPermissionGrants(userId);
+        const userPermissions = await PermissionService.userPermissionGrants(userId, connection);
 
         return !!userPermissions.find(permission => permission.name === action)
     }
@@ -164,16 +176,18 @@ export class PermissionService implements OnModuleInit {
      * @param targetUser target to compare with
      * @returns true when currentUser has stronger hierarchy than targetUser
      */
-    static async compareHierarchy(currentUser: User | number, targetUser: User | number): Promise<boolean> {
+    static async compareHierarchy(currentUser: User | number, targetUser: User | number, connection: Connection): Promise<boolean> {
+        const userRepository = connection.getRepository(User)
         if (typeof currentUser === 'number') {
-            currentUser = await User.findOneOrFail({
+            // @TODO tenancy update to use connection
+            currentUser = await userRepository.findOneOrFail({
                 where: { id: currentUser },
                 relations: ['roles'],
             });
         }
 
         if (typeof targetUser === 'number') {
-            targetUser = await User.findOneOrFail({
+            targetUser = await userRepository.findOneOrFail({
                 where: { id: targetUser },
                 relations: ['roles'],
             });

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Scope } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { AuthenticationError } from 'apollo-server-express';
 import * as moment from 'moment';
@@ -8,23 +8,32 @@ import { CacheService } from 'src/shared';
 import { Str } from 'src/shared/helpers/string.helper';
 import { JwtPayload } from '../jwt-payload.interface';
 import { AccessToken } from '../models/access-token.model';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
+import { Connection, Repository } from 'typeorm';
 
 @Injectable()
 export class AccessTokenService {
+    private accessTokenRepository: Repository<AccessToken>;
     constructor(
         private jwtService: JwtService,
         private cacheService: CacheService,
-    ) {}
+        @Inject(CONNECTION) private readonly connection: Connection
+    ) {
+        this.accessTokenRepository = connection.getRepository(AccessToken);
+    }
 
-    async validateAccessToken(tokenId: string): Promise<User> {
-        if (!tokenId)
+    async validateAccessToken(accessToken: string): Promise<User> {
+        if (!accessToken)
             throw new AuthenticationError(
                 'Authentication error! No access token provided.',
             );
 
+        const tokenData = await this.jwtService.verifyAsync(accessToken);
+
+        const { jti: tokenId } = tokenData;
         await this.validateTokenActivity(tokenId);
 
-        const token = await AccessToken.findOne({
+        const token = await this.accessTokenRepository.findOne({
             where: {
                 id: tokenId,
                 isRevoked: false,
@@ -44,7 +53,7 @@ export class AccessTokenService {
 
     async revokeTokens(user: User): Promise<boolean> {
         Logger.debug('logging out!');
-        const tokens = await AccessToken.find({ where: { userId: user.id } });
+        const tokens = await this.accessTokenRepository.find({ where: { userId: user.id } });
 
         for (const token of tokens) {
             await this.revokeTokenActivity(token.id);
@@ -65,13 +74,14 @@ export class AccessTokenService {
             .add(expiresIn, 'second')
             .toDate();
 
-        const token = AccessToken.create({
+
+        const token = this.accessTokenRepository.create({
             id: tokenId,
             userId: user.id,
             expiresAt: expiresAt,
         });
 
-        await token.save();
+        await this.accessTokenRepository.save(token);
 
         // Cache token
         await this.setTokenActivity(tokenId);

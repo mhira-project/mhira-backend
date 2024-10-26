@@ -1,44 +1,31 @@
-import { ExecutionContext, Injectable, Logger } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, Scope } from '@nestjs/common';
+import { AccessTokenService } from './providers/access-token.service';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { AuthGuard } from '@nestjs/passport';
-import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
-import { AuthenticationError } from 'apollo-server-express';
-import { Reflector } from '@nestjs/core';
 
-@Injectable()
-export class GqlAuthGuard extends AuthGuard('jwt') {
-  constructor(private reflector: Reflector) {
-    super();
-  }
+@Injectable({ scope: Scope.REQUEST }) // this is specifically needed because we get verifyAsync error 
+export class GqlAuthGuard implements CanActivate {
+    constructor(private readonly accessTokenService: AccessTokenService) { }
 
-  protected readonly logger = new Logger(GqlAuthGuard.name);
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+        const ctx = GqlExecutionContext.create(context);
+        const { req } = ctx.getContext();
+        const token = this.extractTokenFromHeader(req);
 
-  canActivate(context: ExecutionContext) {
-    const ctx = GqlExecutionContext.create(context);
-    const { req } = ctx.getContext();
+        if (!token) {
+            return false;
+        }
 
-    return super.canActivate(
-      new ExecutionContextHost([req]),
-    );
-  }
+        const payload = await this.accessTokenService.validateAccessToken(token);
+        if (!payload) {
+            return false;
+        }
 
-  handleRequest(err: any, user: any) {
-
-    if (err) {
-      this.logger.error(`Auth Error! ${err.message}`);
-      throw err;
+        req.user = payload;
+        return true;
     }
 
-    if (!user) {
-      this.logger.error('Auth Error! User not found');
-      throw new AuthenticationError('Auth Error! User not found');
+    private extractTokenFromHeader(request): string | null {
+        const [type, token] = request.headers.authorization?.split(' ') ?? [];
+        return type === 'Bearer' ? token : null;
     }
-
-    if (!user.active) {
-      this.logger.error('Auth Error! User de-activated');
-      throw new AuthenticationError('Auth Error! User de-activated, please contact your administrator.');
-    }
-
-    return user;
-  }
 }

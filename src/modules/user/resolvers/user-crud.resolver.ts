@@ -4,7 +4,7 @@ import {
     FilterType,
     UpdateManyResponseType,
 } from '@nestjs-query/query-graphql';
-import { UseGuards } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import {
     Resolver,
     Args,
@@ -27,6 +27,7 @@ import { UserCrudService } from '../providers/user-crud.service';
 import { PermissionService } from '../../permission/providers/permission.service';
 import { Permission } from 'src/modules/permission/models/permission.model';
 import { DeleteOneUserInput } from '../dto/delete-one-user.input';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
 
 @Resolver(() => User)
 @UseGuards(GqlAuthGuard, PermissionGuard)
@@ -41,7 +42,7 @@ export class UserCrudResolver extends CRUDResolver(User, {
     update: { disabled: true },
     delete: { disabled: true },
 }) {
-    constructor(readonly service: UserCrudService) {
+    constructor(readonly service: UserCrudService, @Inject(CONNECTION) private readonly connection) {
         super(service);
     }
 
@@ -122,6 +123,6 @@ export class UserCrudResolver extends CRUDResolver(User, {
     })
     @UseGuards(GqlAuthGuard)
     permissionGrants(@Parent() user: User): Promise<Permission[]> {
-        return PermissionService.userPermissionGrants(user.id);
+        return PermissionService.userPermissionGrants(user.id, this.connection);
     }
 }

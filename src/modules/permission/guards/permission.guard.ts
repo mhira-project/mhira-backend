@@ -1,14 +1,16 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { ForbiddenError } from 'apollo-server-express';
 import { PermissionService } from '../providers/permission.service';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
 
     constructor(
         private readonly reflector: Reflector,
+        @Inject(CONNECTION) private readonly connection,
     ) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -18,7 +20,7 @@ export class PermissionGuard implements CanActivate {
         if (!userId) return false;
 
         // get permissions of user
-        const permissionGrants = await PermissionService.userPermissionGrants(userId);
+        const permissionGrants = await PermissionService.userPermissionGrants(userId, this.connection);
 
         // Check each required permission is available on User
         // Return failure on first missing permission

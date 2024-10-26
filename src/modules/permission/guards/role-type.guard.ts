@@ -1,12 +1,17 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { ForbiddenError } from 'apollo-server-express';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
 import { User } from 'src/modules/user/models/user.model';
+import { Connection, Repository } from 'typeorm';
 
 @Injectable()
 export class RoleTypeGuard implements CanActivate {
-    constructor(private readonly reflector: Reflector) { }
+    private userRepository: Repository<User>;
+    constructor(private readonly reflector: Reflector, @Inject(CONNECTION) private connection: Connection) {
+        this.userRepository = connection.getRepository(User);
+    }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const ctx = GqlExecutionContext.create(context);
@@ -51,7 +56,7 @@ export class RoleTypeGuard implements CanActivate {
         }
 
         // Refetch user model with roles relation
-        const userModel = await User.findOne({
+        const userModel = await this.userRepository.findOne({
             relations: ['roles'],
             where: { id: user.id },
         });

@@ -3,10 +3,10 @@ import { Patient } from "../models/patient.model";
 import { User } from "src/modules/user/models/user.model";
 import { PermissionService } from 'src/modules/permission/providers/permission.service';
 import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
-import { UnauthorizedException } from '@nestjs/common';
+import { Inject, UnauthorizedException } from '@nestjs/common';
+import { Connection, In } from 'typeorm';
 
 export class PatientAuthorizer {
-
     /**
      * Returns a filter of the Patients Query,
      * By the current user id's departments.
@@ -14,15 +14,18 @@ export class PatientAuthorizer {
      * @param userId 
      * @returns 
      */
-    static async authorizePatient(userId: number): Promise<Filter<Patient>> {
+    static async authorizePatient(userId: number, connection: Connection): Promise<Filter<Patient>> {
+        if (!connection) {
+            throw new UnauthorizedException(`Connection not found!`);
+        }
 
         // Reload current user with departments
-        const currentUser = await User.findOne({
+        const currentUser = await connection.getRepository(User).findOne({
             where: { id: userId },
             relations: ['departments'],
         });
 
-        if (await PermissionService.userCan(currentUser.id, PermissionEnum.VIEW_ALL_PATIENTS)) {
+        if (await PermissionService.userCan(currentUser.id, PermissionEnum.VIEW_ALL_PATIENTS, connection)) {
             return {};
         }
 

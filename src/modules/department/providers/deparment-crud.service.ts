@@ -1,15 +1,16 @@
 import { DeleteManyResponse, Filter, QueryService } from '@nestjs-query/core';
 import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
-import { BadRequestException, Logger } from '@nestjs/common';
+import { BadRequestException, Inject, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 import { Department } from '../models/department.model';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
 
 @QueryService(Department)
 export class DepartmentCrudService extends TypeOrmQueryService<Department> {
-    constructor(@InjectRepository(Department) repo: Repository<Department>) {
+    constructor(@InjectRepository(Department) repo: Repository<Department>, @Inject(CONNECTION) connection: Connection) {
         // pass the use soft delete option to the service.
-        super(repo, { useSoftDelete: true });
+        super(connection.getRepository(Department), { useSoftDelete: true });
     }
 
     async deleteOne(id: number | string): Promise<Department> {

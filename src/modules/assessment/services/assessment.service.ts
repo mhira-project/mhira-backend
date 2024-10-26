@@ -1,7 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Inject, Injectable, NotFoundException, Scope } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { getConnection, Repository } from 'typeorm';
+import { Connection, getConnection, Repository } from 'typeorm';
 import {
     CreateFullAssessmentInput,
     UpdateFullAssessmentInput,
@@ -10,9 +9,7 @@ import { Assessment, FullPublicAssessment, FullAssessment } from '../models/asse
 import { QuestionnaireAssessmentService } from '../../questionnaire/services/questionnaire-assessment.service';
 import {
     Filter,
-    InjectQueryService,
     mergeFilter,
-    QueryService,
     SortDirection,
 } from '@nestjs-query/core';
 import {
@@ -23,27 +20,37 @@ import { PatientAuthorizer } from 'src/modules/patient/authorizers/patient.autho
 import { User } from 'src/modules/user/models/user.model';
 import { ConnectionType } from '@nestjs-query/query-graphql';
 import { PatientQueryService } from 'src/modules/patient/providers/patient-query.service';
-import { Caregiver } from 'src/modules/caregiver/models/caregiver.model';
 import { AssessmentStatus } from 'src/modules/questionnaire/enums/assessment-status.enum';
 import { AssessmentType } from '../models/assessment-type.model';
 import { AssessmentEmailStatus } from '../enums/assessment-emailstatus.enum';
 import { Validator } from 'src/shared';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
+import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
+import { QueryService } from '@nestjs-query/core';
 
 @Injectable()
-export class AssessmentService {
+export class DynamicAssessmentQueryService extends TypeOrmQueryService<Assessment> {
+    constructor(@Inject(CONNECTION) connection: Connection) {
+        super(connection.getRepository(Assessment));
+    }
+}
+
+@QueryService(Assessment)
+export class AssessmentService extends TypeOrmQueryService<Assessment> {
+    private assessmentRepository: Repository<Assessment>;
+    private userRepository: Repository<User>;
+    private assessmentTypeRepo: Repository<AssessmentType>;
+
     constructor(
+        @Inject(CONNECTION) private connection: Connection,
         private questionnaireAssessmentService: QuestionnaireAssessmentService,
-        @InjectRepository(Assessment)
-        private assessmentRepository: Repository<Assessment>,
-        @InjectRepository(User) private userRepository: Repository<User>,
-        @InjectRepository(Caregiver)
-        private caregiverRepository: Repository<Caregiver>,
-        @InjectQueryService(Assessment)
-        private readonly assessmentQueryService: QueryService<Assessment>,
-        @InjectRepository(AssessmentType)
-        private readonly assessmentTypeRepo: Repository<AssessmentType>,
         private readonly patientQueryService: PatientQueryService,
-    ) { }
+    ) {
+        super(connection.getRepository(Assessment));
+        this.assessmentRepository = this.connection.getRepository(Assessment);
+        this.userRepository = this.connection.getRepository(User);
+        this.assessmentTypeRepo = this.connection.getRepository(AssessmentType);
+    }
 
     getQuestionnaireAssessment(id: string) {
         return this.questionnaireAssessmentService.getById(id);
@@ -60,8 +67,10 @@ export class AssessmentService {
         query: AssessmentQuery,
         currentUser: User,
     ): Promise<ConnectionType<Assessment>> {
+
         const patientAuthorizeFilter = await PatientAuthorizer.authorizePatient(
             currentUser?.id,
+            this.connection
         );
         /**
          * Get Current User's patients
@@ -99,9 +108,9 @@ export class AssessmentService {
             : [{ field: 'id', direction: SortDirection.DESC }];
 
         const result: any = await AssessmentConnection.createFromPromise(
-            q => this.assessmentQueryService.query(q),
+            q => this.query(q),
             query,
-            q => this.assessmentQueryService.count(q),
+            q => this.count(q),
         );
 
         for (let i = 0; i < result.edges.length; i++) {
@@ -125,6 +134,7 @@ export class AssessmentService {
     ): Promise<Assessment> {
         const patientAuthorizeFilter = await PatientAuthorizer.authorizePatient(
             currentUser?.id,
+            this.connection
         );
 
         const combinedFilter = mergeFilter(
@@ -132,7 +142,7 @@ export class AssessmentService {
             { patient: patientAuthorizeFilter },
         );
 
-        const assessments = await this.assessmentQueryService.query({
+        const assessments = await this.query({
             paging: { limit: 1 },
             filter: combinedFilter,
         });
@@ -232,7 +242,7 @@ export class AssessmentService {
                     assessment.receiverEmail = assessmentInput.receiverEmail;
                 }
 
-                await assessment.save();
+                await this.assessmentRepository.save(assessment);
                 assessmentArray.push(assessment);
             } catch (err) {
                 // undo mongo assessment and rethrow
@@ -357,7 +367,7 @@ export class AssessmentService {
                 }
                 assessment.receiverEmail = assessmentInput.receiverEmail;
             }
-            await assessment.save();
+            await this.assessmentRepository.save(assessment);
         } catch (err) {
             // undo mongo changes
             await this.questionnaireAssessmentService.updateAssessment(
@@ -372,7 +382,7 @@ export class AssessmentService {
 
     public async deleteAssessment(id: number, statusCancel = true) {
         const assessment = await this.assessmentRepository.findOneOrFail(id);
-        const queryRunner = getConnection().createQueryRunner();
+        const queryRunner = this.connection.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
 
@@ -390,6 +400,10 @@ export class AssessmentService {
         } finally {
             await queryRunner.release();
         }
+    }
+
+    public async deleteAssessmentByPatientId(patientId: number) {
+        return await this.assessmentRepository.delete({ patientId: patientId });
     }
 
     async archiveOneAssessment(id: number) {

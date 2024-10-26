@@ -1,12 +1,12 @@
 import { QueryService, mergeFilter } from '@nestjs-query/core';
 import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Connection, Not, Repository } from 'typeorm';
 import { Patient, PatientReport } from '../models/patient.model';
 import { CreatePatientInput } from '../dto/create-patient.input';
 import { User } from 'src/modules/user/models/user.model';
 import { PatientAuthorizer } from '../authorizers/patient.authorizer';
-import { Inject, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { QuestionnaireAssessmentService } from 'src/modules/questionnaire/services/questionnaire-assessment.service';
 import { QuestionnaireAssessment } from 'src/modules/questionnaire/models/questionnaire-assessment.schema';
 import { IAnswerMap } from 'src/modules/questionnaire/models/answer.schema';
@@ -20,6 +20,14 @@ import {
 } from 'src/modules/assessment/models/assessment.model';
 import { QuestionnaireScriptService } from 'src/modules/questionnaire/services/questionnaire-script.service';
 import { Exception } from 'handlebars';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
+
+@Injectable()
+export class CustomPatientQueryService extends TypeOrmQueryService<Patient> {
+    constructor(@Inject(CONNECTION) connection: Connection) {
+        super(connection.getRepository(Patient));
+    }
+}
 
 @QueryService(Patient)
 export class PatientQueryService extends TypeOrmQueryService<Patient> {
@@ -28,9 +36,10 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
     @Inject(QuestionnaireScriptService)
     questionnaireScriptService: QuestionnaireScriptService;
 
-    constructor(@InjectRepository(Patient) repo: Repository<Patient>) {
+    constructor(@Inject(CONNECTION) private connection: Connection) {
         // pass the use soft delete option to the service.
-        super(repo);
+        super(connection.getRepository(Patient));
+        console.log(connection.name)
     }
 
     /**
@@ -45,6 +54,7 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
     async getOnePatient(currentUser: User, patientId: number) {
         const authorizeFilter = await PatientAuthorizer.authorizePatient(
             currentUser?.id,
+            this.connection
         );
 
         const combinedFilter = mergeFilter(
@@ -280,5 +290,22 @@ export class PatientQueryService extends TypeOrmQueryService<Patient> {
             results = results.concat(questions);
         }
         return results;
+    }
+
+    async getPatientByMedicalRecordNo(medicalRecordNo: string, id: number | string) {
+        const exists = await this.repo.findOne({
+            where: {
+                medicalRecordNo,
+                id: Not(id),
+            },
+        });
+
+        console.log('exists', exists)
+
+        if (exists) {
+            throw new BadRequestException(
+                'Patient with same Medical Record No. already exists',
+            );
+        }
     }
 }

@@ -12,23 +12,28 @@ import { AssessmentStatus } from '../enums/assessment-status.enum';
 import { UserInputError } from 'apollo-server-express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
-import { Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 import { QuestionnaireBundle } from '../models/questionnaire-bundle.schema';
 import { Consent } from 'src/modules/consent/models/consent.model';
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
+import { Inject } from '@nestjs/common';
 
 export class QuestionnaireAssessmentService {
+    private assessmentRepository: Repository<Assessment>
+
     constructor(
+        @Inject(CONNECTION) private connection: Connection,
         @InjectModel(QuestionnaireAssessment.name)
         private assessmentModel: Model<QuestionnaireAssessment>,
         @InjectModel(Answer.name)
         private answerModel: Model<Answer>,
         @InjectModel(Questionnaire.name)
         private questionnaireModel: Model<Questionnaire>,
-        @InjectRepository(Assessment)
-        private assessmentRepository: Repository<Assessment>,
         @InjectRepository(Consent)
         private consentRepository: Repository<Consent>,
-    ) { }
+    ) {
+        this.assessmentRepository = connection.getRepository(Assessment);
+    }
 
     async createNewAssessment(
         questionnaires: Types.ObjectId[],

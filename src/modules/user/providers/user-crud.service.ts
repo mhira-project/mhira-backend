@@ -1,22 +1,33 @@
 import { QueryService } from '@nestjs-query/core';
 import { TypeOrmQueryService } from '@nestjs-query/query-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 import { User } from '../models/user.model';
 import * as moment from 'moment';
 import { CreateUserInput } from '../dto/create-user.input';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Role } from 'src/modules/permission/models/role.model';
 import { RoleCode } from 'src/modules/permission/enums/role-code.enum';
 import { UpdateUserInput } from '../dto/update-user.input';
 import { PermissionService } from 'src/modules/permission/providers/permission.service';
-import {Hash} from "../../../shared";
+import { Hash } from "../../../shared";
+import { CONNECTION } from 'src/modules/tenancy/tenancy.symbols';
 
+@Injectable()
+export class DynamicUserQueryService extends TypeOrmQueryService<User> {
+    constructor(@Inject(CONNECTION) connection: Connection) {
+        super(connection.getRepository(User));
+    }
+}
 @QueryService(User)
 export class UserCrudService extends TypeOrmQueryService<User> {
-    constructor(@InjectRepository(User) repo: Repository<User>) {
+    private roleRepository: Repository<Role>;
+    private userRepository: Repository<User>;
+    constructor(@Inject(CONNECTION) private readonly connection: Connection) {
         // pass the use soft delete option to the service.
-        super(repo);
+        super(connection.getRepository(User));
+        this.roleRepository = connection.getRepository(Role);
+        this.userRepository = connection.getRepository(User);
     }
 
     async createOne(input: CreateUserInput): Promise<User> {
@@ -34,11 +45,11 @@ export class UserCrudService extends TypeOrmQueryService<User> {
         user.passwordExpiresAt = moment().toDate();
         user.password = await Hash.make(user.password);
 
-        const defaultRole = await Role.findOne({ code: RoleCode.NO_ROLE });
+        const defaultRole = await this.roleRepository.findOne({ code: RoleCode.NO_ROLE });
 
         if (defaultRole) {
             user.roles = [defaultRole];
-            await user.save();
+            await this.userRepository.save(user);
         }
 
         return user;
@@ -50,7 +61,7 @@ export class UserCrudService extends TypeOrmQueryService<User> {
         currentUser: User,
     ): Promise<User> {
         // Validate permission hierachy
-        if (!(await PermissionService.compareHierarchy(currentUser.id, +id))) {
+        if (!(await PermissionService.compareHierarchy(currentUser.id, +id, this.connection))) {
             throw new BadRequestException(
                 'Permission denied to modify user! User has higher or equal role than current user',
             );
@@ -86,7 +97,7 @@ export class UserCrudService extends TypeOrmQueryService<User> {
     }
 
     async deleteOneUser(id: number, currentUser: User): Promise<boolean> {
-        if (!(await PermissionService.compareHierarchy(currentUser.id, +id))) {
+        if (!(await PermissionService.compareHierarchy(currentUser.id, +id, this.connection))) {
             throw new BadRequestException(
                 'Permission denied to delete user! User has higher or equal role than current user',
             );

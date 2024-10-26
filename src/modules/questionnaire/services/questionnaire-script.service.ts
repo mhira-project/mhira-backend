@@ -30,7 +30,7 @@ export class QuestionnaireScriptService {
         >,
         @InjectModel(Questionnaire.name)
         private questionnaireModel: Model<Questionnaire>,
-    ) {}
+    ) { }
     async createNewScript(input: CreateQuestionnaireScriptInput) {
         const { scriptText, reportIds, questionnaireId, ...rest } = input;
         const scriptTexts = await this.readFileUpload(scriptText);
