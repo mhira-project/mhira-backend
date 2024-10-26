@@ -1,4 +1,6 @@
-import { Connection, createConnection, getConnectionManager } from 'typeorm';
+import { configService } from 'src/config/config.service';
+import { Connection, createConnection, getConnection, getConnectionManager, Repository } from 'typeorm';
+import { Tenant } from './models/tenant.model';
 
 export function getTenantConnection(tenantId: string): Promise<Connection> {
     const connectionName = tenantId;
@@ -9,18 +11,27 @@ export function getTenantConnection(tenantId: string): Promise<Connection> {
     }
 
     return createConnection({
+        ...configService.getTypeOrmConfigTenants(),
         name: connectionName,
-        type: process.env.TYPEORM_CONNECTION as 'postgres',
-        host: process.env.TYPEORM_HOST,
-        port: parseInt(process.env.TYPEORM_PORT, 10),
-        username: process.env.TYPEORM_USERNAME,
-        password: process.env.TYPEORM_PASSWORD,
-        database: tenantId,
-        logging: process.env.TYPEORM_LOGGING === 'true',
-        entities: [
-            __dirname + process.env.TYPEORM_ENTITIES_DIR,
-        ],
-        synchronize:
-            process.env.TYPEORM_SYNCHRONIZE === 'true',
+        schema: connectionName,
     });
+}
+
+export async function runTenantsMigration() {
+    const tenants = await Tenant.find();
+
+    await Promise.all(tenants.map(async tenant => {
+        const connection = await getTenantConnection(tenant.subdomain);
+        await connection.runMigrations();
+        await connection.close();
+    }));
+}
+
+export async function runMainMigrations() {
+    await getConnection().runMigrations();
+}
+
+export async function runMigrations() {
+    await runMainMigrations();
+    await runTenantsMigration();
 }

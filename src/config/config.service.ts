@@ -1,7 +1,9 @@
+import { join } from "path";
+
 require('dotenv').config();
 
 class ConfigService {
-    constructor(private env: { [k: string]: string | undefined }) {}
+    constructor(private env: { [k: string]: string | undefined }) { }
 
     private getValue(key: string, throwOnMissing = true, defaultValue?: string): string {
         const value = this.env[key];
@@ -11,7 +13,7 @@ class ConfigService {
         }
 
         // Return default value if not found.
-        if(!value && defaultValue !== undefined) {
+        if (!value && defaultValue !== undefined) {
             return defaultValue;
         }
 
@@ -38,7 +40,7 @@ class ConfigService {
     public getFrontendEncryptionKey() {
         return this.getValue('FRONTEND_ENCRYPTION_KEY', true)
     }
- 
+
     public isProduction() {
         const mode = this.getValue('MODE', false);
         return mode != 'DEV';
@@ -69,6 +71,9 @@ class ConfigService {
         const migrationsDir: string[] = [
             __dirname + this.getValue('TYPEORM_MIGRATIONS_DIR'),
         ];
+
+
+
         return {
             type: this.getValue('TYPEORM_CONNECTION') as 'postgres',
             host: this.getValue('TYPEORM_HOST'),
@@ -83,20 +88,30 @@ class ConfigService {
                 migrationsDir,
             },
             migrationsRun: this.getValue('TYPEORM_MIGRATIONS_RUN') === 'true',
-            migrations: ['../dist/migrations/*.{js}'],
+            migrations: [join(__dirname, '../migrations/main/*.js')],
+            migrationsDir: '../dist/migrations',
+        };
+    }
+
+    public getTypeOrmConfigTenants(): any {
+        const defaultConfig = this.getTypeOrmConfig();
+
+        return {
+            ...defaultConfig,
+            migrations: [join(__dirname, '../migrations/tenants/*.js')],
         };
     }
 
     public getMailerConfig(): any {
         return {
             transport: {
-              host: this.getValue('MAIL_HOST'),
-              secure: this.getValue('MAIL_SECURE') && this.getValue('MAIL_SECURE').toLowerCase() === 'true',
-              port: this.getValue('MAIL_PORT'),
-              auth: {
-                user: this.getValue('MAIL_USER'),
-                pass: this.getValue('MAIL_PASS')
-              },
+                host: this.getValue('MAIL_HOST'),
+                secure: this.getValue('MAIL_SECURE') && this.getValue('MAIL_SECURE').toLowerCase() === 'true',
+                port: this.getValue('MAIL_PORT'),
+                auth: {
+                    user: this.getValue('MAIL_USER'),
+                    pass: this.getValue('MAIL_PASS')
+                },
             },
         }
     }

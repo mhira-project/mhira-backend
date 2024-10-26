@@ -23,6 +23,9 @@ export class ChangePasswordService {
 
     constructor(@Inject(CONNECTION) private readonly connection: Connection, private readonly setting: SettingService) {
         this.userRepository = connection.getRepository(User);
+        this.userPreviousPasswordRepository = connection.getRepository(
+            UserPreviousPassword,
+        );
     }
 
     async changeOwnPassword(

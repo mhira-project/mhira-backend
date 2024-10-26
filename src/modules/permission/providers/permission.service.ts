@@ -26,7 +26,7 @@ export class PermissionService implements OnModuleInit {
         await this.populatePermissionsInDB();
     }
 
-    private async populatePermissionsInDB() {
+    public async populatePermissionsInDB() {
         const dbPermissions = (await this.permissionRepository.find()).map(
             permission => permission.name,
         );

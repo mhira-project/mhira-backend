@@ -3,6 +3,9 @@ import { REQUEST } from '@nestjs/core';
 import { getTenantConnection } from './tenancy.utils';
 
 import { CONNECTION } from './tenancy.symbols';
+import { TenantService } from './providers/tenants.service';
+import { Tenant } from './models/tenant.model';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 
 const connectionFactory = {
@@ -12,7 +15,7 @@ const connectionFactory = {
         const { subdomain } = request.req;
 
         if (!subdomain) {
-            throw new Error('Subdomain not found');
+            throw new Error('Tenant not found');
         }
 
         return getTenantConnection(subdomain);
@@ -22,7 +25,9 @@ const connectionFactory = {
 
 @Global()
 @Module({
-    providers: [connectionFactory],
-    exports: [CONNECTION],
+    imports: [TypeOrmModule.forFeature([Tenant])],
+    providers: [connectionFactory, TenantService],
+    exports: [CONNECTION, TenantService],
+    controllers: [],
 })
 export class TenancyModule { }
