@@ -3,9 +3,11 @@ import { systemPermissions } from 'src/modules/permission/enums/permission.enum'
 
 export class ReportPermission1649060292752 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
+        const schemaName = queryRunner.connection.name;
+
         for (const permission of systemPermissions) {
             await queryRunner.query(
-                `INSERT INTO permission (name, "group") SELECT '${permission.name}', '${permission.group}' WHERE NOT EXISTS ( select 1 from permission where name='${permission.name}');`,
+                `INSERT INTO ${schemaName}.permission (name, "group") SELECT '${permission.name}', '${permission.group}' WHERE NOT EXISTS ( select 1 from permission where name='${permission.name}');`,
             );
         }
     }

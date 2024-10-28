@@ -1,7 +1,7 @@
 import { MigrationInterface } from 'typeorm';
 
 const MongoClient = require('mongodb').MongoClient;
-const configService = require('../config/config.service').configService;
+const configService = require('../../config/config.service').configService;
 
 export class QuestionnaireVersion1645105081399 implements MigrationInterface {
     public async up(): Promise<void> {

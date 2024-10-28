@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 const MongoClient = require('mongodb').MongoClient;
-const configService = require('../config/config.service').configService;
+const configService = require('../../config/config.service').configService;
 
 export class CleanQuestionnaireVersions1650359016504
     implements MigrationInterface {

@@ -2,8 +2,10 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class QuestionnaireScripts1647594443498 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
+        const schemaName = queryRunner.connection.name;
+
         await queryRunner.query(`
-        create table IF NOT EXISTS questionnaire_script
+        create table IF NOT EXISTS ${schemaName}.questionnaire_script
      (
          id               serial
          constraint "PK_a486e98875eace5a6257fd6b2f9"
@@ -21,30 +23,32 @@ export class QuestionnaireScripts1647594443498 implements MigrationInterface {
          `);
 
         await queryRunner.query(`
-         create table IF NOT EXISTS questionnaire_script_report
+         create table IF NOT EXISTS ${schemaName}.questionnaire_script_report
          (
              id          serial
              constraint "PK_e5a0d33828fecb338f4cca87342"
                  primary key,
          "questionnaireScriptId"  integer                 not null
              constraint "FK_dbe4c661ea2447fb4c48befba91"
-                 references questionnaire_script,
+                 references ${schemaName}.questionnaire_script,
                  
          "reportId"    integer                 not null
              constraint "FK_6d65a158f4b7b750b2966f0eac5"
-                 references report
+                 references ${schemaName}.report
          );
      
              `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        const schemaName = queryRunner.connection.name;
+
         await queryRunner.query(`
-        drop table questionnaire_script
+        drop table ${schemaName}questionnaire_script
          `);
 
         await queryRunner.query(`
-         drop table questionnaire_script_report
+         drop table ${schemaName}.questionnaire_script_report
           `);
     }
 }

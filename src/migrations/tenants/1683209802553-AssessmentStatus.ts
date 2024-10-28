@@ -2,11 +2,13 @@ import { Types } from 'mongoose';
 import { AssessmentStatus } from 'src/modules/questionnaire/enums/assessment-status.enum';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-const configService = require('../config/config.service').configService;
+const configService = require('../../config/config.service').configService;
 const MongoClient = require('mongodb').MongoClient;
 
 export class AssessmentStatus1683188215805 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
+        const schemaName = queryRunner.connection.name;
+
         const client = new MongoClient(
             configService.getMongoConnectionString(),
             {
@@ -20,7 +22,7 @@ export class AssessmentStatus1683188215805 implements MigrationInterface {
             const db = client.db();
 
             const assessments = await queryRunner.query(
-                `SELECT id, "questionnaireAssessmentId" FROM assessment`,
+                `SELECT id, "questionnaireAssessmentId" FROM ${schemaName}.assessment`,
             );
 
             for (const assessment of assessments) {
@@ -32,7 +34,7 @@ export class AssessmentStatus1683188215805 implements MigrationInterface {
                     .findOne({ _id });
 
                 await queryRunner.query(
-                    `UPDATE assessment SET status = '${questionnaireAssessment.status ?? AssessmentStatus.PLANNED}' WHERE id = ${assessment.id}`,
+                    `UPDATE ${schemaName}.assessment SET status = '${questionnaireAssessment.status ?? AssessmentStatus.PLANNED}' WHERE id = ${assessment.id}`,
                 );
             }
         } catch (error) {
@@ -40,5 +42,5 @@ export class AssessmentStatus1683188215805 implements MigrationInterface {
         }
     }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {}
+    public async down(queryRunner: QueryRunner): Promise<void> { }
 }

@@ -3,16 +3,18 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class InsertAssessmentTypesByName1654780819593
     implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
+        const schemaName = queryRunner.connection.name;
+
         await queryRunner.query(`
           
-        INSERT INTO assessment_type(name)
-        SELECT name FROM assessment;
+        INSERT INTO ${schemaName}.assessment_type(name)
+        SELECT name FROM ${schemaName}.assessment;
 
         `);
 
         await queryRunner.query(`
       
-       UPDATE assessment_type 
+       UPDATE ${schemaName}.assessment_type 
        SET status = 'INACTIVE' WHERE status IS NULL;
  
 
@@ -20,13 +22,13 @@ export class InsertAssessmentTypesByName1654780819593
 
         await queryRunner.query(`
       
-       UPDATE assessment a SET "assessmentTypeId" = t.id FROM assessment_type t WHERE t.name = a.name;
+       UPDATE ${schemaName}.assessment a SET "assessmentTypeId" = t.id FROM assessment_type t WHERE t.name = a.name;
 
         `);
 
         await queryRunner.query(`
       
-        ALTER TABLE assessment DROP COLUMN name;
+        ALTER TABLE ${schemaName}.assessment DROP COLUMN name;
 
         `);
     }

@@ -2,8 +2,10 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class Reports1644501851916 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
+        const schemaName = queryRunner.connection.name;
+
         await queryRunner.query(`
-       create table IF NOT EXISTS report
+       create table IF NOT EXISTS ${schemaName}.report
     (
         id               serial
         constraint "PK_99e4d0bea58cba73c57f935a546"
@@ -22,15 +24,15 @@ export class Reports1644501851916 implements MigrationInterface {
     );
         `);
         await queryRunner.query(`
-        create table IF NOT EXISTS report_role
+        create table IF NOT EXISTS ${schemaName}.report_role
         (
         "reportId"  integer                 not null
             constraint "FK_dfe51bc94484e59713aa9f35bba"
-                references report,
+                references ${schemaName}.report,
 
         "roleId"    integer                 not null
             constraint "FK_e9df64b680b9a489f3b5b924992"
-                references role
+                references ${schemaName}.role
         );
 
             `);

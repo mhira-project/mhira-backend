@@ -1,8 +1,10 @@
-import {MigrationInterface, QueryRunner} from "typeorm";
+import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class DeleteCascadeUsers1664531282964 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
+        const schemaName = queryRunner.connection.name;
+
         const tableRelated = [
             'access_token',
             'user_previous_password',
@@ -10,7 +12,7 @@ export class DeleteCascadeUsers1664531282964 implements MigrationInterface {
 
         for (const tableName of tableRelated) {
             const tableFKeys = await queryRunner.query(`select key_column_usage.constraint_name, column_name from information_schema.key_column_usage
-        where constraint_catalog=current_catalog and table_name='${tableName}'
+        where constraint_catalog=current_catalog and table_schema='${schemaName}' and table_name='${tableName}'
            and position_in_unique_constraint notnull;`);
 
             const userIdFKey = tableFKeys.find(
@@ -18,15 +20,15 @@ export class DeleteCascadeUsers1664531282964 implements MigrationInterface {
             );
 
             await queryRunner.query(
-                `ALTER TABLE "${tableName}"
+                `ALTER TABLE ${schemaName}."${tableName}"
                     drop CONSTRAINT "${userIdFKey.constraint_name}";`,
             );
 
             await queryRunner.query(
-                `ALTER TABLE  "${tableName}"
+                `ALTER TABLE  ${schemaName}."${tableName}"
                      ADD CONSTRAINT "${userIdFKey.constraint_name}"
                         FOREIGN KEY ("userId")
-                        REFERENCES "user"
+                        REFERENCES ${schemaName}."user"
                             (id)
                         ON DELETE CASCADE ON UPDATE NO ACTION;`,
             );
@@ -34,13 +36,15 @@ export class DeleteCascadeUsers1664531282964 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        const schemaName = queryRunner.connection.name;
+
         const tableRelated = [
             'access_token',
             'user_previous_password',
         ];
         for (const tableName of tableRelated) {
             const tableFKeys = await queryRunner.query(`select key_column_usage.constraint_name, column_name from information_schema.key_column_usage
-        where constraint_catalog=current_catalog and table_name='${tableName}'
+        where constraint_catalog=current_catalog and table_schema='${schemaName}' and table_name='${tableName}'
            and position_in_unique_constraint notnull;`);
 
             const userIdFKey = tableFKeys.find(
@@ -48,15 +52,15 @@ export class DeleteCascadeUsers1664531282964 implements MigrationInterface {
             );
 
             await queryRunner.query(
-                `ALTER TABLE "${tableName}"
+                `ALTER TABLE ${schemaName}."${tableName}"
                     drop CONSTRAINT "${userIdFKey.constraint_name}";`,
             );
 
             await queryRunner.query(
-                `ALTER TABLE  "${tableName}"
+                `ALTER TABLE  ${schemaName}."${tableName}"
                      ADD CONSTRAINT "${userIdFKey.constraint_name}"
                         FOREIGN KEY ("userId")
-                        REFERENCES "user"
+                        REFERENCES ${schemaName}."user"
                             (id)
                         ON DELETE NO ACTION ON UPDATE NO ACTION;`,
             );

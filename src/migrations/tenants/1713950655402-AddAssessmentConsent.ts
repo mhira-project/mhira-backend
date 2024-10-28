@@ -3,7 +3,9 @@ import { MigrationInterface, QueryRunner } from "typeorm";
 export class AddConsent1713950655402 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`CREATE TABLE IF NOT EXISTS consent
+        const schemaName = queryRunner.connection.name;
+
+        await queryRunner.query(`CREATE TABLE IF NOT EXISTS ${schemaName}.consent
         (
             id SERIAL PRIMARY KEY,
             name character varying,
@@ -15,7 +17,7 @@ export class AddConsent1713950655402 implements MigrationInterface {
             "updatedAt" timestamp default now() not null
         )`);
 
-        await queryRunner.query(`ALTER TABLE assessment ADD COLUMN "consentId" int`)
+        await queryRunner.query(`ALTER TABLE ${schemaName}.assessment ADD COLUMN "consentId" int`)
 
     }
 

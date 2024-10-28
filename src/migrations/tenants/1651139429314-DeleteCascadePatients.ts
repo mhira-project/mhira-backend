@@ -2,6 +2,8 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class DeleteCascadePatients1651139429314 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
+        const schemaName = queryRunner.connection.name;
+
         const tableRelated = [
             'assessment',
             'patient_caregiver',
@@ -11,7 +13,7 @@ export class DeleteCascadePatients1651139429314 implements MigrationInterface {
 
         for (const tableName of tableRelated) {
             const tableFKeys = await queryRunner.query(`select key_column_usage.constraint_name, column_name from information_schema.key_column_usage
-        where constraint_catalog=current_catalog and table_name='${tableName}'
+        where constraint_catalog=current_catalog and table_schema='${schemaName}' and table_name='${tableName}'
            and position_in_unique_constraint notnull;`);
 
             const patientIdFKey = tableFKeys.find(
@@ -19,15 +21,15 @@ export class DeleteCascadePatients1651139429314 implements MigrationInterface {
             );
 
             await queryRunner.query(
-                `ALTER TABLE "${tableName}"
+                `ALTER TABLE ${schemaName}."${tableName}"
                     drop CONSTRAINT "${patientIdFKey.constraint_name}";`,
             );
 
             await queryRunner.query(
-                `ALTER TABLE  "${tableName}"
+                `ALTER TABLE  ${schemaName}."${tableName}"
                      ADD CONSTRAINT "${patientIdFKey.constraint_name}"
                         FOREIGN KEY ("patientId")
-                        REFERENCES "patient"
+                        REFERENCES ${schemaName}."patient"
                             (id)
                         ON DELETE CASCADE ON UPDATE NO ACTION;`,
             );
@@ -35,6 +37,8 @@ export class DeleteCascadePatients1651139429314 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        const schemaName = queryRunner.connection.name;
+
         const tableRelated = [
             'assessment',
             'patient_caregiver',
@@ -44,7 +48,7 @@ export class DeleteCascadePatients1651139429314 implements MigrationInterface {
 
         for (const tableName of tableRelated) {
             const tableFKeys = await queryRunner.query(`select key_column_usage.constraint_name, column_name from information_schema.key_column_usage
-        where constraint_catalog=current_catalog and table_name='${tableName}'
+        where constraint_catalog=current_catalog and table_schema='${schemaName}' and table_name='${tableName}'
            and position_in_unique_constraint notnull;`);
 
             const patientIdFKey = tableFKeys.find(
@@ -52,15 +56,15 @@ export class DeleteCascadePatients1651139429314 implements MigrationInterface {
             );
 
             await queryRunner.query(
-                `ALTER TABLE "${tableName}"
+                `ALTER TABLE ${schemaName}."${tableName}"
                     drop CONSTRAINT "${patientIdFKey.constraint_name}";`,
             );
 
             await queryRunner.query(
-                `ALTER TABLE  "${tableName}"
+                `ALTER TABLE  ${schemaName}."${tableName}"
                      ADD CONSTRAINT "${patientIdFKey.constraint_name}"
                         FOREIGN KEY ("patientId")
-                        REFERENCES "patient"
+                        REFERENCES ${schemaName}."patient"
                             (id)
                         ON DELETE NO ACTION ON UPDATE NO ACTION;`,
             );

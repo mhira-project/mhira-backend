@@ -3,8 +3,10 @@ import { MigrationInterface, QueryRunner } from "typeorm";
 export class Caregivers1643899056854 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
+        const schemaName = queryRunner.connection.name;
+
         await queryRunner.query(`
-        create table IF NOT EXISTS caregiver
+        create table IF NOT EXISTS ${schemaName}.caregiver
 (
     id                 serial
         constraint "PK_114bf658fe2b416245381f89be0"
@@ -30,7 +32,7 @@ export class Caregivers1643899056854 implements MigrationInterface {
         `)
 
         await queryRunner.query(`
-      create table IF NOT EXISTS patient_caregiver
+      create table IF NOT EXISTS ${schemaName}.patient_caregiver
 (
     id            serial
         constraint "PK_835a0fa676526ee26379524b5fd"
@@ -40,10 +42,10 @@ export class Caregivers1643899056854 implements MigrationInterface {
     "updatedAt"   timestamp default now() not null,
     "patientId"   integer                 not null
         constraint "FK_a4b2a1d0f22f3f2c38aaf18f9e4"
-            references patient,
+            references ${schemaName}.patient,
     "caregiverId" integer                 not null
         constraint "FK_0db340ec8753c91db3dba218fd8"
-            references caregiver,
+            references ${schemaName}.caregiver,
     relation      varchar,
     note          text,
     emergency     boolean   default false,
