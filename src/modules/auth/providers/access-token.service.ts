@@ -59,7 +59,7 @@ export class AccessTokenService {
             await this.revokeTokenActivity(token.id);
 
             token.isRevoked = true;
-            await token.save();
+            await this.accessTokenRepository.save(token);
         }
 
         return tokens.length > 0;

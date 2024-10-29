@@ -173,7 +173,7 @@ export class RoleResolver extends CRUDResolver(Role, {
         currentUser: User,
         action: PermissionAction,
     ): Promise<{ role: Role; permissions: Permission[] }> {
-        const role = await Role.findOneOrFail({
+        const role = await this.roleRepository.findOneOrFail({
             where: { id: input.id },
             relations: ['permissions'],
         });
@@ -235,7 +235,7 @@ export class RoleResolver extends CRUDResolver(Role, {
         currentUser: User,
         update?: RoleInput,
     ): Promise<void> {
-        const roleInDb = await Role.findOneOrFail({
+        const roleInDb = await this.roleRepository.findOneOrFail({
             where: { id: roleId },
         });
 

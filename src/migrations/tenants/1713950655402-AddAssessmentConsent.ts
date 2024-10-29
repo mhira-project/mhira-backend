@@ -12,7 +12,15 @@ export class AddConsent1713950655402 implements MigrationInterface {
             description text,
             consent1 text,
             consent2 text,
+            consent3 text,
+            consent4 text,
+            consent5 text,
+            consent6 text,
+            consent7 text,
             "submitContent" text,
+            title text,
+            "acceptLabel" text,
+            "submitLabel" text,
             "createdAt" timestamp default now() not null,
             "updatedAt" timestamp default now() not null
         )`);
@@ -23,5 +31,4 @@ export class AddConsent1713950655402 implements MigrationInterface {
 
     public async down(queryRunner: QueryRunner): Promise<void> {
     }
-
 }

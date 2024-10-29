@@ -189,7 +189,7 @@ export class QuestionnaireAssessmentService {
 
         if (assessment) {
             assessment.status = status;
-            await assessment.save();
+            await this.assessmentRepository.save(assessment);
         }
 
         assessmentModel.status = status;
