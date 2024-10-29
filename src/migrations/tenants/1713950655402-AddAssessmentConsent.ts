@@ -18,8 +18,6 @@ export class AddConsent1713950655402 implements MigrationInterface {
             consent6 text,
             consent7 text,
             "submitContent" text,
-            title text,
-            "acceptLabel" text,
             "submitLabel" text,
             "createdAt" timestamp default now() not null,
             "updatedAt" timestamp default now() not null
