@@ -65,7 +65,7 @@ export class AccessTokenService {
         return tokens.length > 0;
     }
 
-    async generateToken(user: User): Promise<string> {
+    async generateToken(user: User, tenant: string): Promise<string> {
         // Issue new token
 
         const tokenId = Str.uuid();
@@ -90,6 +90,7 @@ export class AccessTokenService {
         const payload: JwtPayload = {
             jti: tokenId,
             sub: `${user.id}`,
+            tenant,
         };
 
         const options: JwtSignOptions = { expiresIn };

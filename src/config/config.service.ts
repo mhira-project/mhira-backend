@@ -130,6 +130,13 @@ class ConfigService {
             acl: 'private',
         };
     }
+
+    public getBasicAuthConfig() {
+        return {
+            user: this.getValue('TENANCY_BASIC_USER'),
+            pass: this.getValue('TENANCY_BASIC_PASS'),
+        }
+    }
 }
 
 const configService = new ConfigService(process.env).ensureValues([

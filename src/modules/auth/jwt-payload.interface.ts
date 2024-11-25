@@ -7,5 +7,5 @@ export interface JwtPayload {
   // exp?: number;
   sub?: string;
   scopes?: string[];
-
+  tenant?: string;
 }

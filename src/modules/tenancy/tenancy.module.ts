@@ -6,6 +6,8 @@ import { CONNECTION } from './tenancy.symbols';
 import { TenantService } from './providers/tenants.service';
 import { Tenant } from './models/tenant.model';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BasicStrategy } from './auth-basic.strategy';
+import { TenantController } from './controllers/tenant.controller';
 
 
 const connectionFactory = {
@@ -26,8 +28,8 @@ const connectionFactory = {
 @Global()
 @Module({
     imports: [TypeOrmModule.forFeature([Tenant])],
-    providers: [connectionFactory, TenantService],
+    providers: [connectionFactory, TenantService, BasicStrategy],
     exports: [CONNECTION, TenantService],
-    controllers: [],
+    controllers: [TenantController],
 })
 export class TenancyModule { }

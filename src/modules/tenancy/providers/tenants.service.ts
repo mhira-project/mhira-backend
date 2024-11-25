@@ -39,6 +39,18 @@ export class TenantService {
         }
     }
 
+    async deleteTenant(id: string) {
+        const tenant = await this.getTenantById(id);
+
+        if (!tenant) {
+            throw new BadRequestException('Tenant not found');
+        }
+
+        await this.tenantRepository.delete(id);
+
+        await getManager().query(`DROP SCHEMA IF EXISTS ${tenant.subdomain} CASCADE`);
+    }
+
     async getTenantById(id: string) {
         return this.tenantRepository.findOne(id);
     }

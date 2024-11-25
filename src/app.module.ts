@@ -20,12 +20,10 @@ import { ReportModule } from './modules/report/report.module';
 import { DisclaimerModule } from './modules/disclaimer/disclaimer.module';
 import { ConsentModule } from './modules/consent/consent.module';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MailModule } from './modules/mail/mail.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TenancyMiddleware } from './modules/tenancy/tenancy.middleware';
 import { TenancyModule } from './modules/tenancy/tenancy.module';
-import { TenantController } from './modules/tenancy/controllers/tenant.controller';
 
 @Module({
     imports: [
@@ -81,7 +79,7 @@ import { TenantController } from './modules/tenancy/controllers/tenant.controlle
         ConsentModule,
         MailModule,
     ],
-    controllers: [TenantController],
+    controllers: [],
     providers: [],
 })
 export class AppModule implements NestModule {

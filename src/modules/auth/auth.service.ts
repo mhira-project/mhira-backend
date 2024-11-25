@@ -13,7 +13,6 @@ import { AccessTokenService } from './providers/access-token.service';
 import { CacheService } from 'src/shared';
 import * as moment from 'moment';
 import { CONNECTION } from '../tenancy/tenancy.symbols';
-import { AccessToken } from './models/access-token.model';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthService {
@@ -33,8 +32,9 @@ export class AuthService {
 
     async login(loginDto: LoginRequestDto): Promise<LoginResponseDto> {
         const user = await this.validateUserCredentials(loginDto);
+        const tenant = this.connection.name;
 
-        const accessToken: string = await this.tokenService.generateToken(user);
+        const accessToken: string = await this.tokenService.generateToken(user, tenant);
 
 
         return {
