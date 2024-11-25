@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param, Inject, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, Inject, UseGuards, Delete } from '@nestjs/common';
 import { CreateTenantDto } from '../dtos/tenant.input';
 import { TenantService } from '../providers/tenants.service';
 import { Tenant } from '../models/tenant.model';
@@ -14,7 +14,7 @@ export class TenantController {
         return this.tenantService.createTenant(newTenant);
     }
 
-    @Post()
+    @Delete()
     deleteTenant(@Param('id') id: string): Promise<void> {
         return this.tenantService.deleteTenant(id);
     }
