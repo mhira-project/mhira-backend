@@ -28,10 +28,19 @@ import { DepartmentResolver } from './resolvers/departments.resolver';
                     EntityClass: Department,
                     guards: [GqlAuthGuard, PermissionGuard],
                     ServiceClass: DepartmentCrudService,
-                    read: { defaultSort: [{ field: 'id', direction: SortDirection.DESC }] },
+                    read: {
+                        defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
+                        one: { disabled: true },
+                    },
                     create: { disabled: true },
-                    update: { decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)] },
-                    delete: { decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)] },
+                    update: {
+                        decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)],
+                        many: { disabled: true },
+                    },
+                    delete: {
+                        decorators: [UsePermission(PermissionEnum.MANAGE_SETTINGS)],
+                        many: { disabled: true },
+                    },
                 },
             ],
         }),

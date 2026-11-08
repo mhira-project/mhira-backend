@@ -38,6 +38,7 @@ export class RoleResolver extends CRUDResolver(Role, {
                 PermissionEnum.MANAGE_USERS,
             ]),
         ],
+        one: { disabled: true },
     },
     create: { disabled: true }, // overriden with custom implementation
     update: { disabled: true }, // overriden with custom implementation

@@ -20,6 +20,8 @@ import { PatientCaregiver } from './patient-caregiver.model';
 @ObjectType()
 @FilterableUnPagedRelation('patientCaregivers', () => PatientCaregiver, {
     nullable: true,
+    disableUpdate: true,
+    disableRemove: true,
 })
 @Entity()
 export class Caregiver extends BaseEntity {

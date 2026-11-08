@@ -19,7 +19,7 @@ import {
 import { SortDirection } from '@nestjs-query/core';
 
 @ObjectType()
-@UnPagedRelation('roles', () => Role)
+@UnPagedRelation('roles', () => Role, { disableUpdate: true, disableRemove: true })
 @Entity()
 @QueryOptions({
     defaultSort: [{ field: 'createdAt', direction: SortDirection.DESC }],

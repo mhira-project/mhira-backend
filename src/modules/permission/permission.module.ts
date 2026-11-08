@@ -42,7 +42,8 @@ export class RoleAuthorizer implements Authorizer<Role> {
                     guards: [GqlAuthGuard, PermissionGuard],
                     read: {
                         defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
-                        decorators: [UsePermission(PermissionEnum.VIEW_ROLES_PERMISSIONS)]
+                        decorators: [UsePermission(PermissionEnum.VIEW_ROLES_PERMISSIONS)],
+                        one: { disabled: true },
                     },
                     create: { disabled: true },
                     update: { disabled: true },

@@ -31,9 +31,13 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     guards: guards,
                     read: {
                         defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
+                        one: { disabled: true },
                     },
                     create: { disabled: true },
-                    update: { decorators: [UsePermission(PermissionEnum.MANAGE_CAREGIVERS)] },
+                    update: {
+                        decorators: [UsePermission(PermissionEnum.MANAGE_CAREGIVERS)],
+                        many: { disabled: true },
+                    },
                     delete: { disabled: true },
                 },
                 {
@@ -44,10 +48,17 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     read: {
                         defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
                         decorators: [UsePermission(PermissionEnum.VIEW_ALL_CAREGIVERS)],
+                        one: { disabled: true },
                     },
                     create: { disabled: true },
-                    update: { decorators: [UsePermission(PermissionEnum.MANAGE_CAREGIVERS)] },
-                    delete: { decorators: [UsePermission(PermissionEnum.DELETE_CAREGIVERS)] },
+                    update: {
+                        decorators: [UsePermission(PermissionEnum.MANAGE_CAREGIVERS)],
+                        many: { disabled: true },
+                    },
+                    delete: {
+                        decorators: [UsePermission(PermissionEnum.DELETE_CAREGIVERS)],
+                        many: { disabled: true },
+                    },
                 },
             ],
         }),

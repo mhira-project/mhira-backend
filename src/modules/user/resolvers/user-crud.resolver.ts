@@ -36,6 +36,7 @@ export class UserCrudResolver extends CRUDResolver(User, {
     read: {
         defaultSort: [{ field: 'id', direction: SortDirection.DESC }],
         decorators: [UsePermission(PermissionEnum.VIEW_USERS)],
+        one: { disabled: true },
     },
     create: { disabled: true },
     update: { disabled: true },

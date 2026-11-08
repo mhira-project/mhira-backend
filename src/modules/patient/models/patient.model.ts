@@ -35,17 +35,34 @@ import { QuestionnaireScript } from 'src/modules/questionnaire/models/questionna
 @FilterableRelation('status', () => PatientStatus, {
     nullable: true,
     disableUpdate: true,
+    disableRemove: true,
 })
-@FilterableUnPagedRelation('caseManagers', () => User, { nullable: true })
-@FilterableUnPagedRelation('informants', () => Informant, { nullable: true })
+@FilterableUnPagedRelation('caseManagers', () => User, {
+    nullable: true,
+    disableUpdate: true,
+    disableRemove: true,
+})
+@FilterableUnPagedRelation('informants', () => Informant, {
+    nullable: true,
+    disableUpdate: true,
+    disableRemove: true,
+})
 @FilterableUnPagedRelation('emergencyContacts', () => EmergencyContact, {
     nullable: true,
+    disableUpdate: true,
+    disableRemove: true,
 })
 @FilterableUnPagedRelation('departments', () => Department, { nullable: true })
 @FilterableUnPagedRelation('patientCaregivers', () => PatientCaregiver, {
     nullable: true,
+    disableUpdate: true,
+    disableRemove: true,
 })
-@FilterableRelation('assessments', () => Assessment, { nullable: true })
+@FilterableRelation('assessments', () => Assessment, {
+    nullable: true,
+    disableUpdate: true,
+    disableRemove: true,
+})
 @Entity()
 export class Patient extends BaseEntity {
     static searchable = [

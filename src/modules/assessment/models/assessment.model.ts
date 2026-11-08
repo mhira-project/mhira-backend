@@ -23,10 +23,10 @@ import { AssessmentType } from './assessment-type.model';
 import { MailTemplate } from 'src/modules/mail/models/mail-template.model';
 
 @ObjectType()
-@FilterableRelation('patient', () => Patient)
-@FilterableRelation('clinician', () => User, { nullable: true })
-@FilterableRelation('informantClinician', () => User, { nullable: true })
-@FilterableRelation('assessmentType', () => AssessmentType, { nullable: true })
+@FilterableRelation('patient', () => Patient, { disableUpdate: true, disableRemove: true })
+@FilterableRelation('clinician', () => User, { nullable: true, disableUpdate: true, disableRemove: true })
+@FilterableRelation('informantClinician', () => User, { nullable: true, disableUpdate: true, disableRemove: true })
+@FilterableRelation('assessmentType', () => AssessmentType, { nullable: true, disableUpdate: true, disableRemove: true })
 @Entity()
 export class Assessment extends BaseEntity {
     @FilterableField(() => Int)

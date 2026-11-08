@@ -22,7 +22,7 @@ import { Report } from 'src/modules/report/models/report.model';
 
 @ObjectType()
 @UnPagedRelation('permissions', () => Permission, {disableUpdate: true, disableRemove: true})
-@UnPagedRelation('users', () => User)
+@UnPagedRelation('users', () => User, { disableUpdate: true, disableRemove: true })
 @Entity()
 export class Role extends BaseEntity {
     @FilterableField(() => Int)

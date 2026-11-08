@@ -16,7 +16,7 @@ import { Report } from 'src/modules/report/models/report.model';
 
 @ObjectType()
 @Entity()
-@UnPagedRelation('reports', () => Report, { nullable: false })
+@UnPagedRelation('reports', () => Report, { nullable: false, disableUpdate: true, disableRemove: true })
 export class QuestionnaireScript extends BaseEntity {
     @FilterableField(() => Int)
     @PrimaryGeneratedColumn()

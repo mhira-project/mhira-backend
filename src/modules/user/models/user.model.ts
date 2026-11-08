@@ -28,7 +28,7 @@ import {Patient} from 'src/modules/patient/models/patient.model';
 @ObjectType()
 @KeySet(['id'])
 @FilterableUnPagedRelation('roles', () => Role)
-@UnPagedRelation('permissions', () => Permission)
+@UnPagedRelation('permissions', () => Permission, { disableUpdate: true, disableRemove: true })
 @FilterableUnPagedRelation('departments', () => Department)
 @Entity({synchronize: true})
 export class User extends BaseEntity {

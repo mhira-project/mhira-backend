@@ -7,7 +7,6 @@ import { UsePermission } from '../permission/decorators/permission.decorator';
 import { PermissionEnum } from '../permission/enums/permission.enum';
 import { PermissionGuard } from '../permission/guards/permission.guard';
 import { CreatePatientInput } from './dto/create-patient.input';
-import { EmergencyContactInput } from './dto/emergency-contact.input';
 import { UpdatePatientInput } from './dto/update-patient.input';
 import { EmergencyContact } from './models/emergency-contact.model';
 import { Informant } from './models/informant.model';
@@ -105,28 +104,11 @@ const guards = [GqlAuthGuard, PermissionGuard];
                 {
                     DTOClass: EmergencyContact,
                     EntityClass: EmergencyContact,
-                    CreateDTOClass: EmergencyContactInput,
-                    UpdateDTOClass: EmergencyContactInput,
                     guards: guards,
-                    read: {
-                        defaultSort: [
-                            { field: 'id', direction: SortDirection.DESC },
-                        ],
-                        decorators: [
-                            UsePermission(PermissionEnum.VIEW_PATIENTS),
-                        ],
-                    },
+                    read: { disabled: true },
                     create: { disabled: true },
-                    update: {
-                        decorators: [
-                            UsePermission(PermissionEnum.MANAGE_PATIENTS),
-                        ],
-                    },
-                    delete: {
-                        decorators: [
-                            UsePermission(PermissionEnum.MANAGE_PATIENTS),
-                        ],
-                    },
+                    update: { disabled: true },
+                    delete: { disabled: true },
                 },
                 {
                     DTOClass: PatientStatus,
@@ -136,6 +118,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
                         defaultSort: [
                             { field: 'id', direction: SortDirection.DESC },
                         ],
+                        one: { disabled: true },
                     },
                     create: {
                         disabled: true,
@@ -144,11 +127,13 @@ const guards = [GqlAuthGuard, PermissionGuard];
                         decorators: [
                             UsePermission(PermissionEnum.MANAGE_SETTINGS),
                         ],
+                        many: { disabled: true },
                     },
                     delete: {
                         decorators: [
                             UsePermission(PermissionEnum.MANAGE_SETTINGS),
                         ],
+                        many: { disabled: true },
                     },
                 },
             ],
