@@ -62,12 +62,6 @@ export class MailResolver {
         return this.mailService.createEmailTemplate(input);
     }
 
-    @Mutation(() => Boolean)
-    @UsePermission(PermissionEnum.DELETE_TEMPLATES)
-    async deleteEmailTemplate(@Args('id') templateId: number) {
-        return this.mailService.deleteEmailTemplate(templateId);
-    }
-
     @Mutation(() => MailTemplate)
     @UsePermission(PermissionEnum.MANAGE_TEMPLATES)
     async updateEmailTemplate(

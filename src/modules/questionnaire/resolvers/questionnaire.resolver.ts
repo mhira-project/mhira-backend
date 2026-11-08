@@ -24,23 +24,6 @@ const QuestionnaireConnection = QuestionniareQuery.ConnectionType;
 export class QuestionnaireResolver {
     constructor(private questionnaireService: QuestionnaireService) {}
 
-    @Query(() => Questionnaire)
-    getQuestionnaire(
-        @Args('_id', { type: () => String }) questionnaireId: Types.ObjectId,
-    ): Promise<Questionnaire> {
-        return this.questionnaireService.getById(questionnaireId);
-    }
-
-    @Query(() => Questionnaire)
-    @UsePermission(PermissionEnum.VIEW_QUESTIONNAIRES)
-    getQuestionnaireVersion(
-        @Args('_id', { type: () => String }) questionnaireId: Types.ObjectId,
-    ): Promise<Questionnaire> {
-        return this.questionnaireService.getById(
-            questionnaireId,
-        );
-    }
-
     @Query(() => QuestionnaireConnection)
     async questionnaires(@Args() query: QuestionniareQuery) {
         query.sorting = query.sorting?.length

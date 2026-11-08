@@ -14,7 +14,6 @@ import { PatientStatus } from './models/patient-status.model';
 import { Patient } from './models/patient.model';
 import { CaseManagerService } from './providers/case-manager.service';
 import { CaseManagerResolver } from './resolvers/case-manager.resolver';
-import { EmergencyContactResolver } from './resolvers/emergency-contact.resolver';
 import { PatientResolver } from './resolvers/patient.resolver';
 import { PatientQueryService } from './providers/patient-query.service';
 import { QuestionnaireAssessmentService } from '../questionnaire/services/questionnaire-assessment.service';
@@ -143,7 +142,6 @@ const guards = [GqlAuthGuard, PermissionGuard];
         CaseManagerService,
         CaseManagerResolver,
         PatientResolver,
-        EmergencyContactResolver,
         PatientQueryService,
         QuestionnaireAssessmentService,
         PatientStatusService,

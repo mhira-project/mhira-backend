@@ -65,12 +65,4 @@ export class AssessmentTypeResolver {
             assessmentTypeInput,
         );
     }
-
-    @Mutation(() => Boolean)
-    // @UsePermission(PermissionEnum.MANAGE_ASSESSMENTS)
-    deleteAssessmentType(@Args('id') assessmentTypeId: number) {
-        return this.assessmentTypeService.deleteAssessmentType(
-            assessmentTypeId,
-        );
-    }
 }

@@ -4,12 +4,9 @@ import {
     Parent,
     ResolveField,
     Resolver,
-    Query,
 } from '@nestjs/graphql';
-import { Types } from 'mongoose';
 import {
     AnswerAssessmentInput,
-    CreateQuestionnaireAssessmentInput,
     ChangeAssessmentStatusInput,
 } from '../dtos/assessment.input';
 import { QuestionnaireAssessment } from '../models/questionnaire-assessment.schema';
@@ -20,13 +17,6 @@ import { AssessmentStatus } from '../enums/assessment-status.enum';
 @Resolver(() => QuestionnaireAssessment)
 export class AssessmentResolver {
     constructor(private assessmentService: QuestionnaireAssessmentService) {}
-
-    @Query(() => QuestionnaireAssessment)
-    getAssessment(
-        @Args('_id', { type: () => String }) assessmentId: Types.ObjectId,
-    ): Promise<QuestionnaireAssessment> {
-        return this.assessmentService.getById(assessmentId);
-    }
 
     @Mutation(() => QuestionnaireAssessment)
     addAnswer(
@@ -47,15 +37,6 @@ export class AssessmentResolver {
         return this.assessmentService.changeAssessmentStatus(
             assessmentId,
             status,
-        );
-    }
-
-    @Mutation(() => QuestionnaireAssessment)
-    createQuestionnaireAssessment(
-        @Args('assessment') assessmentInput: CreateQuestionnaireAssessmentInput,
-    ) {
-        return this.assessmentService.createNewAssessment(
-            assessmentInput.questionnaires,
         );
     }
 

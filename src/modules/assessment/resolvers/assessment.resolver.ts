@@ -7,7 +7,6 @@ import {
     Mutation,
     ResolveField,
     Parent,
-    ID,
 } from '@nestjs/graphql';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
@@ -40,15 +39,6 @@ export class AssessmentResolver {
         @CurrentUser() currentUser: User,
     ): Promise<ConnectionType<Assessment>> {
         return this.assessmentService.getAssessments(query, currentUser);
-    }
-
-    @Query(() => Assessment)
-    @UsePermission(PermissionEnum.VIEW_ASSESSMENTS)
-    async assessment(
-        @Args('id', { type: () => ID }) patientId: number,
-        @CurrentUser() currentUser: User,
-    ): Promise<Assessment> {
-        return this.assessmentService.getAssessment(patientId, currentUser);
     }
 
     @ResolveField('questionnaireAssessment', () => QuestionnaireAssessment)

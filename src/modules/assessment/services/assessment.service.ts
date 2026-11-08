@@ -9,7 +9,6 @@ import {
 import { Assessment, FullPublicAssessment, FullAssessment } from '../models/assessment.model';
 import { QuestionnaireAssessmentService } from '../../questionnaire/services/questionnaire-assessment.service';
 import {
-    Filter,
     InjectQueryService,
     mergeFilter,
     QueryService,
@@ -112,40 +111,6 @@ export class AssessmentService {
 
         return result;
     }
-    /**
-     * Get assessment if authorized. Throws exception if Not Found
-     *
-     * @param assessmentId
-     * @param currentUser
-     * @returns
-     */
-    async getAssessment(
-        assessmentId: number,
-        currentUser: User,
-    ): Promise<Assessment> {
-        const patientAuthorizeFilter = await PatientAuthorizer.authorizePatient(
-            currentUser?.id,
-        );
-
-        const combinedFilter = mergeFilter(
-            { id: { eq: assessmentId } } as Filter<Assessment>,
-            { patient: patientAuthorizeFilter },
-        );
-
-        const assessments = await this.assessmentQueryService.query({
-            paging: { limit: 1 },
-            filter: combinedFilter,
-        });
-
-        const assessment = assessments?.[0];
-
-        if (!assessment) {
-            throw new NotFoundException();
-        }
-
-        return assessment;
-    }
-
     async createNewAssessment(assessmentInput: CreateFullAssessmentInput) {
         const assessmentLength = assessmentInput.dates.length || 1;
 

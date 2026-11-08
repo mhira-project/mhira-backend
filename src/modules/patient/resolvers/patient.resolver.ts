@@ -101,16 +101,6 @@ export class PatientResolver {
         );
     }
 
-    @Query(() => Patient)
-    @UsePermission(PermissionEnum.VIEW_PATIENTS)
-    async patient(
-        @Args('id', { type: () => ID }) patientId: number,
-        @CurrentUser() currentUser: User,
-    ): Promise<Patient> {
-        // Get patient if authorized. Throws exception if Not Found
-        return this.service.getOnePatient(currentUser, patientId);
-    }
-
     @Mutation(() => Patient)
     @UsePermission(PermissionEnum.MANAGE_PATIENTS)
     async createOnePatient(

@@ -1,15 +1,10 @@
-import { UpdateManyResponse, Filter, SortDirection } from '@nestjs-query/core';
-import {
-    CRUDResolver,
-    FilterType,
-    UpdateManyResponseType,
-} from '@nestjs-query/query-graphql';
+import { SortDirection } from '@nestjs-query/core';
+import { CRUDResolver } from '@nestjs-query/query-graphql';
 import { UseGuards } from '@nestjs/common';
 import {
     Resolver,
     Args,
     Mutation,
-    ID,
     ResolveField,
     Parent,
 } from '@nestjs/graphql';
@@ -91,25 +86,6 @@ export class UserCrudResolver extends CRUDResolver(User, {
 
         // Delegate further actions to service
         return this.service.deleteOneUser(Number(id), currentUser);
-    }
-
-    // restore one mutation will update the `deletedAt` column to null.
-    @Mutation(() => User)
-    @UsePermission(PermissionEnum.MANAGE_USERS)
-    restoreOneUser(
-        @Args('input', { type: () => ID }) id: number,
-    ): Promise<User> {
-        return this.service.restoreOne(id);
-    }
-
-    // restore many mutation will update the `deletedAt` column to null for all todo items that
-    // match the filter.
-    @Mutation(() => UpdateManyResponseType())
-    @UsePermission(PermissionEnum.MANAGE_USERS)
-    restoreManyUsers(
-        @Args('input', { type: () => FilterType(User) }) filter: Filter<User>,
-    ): Promise<UpdateManyResponse> {
-        return this.service.restoreMany(filter);
     }
 
     @ResolveField(() => Boolean)

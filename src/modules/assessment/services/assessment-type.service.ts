@@ -1,5 +1,4 @@
 import {
-    ConflictException,
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
@@ -13,7 +12,7 @@ import {
     QueryService,
     SortDirection,
 } from '@nestjs-query/core';
-import { Assessment, FullAssessment } from '../models/assessment.model';
+import { FullAssessment } from '../models/assessment.model';
 import { ConnectionType } from '@nestjs-query/query-graphql';
 import { AssessmentType } from '../models/assessment-type.model';
 import {
@@ -29,8 +28,6 @@ import { AssessmentTypeEnum } from '../enums/assessment-type.enum';
 @Injectable()
 export class AssessmentTypeService {
     constructor(
-        @InjectRepository(Assessment)
-        private assessmentRepository: Repository<Assessment>,
         @InjectRepository(AssessmentType)
         private assessmentTypeRepository: Repository<AssessmentType>,
         @InjectQueryService(AssessmentType)
@@ -93,28 +90,5 @@ export class AssessmentTypeService {
         assessmentType.status = input.status;
 
         return await this.assessmentTypeRepository.save(assessmentType);
-    }
-
-    async deleteAssessmentType(assessmentTypeId: number): Promise<any> {
-        const assessmentType = await this.assessmentTypeRepository.findOne(
-            assessmentTypeId,
-        );
-
-        if (!assessmentType)
-            throw new NotFoundException('Assessment type not found!');
-
-        const assessmentsByTypeId = await this.assessmentRepository.find({
-            assessmentType: {
-                id: assessmentType.id,
-            },
-        });
-
-        if (assessmentsByTypeId.length !== 0) {
-            throw new ConflictException('Cannot delete assessment type!');
-        }
-
-        await this.assessmentTypeRepository.delete(assessmentType.id);
-
-        return true;
     }
 }

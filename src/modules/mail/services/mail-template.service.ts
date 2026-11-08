@@ -1,7 +1,6 @@
 import { ConnectionType } from '@nestjs-query/query-graphql';
 import {
     Injectable,
-    NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository } from 'typeorm';
@@ -102,23 +101,6 @@ export class MailTemplateService {
             mail.departments = departments;
 
             return this.mailTemplateRepository.save(mail);
-        } catch (error) {
-            return error;
-        }
-    }
-
-    async deleteEmailTemplate(templateId: number) {
-        try {
-            const template = await this.mailTemplateRepository.findOne(
-                templateId,
-            );
-
-            if (!template) {
-                throw new NotFoundException('Mail template not found!');
-            }
-
-            await this.mailTemplateRepository.delete(templateId);
-            return true;
         } catch (error) {
             return error;
         }
