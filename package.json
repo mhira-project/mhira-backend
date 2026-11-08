@@ -5,6 +5,9 @@
     "author": "",
     "private": true,
     "license": "UNLICENSED",
+    "engines": {
+        "node": "^18.20.8"
+    },
     "scripts": {
         "commit": "cz",
         "prebuild": "rimraf dist",

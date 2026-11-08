@@ -1,7 +1,7 @@
 # One Node image for both stages, so native modules (argon2) are built for
 # the libc they run on. Pinned by the digest of the multi-platform index;
 # the tag is for the reader.
-ARG NODE_IMAGE=node:14.21.3-alpine3.17@sha256:434215b487a329c9e867202ff89e704d3a75e554822e07f3e0c0f9e606121b33
+ARG NODE_IMAGE=node:18.20.8-alpine3.21@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
 
 ### Development container build #####################################
 FROM ${NODE_IMAGE} AS builder
@@ -21,7 +21,7 @@ COPY . .
 RUN npm run build
 
 # Preprare node_modules with only production dependencies
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 
 ### Production container build #####################################
