@@ -21,12 +21,4 @@ export const redisConfig = {
         prefix: redisPrefix + ':typeorm:',
     },
 
-    bullQueue: {
-        host: process.env.REDIS_HOST || '127.0.0.1',
-        port: parseInt(process.env.REDIS_PORT, 10) || 6379,
-        db: parseInt(process.env.REDIS_QUEUE_DB, 10) || 0,
-        password: process.env.REDIS_PASSWORD,
-        prefix: redisPrefix + ':bull',
-    } as const,
-
 };
