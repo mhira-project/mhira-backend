@@ -46,7 +46,7 @@
         "cache-manager-mongodb": "^0.3.0",
         "cache-manager-redis-store": "^2.0.0",
         "class-transformer": "^0.2.3",
-        "class-validator": "^0.12.2",
+        "class-validator": "^0.13.2",
         "commitizen": "^4.2.1",
         "crypto-js": "^4.1.1",
         "dataloader": "^2.0.0",

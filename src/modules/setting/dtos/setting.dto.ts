@@ -1,6 +1,6 @@
 import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
-import { IsLocale, Max, Min } from 'class-validator';
-import { IsOptional } from 'src/shared';
+import { Max, Min } from 'class-validator';
+import { IsLocale, IsOptional } from 'src/shared';
 
 @InputType('SettingInput')
 @ObjectType()
