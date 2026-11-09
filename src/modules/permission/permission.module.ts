@@ -1,27 +1,17 @@
 import { SortDirection } from '@nestjs-query/core';
-import { Authorizer, NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
+import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
 import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
-import { Injectable, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { GqlAuthGuard } from '../auth/auth.guard';
 import { UsePermission } from './decorators/permission.decorator';
 import { PermissionEnum } from './enums/permission.enum';
+import { RoleInput } from './dtos/role.input';
 import { PermissionGuard } from './guards/permission.guard';
 import { Permission } from './models/permission.model';
 import { Role } from './models/role.model';
 import { PermissionService } from './providers/permission.service';
 import { RoleCrudService } from './providers/role-crud.service';
 import { RoleResolver } from './resolvers/role.resolver';
-
-@Injectable()
-export class RoleAuthorizer implements Authorizer<Role> {
-    async authorize() {
-        return {};
-    }
-
-    async authorizeRelation() {
-        return {};
-    }
-}
 
 @Module({
     imports: [
@@ -50,6 +40,9 @@ export class RoleAuthorizer implements Authorizer<Role> {
                     delete: { disabled: true },
                 },
             ],
+            // RoleResolver is written by hand; this registers the providers
+            // its CRUDResolver needs (the Role authorizer)
+            dtos: [{ DTOClass: Role, CreateDTOClass: RoleInput, UpdateDTOClass: RoleInput }],
         }),
     ],
     providers: [
@@ -57,7 +50,6 @@ export class RoleAuthorizer implements Authorizer<Role> {
         PermissionService,
         RoleResolver,
         RoleCrudService,
-        RoleAuthorizer,
     ],
     exports: [
         PermissionGuard,
