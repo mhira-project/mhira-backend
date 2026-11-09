@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import {
     Args,
     Mutation,
@@ -16,16 +17,29 @@ import { AssessmentStatus } from '../enums/assessment-status.enum';
 
 @Resolver(() => QuestionnaireAssessment)
 export class AssessmentResolver {
+    private readonly logger = new Logger(AssessmentResolver.name);
+
     constructor(private assessmentService: QuestionnaireAssessmentService) {}
 
     @Mutation(() => QuestionnaireAssessment)
     addAnswer(
         @Args('assessment') assessmentInput: AnswerAssessmentInput,
     ): Promise<QuestionnaireAssessment> {
-        this.assessmentService.changeAssessmentStatus(
-            assessmentInput.assessmentId,
-            AssessmentStatus.PARTIALLY_COMPLETED,
-        );
+        // Not awaited, so it races the answer's save of the same document
+        // (BUGS.md, B02). From Node 15 on an unhandled rejection ends the
+        // process; the failure is logged here instead, and the race is left
+        // as it is.
+        this.assessmentService
+            .changeAssessmentStatus(
+                assessmentInput.assessmentId,
+                AssessmentStatus.PARTIALLY_COMPLETED,
+            )
+            .catch((error: unknown) =>
+                this.logger.error(
+                    `addAnswer: the status change to PARTIALLY_COMPLETED of assessment ${assessmentInput.assessmentId} failed and was dropped (B02)`,
+                    error instanceof Error ? error.stack : String(error),
+                ),
+            );
         return this.assessmentService.addAnswerToAssessment(assessmentInput);
     }
 

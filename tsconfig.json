@@ -13,7 +13,8 @@
         "outDir": "./dist",
         "baseUrl": "./",
         "incremental": true,
-        "allowSyntheticDefaultImports": true
+        "allowSyntheticDefaultImports": true,
+        "skipLibCheck": true
     },
     "exclude": ["node_modules", "dist"]
 }
