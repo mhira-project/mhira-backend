@@ -1,5 +1,5 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
@@ -14,6 +14,8 @@ import { AssessmentStatus } from 'src/modules/questionnaire/enums/assessment-sta
 
 @Injectable()
 export class SendMailService {
+    private readonly logger = new Logger(SendMailService.name);
+
     constructor(
         private questionnaireAssessmentService: QuestionnaireAssessmentService,
         private mailerService: MailerService,
@@ -33,8 +35,18 @@ export class SendMailService {
                 )
                 .getMany();
 
-            selectAssessment.map(async assessmentInfo => {
-                await this.sendEmail(assessmentInfo);
+            // Not awaited, so every due reminder is sent at once. From Node 15
+            // on an unhandled rejection ends the process, and the reminder,
+            // still SCHEDULED, would end it again a minute later (BUGS.md,
+            // B52). A reminder that fails before its status is written is
+            // logged here and stays SCHEDULED, so the next run tries it again.
+            selectAssessment.forEach(assessmentInfo => {
+                this.sendEmail(assessmentInfo).catch((error: unknown) =>
+                    this.logger.error(
+                        `checkAssessmentEmails: the reminder of assessment ${assessmentInfo.id} failed and stays SCHEDULED (B52)`,
+                        error instanceof Error ? error.stack : String(error),
+                    ),
+                );
             });
         } catch (error) {
             return error;
