@@ -5,8 +5,10 @@ import { corsConfig } from './config/cors.config';
 import { GqlBadRequestHandler } from './shared/exception/gql-bad-request.handler';
 import { configService } from './config/config.service';
 import { GqlUnauthorizedHandler } from './shared/exception/gql-unauthorized.handler';
+import { restoreBooleanComparisons } from './shared/boolean-comparisons';
 
 async function bootstrap() {
+    restoreBooleanComparisons();
     const app = await NestFactory.create(AppModule);
 
     const port = configService.getPort();

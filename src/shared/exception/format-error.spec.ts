@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { ApolloServer, UserInputError } from 'apollo-server-express';
 import { DatabaseError } from 'pg-protocol';
+import * as typeorm from 'typeorm';
 import { EntityNotFoundError, QueryFailedError } from 'typeorm';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
 import { formatError } from './format-error';
@@ -13,10 +14,8 @@ import { formatError } from './format-error';
 // error without the query's nodes, so no error carries `locations`, as on
 // v1.1.6.
 
-const { version: typeormVersion } = require('typeorm/package.json') as {
-    version: string;
-};
-const TYPEORM_0_3 = typeormVersion.startsWith('0.3.');
+/** Whether TypeORM 0.3 is installed (DataSource came with it). */
+const TYPEORM_0_3 = 'DataSource' in typeorm;
 
 /** Apollo Server with one query, `assessment(id: Int!)`, whose resolver throws what `throwing` gives. */
 async function server(throwing: () => Error = () => new Error('unused')) {

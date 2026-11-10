@@ -52,14 +52,22 @@ import { QuestionnaireScript } from 'src/modules/questionnaire/models/questionna
     disableUpdate: true,
     disableRemove: true,
 })
-@FilterableUnPagedRelation('departments', () => Department, { nullable: true })
+// addDepartmentsToPatient and removeDepartmentsFromPatient are written by
+// hand in PatientResolver, without setDepartmentsOnPatient.
+@FilterableUnPagedRelation('departments', () => Department, {
+    nullable: true,
+    disableUpdate: true,
+    disableRemove: true,
+})
 @FilterableUnPagedRelation('patientCaregivers', () => PatientCaregiver, {
     nullable: true,
     disableUpdate: true,
     disableRemove: true,
 })
+// Patient.assessments, one assessment, is resolved in PatientResolver.
 @FilterableRelation('assessments', () => Assessment, {
     nullable: true,
+    disableRead: true,
     disableUpdate: true,
     disableRemove: true,
 })

@@ -14,8 +14,10 @@ import {
     InputType,
     Mutation,
     ObjectType,
+    Parent,
     PartialType,
     Query,
+    ResolveField,
     Resolver,
 } from '@nestjs/graphql';
 import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
@@ -25,8 +27,13 @@ import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
 import { PermissionService } from 'src/modules/permission/providers/permission.service';
 import { User } from 'src/modules/user/models/user.model';
+import { DEFAULT_AUTHORIZER_FILTERS } from 'src/shared/relation-mutations';
 import { PatientAuthorizer } from '../authorizers/patient.authorizer';
 import { CreatePatientInput } from '../dto/create-patient.input';
+import {
+    AddDepartmentsToPatientArgs,
+    RemoveDepartmentsFromPatientArgs,
+} from '../dto/patient-departments.input';
 import { UpdatePatientInput } from '../dto/update-patient.input';
 import { PatientQueryService } from '../providers/patient-query.service';
 import { Patient, PatientReport } from '../models/patient.model';
@@ -278,6 +285,44 @@ export class PatientResolver {
         } catch (error) {
             return error;
         }
+    }
+
+    // One assessment of the patient, as the fork up to 0.33 loaded this
+    // single-valued relation laid over a one-to-many: the first row of the
+    // patient's assessments. The fork 2.0 batches the patients of a list
+    // and limits the whole batch to as many rows as patients, so a patient
+    // whose assessments fall outside it would get null.
+    @ResolveField('assessments', () => Assessment, { nullable: true })
+    assessments(@Parent() patient: Patient): Promise<Assessment | undefined> {
+        return this.service.findRelation(Assessment, 'assessments', patient);
+    }
+
+    // The fork generates `add…` and `set…` together; setDepartmentsOnPatient
+    // goes (ticket 06, decision 2), so these two are written here as the
+    // fork generated them: the same inputs, validation, guards and service
+    // call.
+    @Mutation(() => Patient)
+    addDepartmentsToPatient(
+        @Args() { input }: AddDepartmentsToPatientArgs,
+    ): Promise<Patient> {
+        return this.service.addRelations(
+            'departments',
+            input.id,
+            input.relationIds,
+            DEFAULT_AUTHORIZER_FILTERS,
+        );
+    }
+
+    @Mutation(() => Patient)
+    removeDepartmentsFromPatient(
+        @Args() { input }: RemoveDepartmentsFromPatientArgs,
+    ): Promise<Patient> {
+        return this.service.removeRelations(
+            'departments',
+            input.id,
+            input.relationIds,
+            DEFAULT_AUTHORIZER_FILTERS,
+        );
     }
 
     @Mutation(() => PatientStatus)

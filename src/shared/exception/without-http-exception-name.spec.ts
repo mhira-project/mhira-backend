@@ -9,18 +9,16 @@ import { withoutHttpExceptionName } from './without-http-exception-name';
 /** The error formatError receives: Apollo Server's enrichError (2 and 3) builds `exception` from the original error's own enumerable properties. */
 function asApolloFormats(originalError: Error): GraphQLError {
     const exception: Record<string, unknown> = { ...originalError };
-    return new GraphQLError(
-        originalError.message,
-        null,
-        null,
-        null,
-        ['generatePatientReport'],
+    return new GraphQLError(originalError.message, {
+        path: ['generatePatientReport'],
         originalError,
-        {
-            code: 'INTERNAL_SERVER_ERROR',
-            exception,
-        },
-    );
+        extensions: { code: 'INTERNAL_SERVER_ERROR', exception },
+    });
+}
+
+/** The `exception` that asApolloFormats built, as a record: Apollo's typings declare only `code` and `stacktrace`. */
+function exceptionOf(error: GraphQLError): Record<string, unknown> {
+    return error.extensions.exception as Record<string, unknown>;
 }
 
 describe('withoutHttpExceptionName', () => {
@@ -31,11 +29,9 @@ describe('withoutHttpExceptionName', () => {
         'leaves out the name NestJS 8 adds to an %s, and keeps the rest',
         (_, exception) => {
             const error = asApolloFormats(exception);
-            expect(error.extensions.exception.name).toBe(
-                exception.constructor.name,
-            );
+            expect(exceptionOf(error).name).toBe(exception.constructor.name);
 
-            const { name, ...asInV116 } = error.extensions.exception;
+            const { name, ...asInV116 } = exceptionOf(error);
             expect(withoutHttpExceptionName(error)).toEqual({
                 code: 'INTERNAL_SERVER_ERROR',
                 exception: asInV116,
@@ -59,18 +55,13 @@ describe('withoutHttpExceptionName', () => {
         }
         const error = asApolloFormats(new QueryFailedError());
         expect(withoutHttpExceptionName(error)).toBe(error.extensions);
-        expect(error.extensions.exception.name).toBe('QueryFailedError');
+        expect(exceptionOf(error).name).toBe('QueryFailedError');
     });
 
     it('returns extensions without an exception unchanged', () => {
         const error = new GraphQLError(
             'Variable "$id" of required type "Int!" was not provided.',
-            null,
-            null,
-            null,
-            null,
-            null,
-            { code: 'INTERNAL_SERVER_ERROR' },
+            { extensions: { code: 'INTERNAL_SERVER_ERROR' } },
         );
         expect(withoutHttpExceptionName(error)).toBe(error.extensions);
     });

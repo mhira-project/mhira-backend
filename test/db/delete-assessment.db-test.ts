@@ -1,4 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
+import { EntityNotFoundError } from 'typeorm';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
 import { AssessmentType } from 'src/modules/assessment/models/assessment-type.model';
 import { AssessmentService } from 'src/modules/assessment/services/assessment.service';
@@ -6,7 +7,7 @@ import { Caregiver } from 'src/modules/caregiver/models/caregiver.model';
 import { PatientQueryService } from 'src/modules/patient/providers/patient-query.service';
 import { QuestionnaireAssessmentService } from 'src/modules/questionnaire/services/questionnaire-assessment.service';
 import { User } from 'src/modules/user/models/user.model';
-import { lookupModule, StatementRecorder } from './database';
+import { lookupModule, StatementRecorder, whereLive } from './database';
 
 // Ticket 07, 07_D, P1 (T2): deleteAssessment looks the assessment up by id,
 // then, in one transaction, deletes the row (unless it only cancels) and has
@@ -17,6 +18,14 @@ import { lookupModule, StatementRecorder } from './database';
 // `"id" IN ($1)` without a LIMIT, for the same row and the same message.
 
 const MISSING = 999999;
+
+/** The lookup of an assessment by id. */
+function byId(id: number): string {
+    return `SELECT ... FROM "assessment" "Assessment" ${whereLive(
+        'Assessment',
+        '"Assessment"."id" = $1',
+    )} LIMIT 1 -- [${id}]`;
+}
 
 describe('deleteAssessment (P1, T2)', () => {
     let module: TestingModule;
@@ -52,11 +61,15 @@ describe('deleteAssessment (P1, T2)', () => {
             '63cfdc2c47f5b40024688e7d',
             false,
         );
+        // Not found: undefined on TypeORM 0.2, null on 0.3.
         expect(
-            await Assessment.findOne({ where: { id: 4 }, withDeleted: true }),
-        ).toBeUndefined();
+            (await Assessment.findOne({
+                where: { id: 4 },
+                withDeleted: true,
+            })) ?? null,
+        ).toBeNull();
         expect(sql).toEqual([
-            'SELECT ... FROM "assessment" "Assessment" WHERE ( "Assessment"."id" = $1 ) AND ( "Assessment"."deletedAt" IS NULL ) LIMIT 1 -- [4]',
+            byId(4),
             'DELETE FROM "assessment" WHERE "id" IN ($1) -- [4]',
         ]);
         expect(transaction).toEqual([
@@ -92,22 +105,18 @@ describe('deleteAssessment (P1, T2)', () => {
             true,
         );
         expect((await Assessment.findOne({ where: { id: 1 } })).id).toBe(1);
-        expect(sql).toEqual([
-            'SELECT ... FROM "assessment" "Assessment" WHERE ( "Assessment"."id" = $1 ) AND ( "Assessment"."deletedAt" IS NULL ) LIMIT 1 -- [1]',
-        ]);
+        expect(sql).toEqual([byId(1)]);
     });
 
     it('refuses a missing assessment before the transaction', async () => {
         const { error, sql } = await recorder.observe(() =>
             module.get(AssessmentService).deleteAssessment(MISSING, false),
         );
-        expect(error.name).toBe('EntityNotFound');
+        expect(error).toBeInstanceOf(EntityNotFoundError);
         expect(error.message).toBe(
             `Could not find any entity of type "Assessment" matching: ${MISSING}`,
         );
         expect(deleteDocument).not.toHaveBeenCalled();
-        expect(sql).toEqual([
-            `SELECT ... FROM "assessment" "Assessment" WHERE ( "Assessment"."id" = $1 ) AND ( "Assessment"."deletedAt" IS NULL ) LIMIT 1 -- [${MISSING}]`,
-        ]);
+        expect(sql).toEqual([byId(MISSING)]);
     });
 });

@@ -6,6 +6,7 @@ import { GqlAuthGuard } from '../auth/auth.guard';
 import { UsePermission } from '../permission/decorators/permission.decorator';
 import { PermissionEnum } from '../permission/enums/permission.enum';
 import { PermissionGuard } from '../permission/guards/permission.guard';
+import { CreateInformantInput } from './dto/create-informant.input';
 import { CreatePatientInput } from './dto/create-patient.input';
 import { UpdatePatientInput } from './dto/update-patient.input';
 import { EmergencyContact } from './models/emergency-contact.model';
@@ -76,6 +77,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
                 {
                     DTOClass: Informant,
                     EntityClass: Informant,
+                    CreateDTOClass: CreateInformantInput,
                     guards: guards,
                     read: {
                         defaultSort: [

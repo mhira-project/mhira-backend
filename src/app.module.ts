@@ -1,4 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { GraphQLModule } from '@nestjs/graphql';
 import { join } from 'path';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -37,7 +38,8 @@ import { ScheduleModule } from '@nestjs/schedule';
             connectionFactory: mongooseConnectionFactory,
         }),
         TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
-        GraphQLModule.forRoot({
+        GraphQLModule.forRoot<ApolloDriverConfig>({
+            driver: ApolloDriver,
             introspection: configService.isGraphqlPlaygroundEnabled(),
             playground: configService.isGraphqlPlaygroundEnabled(),
             autoSchemaFile: join(process.cwd(), 'src/schema/schema.gql'),
