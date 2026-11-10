@@ -3,7 +3,7 @@ import {
     Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, Repository } from 'typeorm';
+import { Brackets, EntityNotFoundError, Repository } from 'typeorm';
 import {
     CreateEmailTemplate,
     UpdateEmailTemplate,
@@ -32,7 +32,12 @@ export class MailTemplateService {
     ) {}
 
     async getEmailTemplate(id: number): Promise<MailTemplate> {
-        return this.mailTemplateRepository.findOneOrFail(id);
+        const template = await this.mailTemplateRepository.findOne({
+            where: { id },
+        });
+        // v1.1.6's message prints the id ("matching: 999999").
+        if (!template) throw new EntityNotFoundError(MailTemplate, id);
+        return template;
     }
 
     async getPatientEmailTemplates(patientId: number) {

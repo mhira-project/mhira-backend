@@ -59,7 +59,7 @@ export class AssessmentTypeService {
         // Apply combined authorized filter
 
         const result = await this.assessmentTypeRepository.find({
-            status: AssessmentTypeEnum.ACTIVE,
+            where: { status: AssessmentTypeEnum.ACTIVE },
         });
 
         return result;
@@ -79,9 +79,9 @@ export class AssessmentTypeService {
     async updateAssessmentType(
         input: UpdateAssessmentTypeInput,
     ): Promise<AssessmentType> {
-        const assessmentType = await this.assessmentTypeRepository.findOne(
-            input.assessmentTypeId,
-        );
+        const assessmentType = await this.assessmentTypeRepository.findOne({
+            where: { id: input.assessmentTypeId },
+        });
 
         if (!assessmentType)
             throw new NotFoundException('Assessment type not found!');

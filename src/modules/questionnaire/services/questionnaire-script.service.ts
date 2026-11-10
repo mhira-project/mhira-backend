@@ -96,7 +96,7 @@ export class QuestionnaireScriptService {
         questionnaireId,
     ): Promise<QuestionnaireScript[]> {
         const questionnaireScripts = await this.questionnaireScriptRepository.find(
-            { questionnaireId },
+            { where: { questionnaireId } },
         );
 
         return questionnaireScripts;
@@ -111,7 +111,10 @@ export class QuestionnaireScriptService {
         const questionnaireScript = await this.questionnaireScriptRepository.findOne(
             {
                 relations: ['reports'],
-                where: { id },
+                // The GraphQL ID, a string at run time, goes to Postgres as
+                // it came, as v1.1.6 sends it: Postgres casts it, and refuses
+                // "abc" with v1.1.6's message. Number() would not.
+                where: { id: id as QuestionnaireScript['id'] },
             },
         );
 
@@ -120,7 +123,9 @@ export class QuestionnaireScriptService {
 
         const cleanedReportIds = [...new Set(reportIds)];
 
-        const reports = await Report.find({ id: In(cleanedReportIds) });
+        const reports = await Report.find({
+            where: { id: In(cleanedReportIds) },
+        });
 
         if (reports.length !== cleanedReportIds.length)
             throw new NotFoundException(

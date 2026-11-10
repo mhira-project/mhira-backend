@@ -57,7 +57,9 @@ export class RoleResolver extends CRUDResolver(Role, {
     ): Promise<Role> {
         const roleInput = input['role'] as RoleInput;
 
-        const exists = await Role.findOne({ name: roleInput.name });
+        const exists = await Role.findOne({
+            where: { name: roleInput.name },
+        });
 
         if (exists) {
             throw new BadRequestException('Role with same name already exists');

@@ -34,7 +34,9 @@ export class UserCrudService extends TypeOrmQueryService<User> {
         user.passwordExpiresAt = moment().toDate();
         user.password = await Hash.make(user.password);
 
-        const defaultRole = await Role.findOne({ code: RoleCode.NO_ROLE });
+        const defaultRole = await Role.findOne({
+            where: { code: RoleCode.NO_ROLE },
+        });
 
         if (defaultRole) {
             user.roles = [defaultRole];

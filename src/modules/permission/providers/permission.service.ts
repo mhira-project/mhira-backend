@@ -63,7 +63,9 @@ export class PermissionService implements OnModuleInit {
         }
 
         // Auto Create Super-admin role if not exists
-        let superAdminRole = await Role.findOne({ code: RoleCode.SUPER_ADMIN });
+        let superAdminRole = await Role.findOne({
+            where: { code: RoleCode.SUPER_ADMIN },
+        });
         if (!superAdminRole) {
             this.logger.log(
                 'Role Super Admin not found in DB. System seeding it',
@@ -77,7 +79,9 @@ export class PermissionService implements OnModuleInit {
         }
 
         // Auto Create No-Role role if not exists
-        let noRole = await Role.findOne({ code: RoleCode.NO_ROLE });
+        let noRole = await Role.findOne({
+            where: { code: RoleCode.NO_ROLE },
+        });
         if (!noRole) {
             this.logger.log('Role No-Role not found in DB. System seeding it');
 

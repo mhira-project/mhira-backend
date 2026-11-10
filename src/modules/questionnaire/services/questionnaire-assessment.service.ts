@@ -60,7 +60,7 @@ export class QuestionnaireAssessmentService {
 
     /** The assessment's stored status, or undefined when there is no such assessment. */
     async getStatus(
-        assessmentId: Types.ObjectId,
+        assessmentId: string,
     ): Promise<AssessmentStatus | undefined> {
         const assessment = await this.assessmentModel
             .findById(assessmentId)
@@ -177,10 +177,7 @@ export class QuestionnaireAssessmentService {
         }
     }
 
-    async changeAssessmentStatus(
-        assessmentId: Types.ObjectId,
-        status: AssessmentStatus,
-    ) {
+    async changeAssessmentStatus(assessmentId: string, status: AssessmentStatus) {
         const assessmentModel = await this.assessmentModel.findById(
             assessmentId,
         );

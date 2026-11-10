@@ -24,7 +24,7 @@ export class SettingService {
     }
 
     async getKey<K extends keyof SettingDto>(key?: K): Promise<SettingDto[K]> {
-        const storedSetting = await Setting.findOne({ key });
+        const storedSetting = await Setting.findOne({ where: { key } });
 
         const value: SettingDto[K] = storedSetting
             ? (storedSetting.value as SettingDto[K])
@@ -54,7 +54,7 @@ export class SettingService {
     ): Promise<boolean> {
         const stringValue = value.toString();
 
-        const storedSetting = await Setting.findOne({ key });
+        const storedSetting = await Setting.findOne({ where: { key } });
 
         // Update existing setting entry
         if (storedSetting) {

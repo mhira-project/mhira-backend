@@ -145,7 +145,7 @@ export class PatientResolver {
 
         if (patientInput.medicalRecordNo) {
             const exists = await Patient.findOne({
-                medicalRecordNo: patientInput.medicalRecordNo,
+                where: { medicalRecordNo: patientInput.medicalRecordNo },
             });
             if (exists) {
                 throw new BadRequestException(

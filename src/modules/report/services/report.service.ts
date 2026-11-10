@@ -33,7 +33,9 @@ export class ReportService {
         const { roles, ...rest } = report;
         const newReport = this.reportRepository.create(rest);
 
-        const findRoles = await this.roleRepository.find({ id: In(roles) });
+        const findRoles = await this.roleRepository.find({
+            where: { id: In(roles) },
+        });
 
         newReport.roles = findRoles;
 
@@ -47,11 +49,14 @@ export class ReportService {
         const { roles, ...rest } = update;
         const report = await this.reportRepository.findOne({
             relations: ['roles'],
-            where: { id },
+            // The GraphQL ID, a string at run time, goes to Postgres as it
+            // came, as v1.1.6 sends it: Postgres casts it, and refuses "abc"
+            // with v1.1.6's message. Number() would not.
+            where: { id: id as Report['id'] },
         });
 
         const findRoles = await this.roleRepository.find({
-            id: In(roles),
+            where: { id: In(roles) },
         });
 
         if (findRoles.length !== roles.length)

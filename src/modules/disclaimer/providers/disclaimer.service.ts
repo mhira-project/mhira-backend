@@ -10,7 +10,9 @@ export class DisclaimerService {
     }
 
     async updateDisclaimer(input): Promise<any> {
-        const disclaimer = await Disclaimer.findOne({ type: input.type });
+        const disclaimer = await Disclaimer.findOne({
+            where: { type: input.type },
+        });
 
         if (!disclaimer)
             throw new NotFoundException('Disclaimer type not found!');

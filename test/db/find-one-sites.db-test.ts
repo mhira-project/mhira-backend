@@ -30,9 +30,14 @@ import { lookupModule, StatementRecorder } from './database';
 const MISSING = 999999;
 const DOCUMENT_ID = '63c67b43ea6e670024c8bca1';
 
-/** TypeORM 0.2's statement for `findOne(id)` and `findOneOrFail(id)` on a soft-deletable entity. */
+/**
+ * The statement of a lookup by id on a soft-deletable entity, in the form
+ * P2 writes it, `findOne({ where: { id } })`. v1.1.6's `findOne(id)` and
+ * `findOneOrFail(id)` sent `WHERE ( "X"."id" IN ($1) )` without a LIMIT:
+ * the same row, and for an `Int!` id no error that could carry the SQL.
+ */
 function byId(table: string, entity: string, id: number): string {
-    return `SELECT ... FROM "${table}" "${entity}" WHERE ( "${entity}"."id" IN ($1) ) AND ( "${entity}"."deletedAt" IS NULL ) -- [${id}]`;
+    return `SELECT ... FROM "${table}" "${entity}" WHERE ( "${entity}"."id" = $1 ) AND ( "${entity}"."deletedAt" IS NULL ) LIMIT 1 -- [${id}]`;
 }
 
 /** TypeORM 0.2's statement for `findOne({ column: value })` on an entity without soft delete. */
@@ -45,11 +50,6 @@ function byColumn(
     return `SELECT ... FROM "${table}" "${entity}" WHERE "${entity}"."${column}" = $1 LIMIT 1 -- ${JSON.stringify(
         [value],
     )}`;
-}
-
-/** The same with the soft delete condition. */
-function byIdCondition(table: string, entity: string, id: number): string {
-    return `SELECT ... FROM "${table}" "${entity}" WHERE ( "${entity}"."id" = $1 ) AND ( "${entity}"."deletedAt" IS NULL ) LIMIT 1 -- [${id}]`;
 }
 
 /** The Mongo side of an assessment, stubbed: these tests are about Postgres. */
@@ -276,7 +276,7 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
             );
             expect(created.error).toBeUndefined();
             expect(created.result.informantClinician.id).toBe(2);
-            expect(created.sql[1]).toBe(byIdCondition('user', 'User', 2));
+            expect(created.sql[1]).toBe(byId('user', 'User', 2));
 
             const createMissing = await recorder.observe(() =>
                 service.createNewAssessment(
@@ -286,9 +286,7 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
             expect(createMissing.error).toEqual(
                 new NotFoundException('Informant clinician not found!'),
             );
-            expect(createMissing.sql[1]).toBe(
-                byIdCondition('user', 'User', MISSING),
-            );
+            expect(createMissing.sql[1]).toBe(byId('user', 'User', MISSING));
 
             const updated = await recorder.observe(() =>
                 service.updateAssessment(
@@ -300,7 +298,7 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
             );
             expect(updated.error).toBeUndefined();
             expect(updated.result.informantClinician.id).toBe(3);
-            expect(updated.sql[2]).toBe(byIdCondition('user', 'User', 3));
+            expect(updated.sql[2]).toBe(byId('user', 'User', 3));
 
             const updateMissing = await recorder.observe(() =>
                 service.updateAssessment(
@@ -313,9 +311,7 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
             expect(updateMissing.error).toEqual(
                 new NotFoundException('Informant clinician not found!'),
             );
-            expect(updateMissing.sql[2]).toBe(
-                byIdCondition('user', 'User', MISSING),
-            );
+            expect(updateMissing.sql[2]).toBe(byId('user', 'User', MISSING));
         });
 
         it('updateDisclaimer finds the disclaimer by type, or refuses a missing one', async () => {

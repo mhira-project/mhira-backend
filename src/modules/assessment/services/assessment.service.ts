@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Types } from 'mongoose';
-import { getConnection, Repository } from 'typeorm';
+import { EntityNotFoundError, getConnection, Repository } from 'typeorm';
 import {
     CreateFullAssessmentInput,
     UpdateFullAssessmentInput,
@@ -120,9 +120,9 @@ export class AssessmentService {
         for (let i = 0; i < assessmentLength; i++) {
             let assessment: Assessment;
 
-            const assessmentType = await this.assessmentTypeRepo.findOne(
-                assessmentInput.assessmentTypeId,
-            );
+            const assessmentType = await this.assessmentTypeRepo.findOne({
+                where: { id: assessmentInput.assessmentTypeId },
+            });
 
             if (!assessmentType) {
                 throw new NotFoundException('Assessment type not found!');
@@ -160,7 +160,7 @@ export class AssessmentService {
                     questionnaireAssessment.id;
                 if (assessmentInput.informantClinicianId) {
                     const clinician = await this.userRepository.findOne({
-                        id: assessmentInput.informantClinicianId,
+                        where: { id: assessmentInput.informantClinicianId },
                     });
                     if (!clinician)
                         throw new NotFoundException(
@@ -239,13 +239,13 @@ export class AssessmentService {
 
     async updateAssessment(assessmentInput: UpdateFullAssessmentInput) {
         // find postgres assessment
-        const assessment = await this.assessmentRepository.findOneOrFail(
+        const assessment = await this.findAssessmentOrFail(
             assessmentInput.assessmentId,
         );
 
-        const assessmentType = await this.assessmentTypeRepo.findOne(
-            assessmentInput.assessmentTypeId,
-        );
+        const assessmentType = await this.assessmentTypeRepo.findOne({
+            where: { id: assessmentInput.assessmentTypeId },
+        });
 
         if (!assessmentType)
             throw new NotFoundException('Assessment type not found!');
@@ -286,7 +286,7 @@ export class AssessmentService {
             assessment.informantClinician = null;
             if (assessmentInput.informantClinicianId) {
                 const clinician = await this.userRepository.findOne({
-                    id: assessmentInput.informantClinicianId,
+                    where: { id: assessmentInput.informantClinicianId },
                 });
                 if (!clinician)
                     throw new NotFoundException(
@@ -334,7 +334,7 @@ export class AssessmentService {
     }
 
     public async deleteAssessment(id: number, statusCancel = true) {
-        const assessment = await this.assessmentRepository.findOneOrFail(id);
+        const assessment = await this.findAssessmentOrFail(id);
         const queryRunner = getConnection().createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
@@ -356,7 +356,7 @@ export class AssessmentService {
     }
 
     async archiveOneAssessment(id: number) {
-        const assessment = await this.assessmentRepository.findOneOrFail(id);
+        const assessment = await this.findAssessmentOrFail(id);
 
         if (assessment.deleted) {
             throw Error('This assessment is already archived!');
@@ -364,6 +364,19 @@ export class AssessmentService {
 
         await this.assessmentRepository.update(id, { deleted: true });
 
+        return assessment;
+    }
+
+    /**
+     * The assessment with this id, or v1.1.6's EntityNotFoundError, whose
+     * message prints the id ("matching: 999999"); findOneOrFail with
+     * `where` would print the options object instead.
+     */
+    private async findAssessmentOrFail(id: number): Promise<Assessment> {
+        const assessment = await this.assessmentRepository.findOne({
+            where: { id },
+        });
+        if (!assessment) throw new EntityNotFoundError(Assessment, id);
         return assessment;
     }
 

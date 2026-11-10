@@ -5,7 +5,7 @@ import { AssessmentStatus } from '../enums/assessment-status.enum';
 @InputType()
 export class AnswerAssessmentInput {
     @Field(() => String)
-    assessmentId: Types.ObjectId;
+    assessmentId: string;
 
     @Field(() => String)
     questionnaireVersionId: Types.ObjectId;
@@ -32,7 +32,7 @@ export class AnswerAssessmentInput {
 @InputType()
 export class ChangeAssessmentStatusInput {
     @Field(() => String)
-    assessmentId: Types.ObjectId;
+    assessmentId: string;
 
     @Field(() => AssessmentStatus)
     status: AssessmentStatus;

@@ -12,7 +12,9 @@ import { lookupModule, StatementRecorder } from './database';
 // then, in one transaction, deletes the row (unless it only cancels) and has
 // the Mongo side delete or cancel the document: the transaction commits
 // when that succeeds and rolls back when it fails. P3 runs it on the
-// injected connection, which TypeORM 0.3 needs.
+// injected connection, which TypeORM 0.3 needs. The lookup is P2's
+// `findOne({ where: { id } })`; v1.1.6's `findOneOrFail(id)` sent
+// `"id" IN ($1)` without a LIMIT, for the same row and the same message.
 
 const MISSING = 999999;
 
@@ -54,7 +56,7 @@ describe('deleteAssessment (P1, T2)', () => {
             await Assessment.findOne({ where: { id: 4 }, withDeleted: true }),
         ).toBeUndefined();
         expect(sql).toEqual([
-            'SELECT ... FROM "assessment" "Assessment" WHERE ( "Assessment"."id" IN ($1) ) AND ( "Assessment"."deletedAt" IS NULL ) -- [4]',
+            'SELECT ... FROM "assessment" "Assessment" WHERE ( "Assessment"."id" = $1 ) AND ( "Assessment"."deletedAt" IS NULL ) LIMIT 1 -- [4]',
             'DELETE FROM "assessment" WHERE "id" IN ($1) -- [4]',
         ]);
         expect(transaction).toEqual([
@@ -91,7 +93,7 @@ describe('deleteAssessment (P1, T2)', () => {
         );
         expect((await Assessment.findOne({ where: { id: 1 } })).id).toBe(1);
         expect(sql).toEqual([
-            'SELECT ... FROM "assessment" "Assessment" WHERE ( "Assessment"."id" IN ($1) ) AND ( "Assessment"."deletedAt" IS NULL ) -- [1]',
+            'SELECT ... FROM "assessment" "Assessment" WHERE ( "Assessment"."id" = $1 ) AND ( "Assessment"."deletedAt" IS NULL ) LIMIT 1 -- [1]',
         ]);
     });
 
@@ -105,7 +107,7 @@ describe('deleteAssessment (P1, T2)', () => {
         );
         expect(deleteDocument).not.toHaveBeenCalled();
         expect(sql).toEqual([
-            `SELECT ... FROM "assessment" "Assessment" WHERE ( "Assessment"."id" IN ($1) ) AND ( "Assessment"."deletedAt" IS NULL ) -- [${MISSING}]`,
+            `SELECT ... FROM "assessment" "Assessment" WHERE ( "Assessment"."id" = $1 ) AND ( "Assessment"."deletedAt" IS NULL ) LIMIT 1 -- [${MISSING}]`,
         ]);
     });
 });
