@@ -4,7 +4,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Types } from 'mongoose';
-import { getConnection, IsNull, Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import {
     Filter,
     InjectQueryService,

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Types } from 'mongoose';
-import { EntityNotFoundError, getConnection, Repository } from 'typeorm';
+import { Connection, EntityNotFoundError, Repository } from 'typeorm';
 import {
     CreateFullAssessmentInput,
     UpdateFullAssessmentInput,
@@ -43,6 +43,7 @@ export class AssessmentService {
         @InjectRepository(AssessmentType)
         private readonly assessmentTypeRepo: Repository<AssessmentType>,
         private readonly patientQueryService: PatientQueryService,
+        private readonly connection: Connection,
     ) {}
 
     getQuestionnaireAssessment(id: string) {
@@ -335,7 +336,7 @@ export class AssessmentService {
 
     public async deleteAssessment(id: number, statusCancel = true) {
         const assessment = await this.findAssessmentOrFail(id);
-        const queryRunner = getConnection().createQueryRunner();
+        const queryRunner = this.connection.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
 
