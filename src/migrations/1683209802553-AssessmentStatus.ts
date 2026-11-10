@@ -33,6 +33,8 @@ export class AssessmentStatus1683188215805 implements MigrationInterface {
             }
         } catch (error) {
             console.log(error);
+        } finally {
+            await client.close();
         }
     }
 

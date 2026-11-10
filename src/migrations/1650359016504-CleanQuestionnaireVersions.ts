@@ -21,6 +21,8 @@ export class CleanQuestionnaireVersions1650359016504
             });
         } catch (e) {
             console.log(e);
+        } finally {
+            await client.close();
         }
     }
 
