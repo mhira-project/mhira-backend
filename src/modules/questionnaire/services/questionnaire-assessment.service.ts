@@ -58,12 +58,28 @@ export class QuestionnaireAssessmentService {
         });
     }
 
+    /** The assessment's stored status, or undefined when there is no such assessment. */
+    async getStatus(
+        assessmentId: Types.ObjectId,
+    ): Promise<AssessmentStatus | undefined> {
+        const assessment = await this.assessmentModel
+            .findById(assessmentId)
+            .select('status')
+            .exec();
+        return assessment?.status;
+    }
+
     /**
      * Adds an answer subdocument to existing mongodb questionnaire assessment
      * @param assessmentAnswerInput
+     * @param statusOnArrival the status the request found, before its own
+     * status change: whether answers may still be added is decided on it
      * @returns
      */
-    async addAnswerToAssessment(assessmentAnswerInput: AnswerAssessmentInput) {
+    async addAnswerToAssessment(
+        assessmentAnswerInput: AnswerAssessmentInput,
+        statusOnArrival: AssessmentStatus | undefined,
+    ) {
         const foundAssessment: QuestionnaireAssessment = await this.assessmentModel.findById(
             assessmentAnswerInput.assessmentId,
         );
@@ -78,7 +94,7 @@ export class QuestionnaireAssessmentService {
             ![
                 AssessmentStatus.PARTIALLY_COMPLETED,
                 AssessmentStatus.OPEN_FOR_COMPLETION,
-            ].includes(foundAssessment.status)
+            ].includes(statusOnArrival)
         ) {
             throw new Error(
                 'You cannot add any more answers to this assessment.',
