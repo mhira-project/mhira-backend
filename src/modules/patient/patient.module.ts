@@ -35,6 +35,17 @@ const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
     imports: [
         QuestionnaireModule,
+        MongooseModule.forFeature([
+            {
+                name: QuestionnaireAssessment.name,
+                schema: AssessmentSchema,
+            },
+            { name: Answer.name, schema: AnswerSchema },
+            {
+                name: Questionnaire.name,
+                schema: QuestionnaireSchema,
+            },
+        ]),
         NestjsQueryGraphQLModule.forFeature({
             // import the NestjsQueryTypeOrmModule to register the entity with typeorm
             // and provide a QueryService
@@ -45,17 +56,6 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     Informant,
                     EmergencyContact,
                     PatientStatus,
-                ]),
-                MongooseModule.forFeature([
-                    {
-                        name: QuestionnaireAssessment.name,
-                        schema: AssessmentSchema,
-                    },
-                    { name: Answer.name, schema: AnswerSchema },
-                    {
-                        name: Questionnaire.name,
-                        schema: QuestionnaireSchema,
-                    },
                 ]),
             ],
 

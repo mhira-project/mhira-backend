@@ -42,41 +42,41 @@ const guards = [GqlAuthGuard, PermissionGuard];
 
 @Module({
     imports: [
+        MongooseModule.forFeature([
+            {
+                name: Questionnaire.name,
+                schema: QuestionnaireSchema,
+            },
+            {
+                name: Question.name,
+                schema: QuestionSchema,
+            },
+            {
+                name: QuestionGroup.name,
+                schema: QuestionGroupSchema,
+            },
+            {
+                name: Answer.name,
+                schema: AnswerSchema,
+            },
+            {
+                name: Choice.name,
+                schema: ChoiceSchema,
+            },
+            {
+                name: QuestionnaireAssessment.name,
+                schema: AssessmentSchema,
+            },
+            {
+                name: QuestionnaireBundle.name,
+                schema: QuestionnaireBundleSchema,
+            },
+        ]),
         NestjsQueryGraphQLModule.forFeature({
             imports: [
                 NestjsQueryTypeOrmModule.forFeature([
                     QuestionnaireScript,
                     Assessment,
-                ]),
-                MongooseModule.forFeature([
-                    {
-                        name: Questionnaire.name,
-                        schema: QuestionnaireSchema,
-                    },
-                    {
-                        name: Question.name,
-                        schema: QuestionSchema,
-                    },
-                    {
-                        name: QuestionGroup.name,
-                        schema: QuestionGroupSchema,
-                    },
-                    {
-                        name: Answer.name,
-                        schema: AnswerSchema,
-                    },
-                    {
-                        name: Choice.name,
-                        schema: ChoiceSchema,
-                    },
-                    {
-                        name: QuestionnaireAssessment.name,
-                        schema: AssessmentSchema,
-                    },
-                    {
-                        name: QuestionnaireBundle.name,
-                        schema: QuestionnaireBundleSchema,
-                    },
                 ]),
             ],
             resolvers: [

@@ -22,22 +22,22 @@ import {
 
 @Module({
   imports: [
+    MongooseModule.forFeature([
+      {
+          name: QuestionnaireAssessment.name,
+          schema: AssessmentSchema,
+      },
+      { name: Answer.name, schema: AnswerSchema },
+      {
+          name: Questionnaire.name,
+          schema: QuestionnaireSchema,
+      },
+    ]),
     NestjsQueryGraphQLModule.forFeature({
       imports: [
         NestjsQueryTypeOrmModule.forFeature([
           MailTemplate,
           Assessment
-        ]),
-        MongooseModule.forFeature([
-          {
-              name: QuestionnaireAssessment.name,
-              schema: AssessmentSchema,
-          },
-          { name: Answer.name, schema: AnswerSchema },
-          {
-              name: Questionnaire.name,
-              schema: QuestionnaireSchema,
-          },
         ]),
       ],
       resolvers: [

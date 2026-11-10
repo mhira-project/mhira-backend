@@ -28,6 +28,17 @@ import { AssessmentType } from './models/assessment-type.model';
 const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
     imports: [
+        MongooseModule.forFeature([
+            {
+                name: QuestionnaireAssessment.name,
+                schema: AssessmentSchema,
+            },
+            { name: Answer.name, schema: AnswerSchema },
+            {
+                name: Questionnaire.name,
+                schema: QuestionnaireSchema,
+            },
+        ]),
         NestjsQueryGraphQLModule.forFeature({
             // import the NestjsQueryTypeOrmModule to register the entity with typeorm
             // and provide a QueryService
@@ -37,18 +48,6 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     User,
                     Caregiver,
                     AssessmentType,
-                ]),
-
-                MongooseModule.forFeature([
-                    {
-                        name: QuestionnaireAssessment.name,
-                        schema: AssessmentSchema,
-                    },
-                    { name: Answer.name, schema: AnswerSchema },
-                    {
-                        name: Questionnaire.name,
-                        schema: QuestionnaireSchema,
-                    },
                 ]),
             ],
             // describe the resolvers you want to expose
