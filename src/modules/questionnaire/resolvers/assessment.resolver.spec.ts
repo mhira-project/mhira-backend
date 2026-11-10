@@ -15,7 +15,7 @@ import { AssessmentResolver } from './assessment.resolver';
 // the status the request found, read before the status change reopens
 // the assessment.
 
-const ASSESSMENT_ID = Types.ObjectId('5f1d7f3b9d3e2a0012345678');
+const ASSESSMENT_ID = new Types.ObjectId('5f1d7f3b9d3e2a0012345678');
 const INPUT = ({
     assessmentId: ASSESSMENT_ID,
 } as unknown) as AnswerAssessmentInput;

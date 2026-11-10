@@ -1,17 +1,13 @@
-import { Types } from 'mongoose';
+import { mongo, Types } from 'mongoose';
 import { AssessmentStatus } from 'src/modules/questionnaire/enums/assessment-status.enum';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 const configService = require('../config/config.service').configService;
-const MongoClient = require('mongodb').MongoClient;
 
 export class AssessmentStatus1683188215805 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
-        const client = new MongoClient(
+        const client = new mongo.MongoClient(
             configService.getMongoConnectionString(),
-            {
-                useUnifiedTopology: true,
-            },
         );
 
         try {
@@ -24,7 +20,7 @@ export class AssessmentStatus1683188215805 implements MigrationInterface {
             );
 
             for (const assessment of assessments) {
-                const _id = Types.ObjectId(
+                const _id = new Types.ObjectId(
                     assessment.questionnaireAssessmentId,
                 );
                 const questionnaireAssessment = await db

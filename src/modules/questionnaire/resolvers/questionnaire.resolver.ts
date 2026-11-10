@@ -63,7 +63,7 @@ export class QuestionnaireResolver {
     async deleteQuestionnaire(
         @Args('_id', { type: () => String }) questionnaireId: string,
     ) {
-        const _id = Types.ObjectId(questionnaireId);
+        const _id = new Types.ObjectId(questionnaireId);
         return this.questionnaireService.deleteQuestionnaire(_id);
     }
 }

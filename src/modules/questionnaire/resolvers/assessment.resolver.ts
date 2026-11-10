@@ -69,12 +69,10 @@ export class AssessmentResolver {
         @Args('populate') populate: boolean,
     ) {
         if (populate)
-            await assessment
-                .populate({
-                    path: 'questionnaires',
-                    model: Questionnaire.name,
-                })
-                .execPopulate();
+            await assessment.populate({
+                path: 'questionnaires',
+                model: Questionnaire.name,
+            });
 
         return assessment.questionnaires;
     }

@@ -1,15 +1,12 @@
 import { MigrationInterface } from 'typeorm';
 
-const MongoClient = require('mongodb').MongoClient;
+import { mongo } from 'mongoose';
 const configService = require('../config/config.service').configService;
 
 export class QuestionnaireVersion1645105081399 implements MigrationInterface {
     public async up(): Promise<void> {
-        const client = new MongoClient(
+        const client = new mongo.MongoClient(
             configService.getMongoConnectionString(),
-            {
-                useUnifiedTopology: true,
-            },
         );
 
         try {
@@ -59,11 +56,8 @@ export class QuestionnaireVersion1645105081399 implements MigrationInterface {
     }
 
     public async down(): Promise<void> {
-        const client = new MongoClient(
+        const client = new mongo.MongoClient(
             configService.getMongoConnectionString(),
-            {
-                useUnifiedTopology: true,
-            },
         );
 
         try {

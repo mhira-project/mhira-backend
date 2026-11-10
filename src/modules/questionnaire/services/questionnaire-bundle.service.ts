@@ -64,7 +64,7 @@ export class QuestionnaireBundleService {
     }
 
     async deleteQuestionnaireBundle(id: string) {
-        const _id = Types.ObjectId(id);
+        const _id = new Types.ObjectId(id);
 
         const questionnaireBundle = await this.questionnaireBundleModel.findById(_id)
 
@@ -75,7 +75,7 @@ export class QuestionnaireBundleService {
 
     async updateQuestionnaireBundle(input: UpdateQuestionnaireBundleInput) {
         const { _id, ...restInput } = input;
-        const id = Types.ObjectId(_id);
+        const id = new Types.ObjectId(_id);
         const questionnaireBundle = await this.questionnaireBundleModel.findById(
             id,
         );

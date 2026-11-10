@@ -47,12 +47,7 @@ export class QuestionnaireService {
             ([key, value]) => (version[key] = value),
         );
 
-        return (await version.save())
-            .populate({
-                path: 'questionnaire',
-                model: Questionnaire.name,
-            })
-            .execPopulate();
+        return version.save();
     }
 
     public async getById(questionnaireId: Types.ObjectId) {

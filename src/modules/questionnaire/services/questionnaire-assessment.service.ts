@@ -222,7 +222,7 @@ export class QuestionnaireAssessmentService {
 
     getById(_id: Types.ObjectId | string, populate = true) {
         if (typeof _id === 'string') {
-            _id = Types.ObjectId(_id);
+            _id = new Types.ObjectId(_id);
         }
 
         const query = this.assessmentModel.findById(_id)

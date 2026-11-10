@@ -1,16 +1,13 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { MongoClient } from 'mongodb';
+import { mongo } from 'mongoose';
 import { configService } from 'src/config/config.service';
 import { QuestionnaireStatus } from 'src/modules/questionnaire/models/questionnaire.schema';
 
 export class QuestionnaireOldVersions1689180681401
     implements MigrationInterface {
     public async up(): Promise<void> {
-        const client = new MongoClient(
+        const client = new mongo.MongoClient(
             configService.getMongoConnectionString(),
-            {
-                useUnifiedTopology: true,
-            },
         );
 
         try {

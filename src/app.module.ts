@@ -28,8 +28,12 @@ import { ScheduleModule } from '@nestjs/schedule';
     imports: [
         ScheduleModule.forRoot(),
         MailerModule.forRoot(configService.getMailerConfig()),
+        // From Mongoose 6 every registered model's collection would be
+        // created at start; v1.1.6 creates a collection with its first
+        // document, so the empty ones (answers, choices, questions,
+        // questiongroups, questionnaire_bundle) must not appear.
         MongooseModule.forRoot(configService.getMongoConnectionString(), {
-            useFindAndModify: false,
+            autoCreate: false,
         }),
         TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
         GraphQLModule.forRoot({
