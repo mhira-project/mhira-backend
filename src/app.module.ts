@@ -44,7 +44,6 @@ import { ScheduleModule } from '@nestjs/schedule';
             autoSchemaFile: join(process.cwd(), 'src/schema/schema.gql'),
             context: ({ req }) => ({ req }),
             debug: false, // disables stack trace
-            uploads: false,
             // @nestjs/graphql 8 turns an HttpException into an Apollo error
             // for its status unless this is off; v1.1.6 (7.x) leaves it to
             // formatError below, and the clients see that shape.

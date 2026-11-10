@@ -6,8 +6,9 @@ import { withoutHttpExceptionName } from './without-http-exception-name';
 // extensions v1.1.6 sent, without the `name` NestJS 8 sets on the instance.
 // Any other error keeps what Apollo built.
 
-/** The error formatError receives: Apollo Server 2's enrichError builds `exception` from the original error's own enumerable properties. */
+/** The error formatError receives: Apollo Server's enrichError (2 and 3) builds `exception` from the original error's own enumerable properties. */
 function asApolloFormats(originalError: Error): GraphQLError {
+    const exception: Record<string, unknown> = { ...originalError };
     return new GraphQLError(
         originalError.message,
         null,
@@ -17,7 +18,7 @@ function asApolloFormats(originalError: Error): GraphQLError {
         originalError,
         {
             code: 'INTERNAL_SERVER_ERROR',
-            exception: Object.assign({}, originalError),
+            exception,
         },
     );
 }
