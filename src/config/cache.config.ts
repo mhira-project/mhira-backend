@@ -1,6 +1,12 @@
 import { CacheModuleOptions } from "@nestjs/common";
 import { redisConfig } from "./redis.config";
 import * as redisStore from 'cache-manager-redis-store';
+// cache-manager-mongodb 0.3 replaces the global Promise with Bluebird when it
+// loads (`Promise = require('bluebird')`, undeclared, in its index.js), and
+// the backend has always run that way. Mongoose 8's driver declares a
+// subclass of Promise when it loads, which Bluebird refuses to construct, so
+// Mongoose is loaded first, while Promise is still the native one.
+import 'mongoose';
 import * as mongoStore from 'cache-manager-mongodb';
 import { configService } from "./config.service";
 

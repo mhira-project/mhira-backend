@@ -8,6 +8,7 @@ import {
 } from '../dtos/create-assessment.input';
 import { Assessment, FullPublicAssessment, FullAssessment } from '../models/assessment.model';
 import { QuestionnaireAssessmentService } from '../../questionnaire/services/questionnaire-assessment.service';
+import { QuestionnaireAssessment } from '../../questionnaire/models/questionnaire-assessment.schema';
 import {
     InjectQueryService,
     mergeFilter,
@@ -250,7 +251,7 @@ export class AssessmentService {
             throw new NotFoundException('Assessment type not found!');
 
         // find & update mongo assessment
-        let questionnaireAssessment = await this.questionnaireAssessmentService.getById(
+        let questionnaireAssessment: QuestionnaireAssessment = await this.questionnaireAssessmentService.getById(
             assessment.questionnaireAssessmentId,
         );
         const originalQuestionnaires = [
