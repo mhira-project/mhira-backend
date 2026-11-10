@@ -1,20 +1,23 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { AnsweredQuestions } from './questionnaire.schema';
 
 @ObjectType()
 @Schema({ timestamps: true })
 export class Answer extends Document {
+    // Both are stored as they come: every answer in the seed holds
+    // `question` as a string and no `_id`, and an existing answer is found
+    // by comparing `question` as a string. Declared Mixed because that is
+    // what @nestjs/mongoose has always made of the bare Types.ObjectId
+    // here; an ObjectId cast would append a second answer instead of
+    // replacing it (BUGS.md, B04). Nothing populates `question`.
     @Field(() => String)
-    @Prop()
+    @Prop({ type: MongooseSchema.Types.Mixed })
     _id: Types.ObjectId;
 
     @Field(() => String)
-    @Prop({
-        type: Types.ObjectId,
-        ref: 'questionnaire_versions.questionGroups.questions',
-    })
+    @Prop({ type: MongooseSchema.Types.Mixed })
     question: Types.ObjectId;
 
     @Field(() => Boolean, { nullable: true })
