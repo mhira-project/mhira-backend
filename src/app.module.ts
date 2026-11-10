@@ -6,10 +6,9 @@ import { UserModule } from './modules/user/user.module';
 import { configService } from './config/config.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { SharedModule } from './shared/shared.module';
-import { withoutHttpExceptionName } from './shared/exception';
+import { formatError } from './shared/exception';
 import { PermissionModule } from './modules/permission/permission.module';
 import { PatientModule } from './modules/patient/patient.module';
-import { GraphQLError } from 'graphql';
 import { graphqlUploadExpress } from 'graphql-upload';
 import { QuestionnaireModule } from './modules/questionnaire/questionnaire.module';
 import { AssessmentModule } from './modules/assessment/assessment.module';
@@ -49,18 +48,7 @@ import { ScheduleModule } from '@nestjs/schedule';
             // for its status unless this is off; v1.1.6 (7.x) leaves it to
             // formatError below, and the clients see that shape.
             autoTransformHttpErrors: false,
-            formatError: (error: GraphQLError) =>
-                new GraphQLError(
-                    typeof error.message === 'string'
-                        ? error.message
-                        : error.message['message'],
-                    null,
-                    null,
-                    null,
-                    error.path,
-                    error,
-                    withoutHttpExceptionName(error),
-                ),
+            formatError,
         }),
         UserModule,
         AuthModule,
