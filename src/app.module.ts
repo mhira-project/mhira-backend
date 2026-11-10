@@ -38,6 +38,10 @@ import { ScheduleModule } from '@nestjs/schedule';
             context: ({ req }) => ({ req }),
             debug: false, // disables stack trace
             uploads: false,
+            // @nestjs/graphql 8 turns an HttpException into an Apollo error
+            // for its status unless this is off; v1.1.6 (7.x) leaves it to
+            // formatError below, and the clients see that shape.
+            autoTransformHttpErrors: false,
             formatError: (error: GraphQLError) => {
                 if (typeof error.message === 'string') {
                     return new GraphQLError(
