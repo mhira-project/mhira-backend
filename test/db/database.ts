@@ -4,13 +4,35 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NestjsQueryTypeOrmModule } from '@ptc-org/nestjs-query-typeorm';
 import { join } from 'path';
 import { Client } from 'pg';
+import * as typeorm from 'typeorm';
 import { Logger, QueryRunner } from 'typeorm';
+import { TYPEORM_WHERE_VALUES } from 'src/config/config.service';
 
 // The database the lookup tests run against (ticket 07, 07_D, P1): a
 // Postgres 13 server, given by MHIRA_TEST_POSTGRES_URL, that has a database
 // holding the seed (MHIRA_TEST_POSTGRES_TEMPLATE, default `seed`). Each test
 // file works on a copy of it made fresh for the file, so the tests can write
 // and leave nothing behind in the template. Run with `npm run test:db`.
+
+/** Whether TypeORM 0.3 is installed (DataSource came with it): the tests run on 0.2 (P1, P2) and again on 0.3 (step 11). */
+export const TYPEORM_0_3 = 'DataSource' in typeorm;
+
+/**
+ * The conditions of a WHERE clause as the installed TypeORM writes them:
+ * 0.2 joins them with AND, 0.3 also puts each condition, and all of them
+ * together, in parentheses. The same conditions and parameters, so the
+ * same rows.
+ */
+export function conditions(...parts: string[]): string {
+    return TYPEORM_0_3 ? `((${parts.join(') AND (')}))` : parts.join(' AND ');
+}
+
+/** A WHERE clause on a soft-deletable entity: the conditions, and the row not deleted. */
+export function whereLive(entity: string, ...parts: string[]): string {
+    return `WHERE ( ${conditions(
+        ...parts,
+    )} ) AND ( "${entity}"."deletedAt" IS NULL )`;
+}
 
 const url = process.env.MHIRA_TEST_POSTGRES_URL;
 const template = process.env.MHIRA_TEST_POSTGRES_TEMPLATE ?? 'seed';
@@ -48,6 +70,8 @@ export async function freshDatabase(name: string) {
         // The entities as the app finds them (TYPEORM_ENTITIES_DIR).
         entities: [join(__dirname, '../../src/**/*.model.{js,ts}')],
         synchronize: false,
+        // As the app sets it (config.service.ts).
+        invalidWhereValuesBehavior: TYPEORM_WHERE_VALUES,
     };
 }
 

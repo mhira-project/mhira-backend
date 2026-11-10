@@ -19,7 +19,12 @@ import { QuestionnaireAssessmentService } from 'src/modules/questionnaire/servic
 import { QuestionnaireScriptService } from 'src/modules/questionnaire/services/questionnaire-script.service';
 import { User } from 'src/modules/user/models/user.model';
 import { CacheService } from 'src/shared';
-import { lookupModule, StatementRecorder } from './database';
+import {
+    lookupModule,
+    StatementRecorder,
+    TYPEORM_0_3,
+    whereLive,
+} from './database';
 
 // Ticket 07, 07_D, P1 (T1): `null` and `undefined` in conditions. TypeORM
 // 0.2 turns a `null` value into `IS NULL`; 0.3 drops the condition unless
@@ -27,6 +32,16 @@ import { lookupModule, StatementRecorder } from './database';
 // value finds no row on 0.2, and throws on 0.3 with `undefined: 'throw'`;
 // either way never a row. The backend's own guards keep `undefined` away from
 // the lookups that could see it.
+
+/** The caregiver insert's WHERE clause: the patient and caregiver of the link, then `more`. */
+function link(...more: string[]): string {
+    return whereLive(
+        'PatientCaregiver',
+        '"PatientCaregiver"."patientId" = $1',
+        '"PatientCaregiver"."caregiverId" = $2',
+        ...more,
+    );
+}
 
 const DOCUMENT = {
     id: '63c67b43ea6e670024c8bca1',
@@ -90,7 +105,9 @@ describe('null and undefined in conditions (P1, T1)', () => {
             );
             expect(error).toEqual(new ConflictException());
             expect(sql).toEqual([
-                'SELECT ... FROM "patient_caregiver" "PatientCaregiver" WHERE ( "PatientCaregiver"."patientId" = $1 AND "PatientCaregiver"."caregiverId" = $2 AND "PatientCaregiver"."relation" = $3 ) AND ( "PatientCaregiver"."deletedAt" IS NULL ) LIMIT 1 -- [1,1,"Mother"]',
+                `SELECT ... FROM "patient_caregiver" "PatientCaregiver" ${link(
+                    '"PatientCaregiver"."relation" = $3',
+                )} LIMIT 1 -- [1,1,"Mother"]`,
             ]);
         });
 
@@ -105,7 +122,10 @@ describe('null and undefined in conditions (P1, T1)', () => {
             );
             expect(error).toEqual(new ConflictException());
             expect(sql).toEqual([
-                'SELECT ... FROM "patient_caregiver" "PatientCaregiver" WHERE ( "PatientCaregiver"."patientId" = $1 AND "PatientCaregiver"."caregiverId" = $2 AND "PatientCaregiver"."emergency" IS NULL AND "PatientCaregiver"."note" IS NULL ) AND ( "PatientCaregiver"."deletedAt" IS NULL ) LIMIT 1 -- [1,2]',
+                `SELECT ... FROM "patient_caregiver" "PatientCaregiver" ${link(
+                    '"PatientCaregiver"."emergency" IS NULL',
+                    '"PatientCaregiver"."note" IS NULL',
+                )} LIMIT 1 -- [1,2]`,
             ]);
         });
 
@@ -122,7 +142,9 @@ describe('null and undefined in conditions (P1, T1)', () => {
                 'duplicate key value violates unique constraint "UQ_d1984b08df9e3fba76965be4aa3"',
             );
             expect(sql[0]).toBe(
-                'SELECT ... FROM "patient_caregiver" "PatientCaregiver" WHERE ( "PatientCaregiver"."patientId" = $1 AND "PatientCaregiver"."caregiverId" = $2 AND "PatientCaregiver"."relation" IS NULL ) AND ( "PatientCaregiver"."deletedAt" IS NULL ) LIMIT 1 -- [91,4]',
+                `SELECT ... FROM "patient_caregiver" "PatientCaregiver" ${link(
+                    '"PatientCaregiver"."relation" IS NULL',
+                )} LIMIT 1 -- [91,4]`,
             );
             expect(
                 await PatientCaregiver.count({
@@ -149,19 +171,35 @@ describe('null and undefined in conditions (P1, T1)', () => {
             (await links.findOne({ where: { patientId: 1, caregiverId: 1 } }))
                 .note,
         ).toBeNull();
+        // TypeORM 0.3 numbers the SET values first and brackets the
+        // conditions; the same values, the same rows (register, decision K).
         expect(sql).toEqual([
-            'UPDATE "patient_caregiver" SET "note" = $2, "updatedAt" = CURRENT_TIMESTAMP WHERE "patientId" = $1 AND "emergency" IS NULL -- [1,"P1"]',
+            TYPEORM_0_3
+                ? 'UPDATE "patient_caregiver" SET "note" = $1, "updatedAt" = CURRENT_TIMESTAMP WHERE ("patientId" = $2 AND "emergency" IS NULL) -- ["P1",1]'
+                : 'UPDATE "patient_caregiver" SET "note" = $2, "updatedAt" = CURRENT_TIMESTAMP WHERE "patientId" = $1 AND "emergency" IS NULL -- [1,"P1"]',
         ]);
     });
 
     it('a condition on undefined never finds a row', async () => {
-        const { result, sql } = await recorder.observe(() =>
+        const { result, error, sql } = await recorder.observe(() =>
             Patient.findOne({ where: { id: undefined } }),
         );
         expect(result ?? null).toBeNull();
-        expect(sql).toEqual([
-            'SELECT ... FROM "patient" "Patient" WHERE ( "Patient"."id" = $1 ) AND ( "Patient"."deletedAt" IS NULL ) LIMIT 1 -- [null]',
-        ]);
+        if (TYPEORM_0_3) {
+            // invalidWhereValuesBehavior.undefined: 'throw' (step 11): 0.3's
+            // default would drop the condition and return the first row.
+            expect(error.message).toBe(
+                "Undefined value encountered in property 'Patient.id' of a where condition. Set 'invalidWhereValuesBehavior.undefined' to 'ignore' in connection options to skip properties with undefined values.",
+            );
+            expect(sql).toEqual([]);
+        } else {
+            expect(sql).toEqual([
+                `SELECT ... FROM "patient" "Patient" ${whereLive(
+                    'Patient',
+                    '"Patient"."id" = $1',
+                )} LIMIT 1 -- [null]`,
+            ]);
+        }
     });
 
     describe('the guards that keep undefined away from a lookup', () => {

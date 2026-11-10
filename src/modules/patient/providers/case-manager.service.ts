@@ -3,14 +3,14 @@ import { UserConnectionDto } from "src/modules/user/dto/user-connection.model";
 import { User } from "src/modules/user/models/user.model";
 import { applySearchQuery } from "src/shared/helpers/search.helper";
 import { paginate } from "src/shared/pagination/services/paginate";
-import { Connection } from "typeorm";
+import { DataSource } from "typeorm";
 import { CaseManagerFilter } from "../dto/case-manager.filter";
 
 
 @Injectable()
 export class CaseManagerService {
 
-    constructor(private readonly connection: Connection) { }
+    constructor(private readonly dataSource: DataSource) { }
 
     getPatientCaseManagers(caseManagerFilter: CaseManagerFilter): Promise<UserConnectionDto> {
 
@@ -53,7 +53,7 @@ export class CaseManagerService {
 
     async unassignPatientCaseManager(patientId: number, userId: number): Promise<boolean> {
 
-        const result = await this.connection.createQueryBuilder()
+        const result = await this.dataSource.createQueryBuilder()
             .delete()
             .from('patient_case_manager')
             .where({ patientId, userId })
@@ -65,7 +65,7 @@ export class CaseManagerService {
 
     async assignPatientCaseManager(patientId: number, userId: number): Promise<boolean> {
 
-        const caseManager = await this.connection
+        const caseManager = await this.dataSource
             .createQueryBuilder()
             .from('patient_case_manager', 'patient_case_manager')
             .where({ patientId, userId })
@@ -75,7 +75,7 @@ export class CaseManagerService {
             return true;
         }
 
-        const result = await this.connection.createQueryBuilder()
+        const result = await this.dataSource.createQueryBuilder()
             .insert()
             .into('patient_case_manager')
             .values([

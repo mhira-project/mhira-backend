@@ -1,9 +1,21 @@
+import { DataSourceOptions } from 'typeorm';
+
 require('dotenv').config();
+
+/** What a null or undefined value in a TypeORM condition does (getTypeOrmConnection). */
+export const TYPEORM_WHERE_VALUES = {
+    null: 'sql-null',
+    undefined: 'throw',
+} as const;
 
 class ConfigService {
     constructor(private env: { [k: string]: string | undefined }) {}
 
-    private getValue(key: string, throwOnMissing = true, defaultValue?: string): string {
+    private getValue(
+        key: string,
+        throwOnMissing = true,
+        defaultValue?: string,
+    ): string {
         const value = this.env[key];
 
         if (!value && throwOnMissing) {
@@ -11,7 +23,7 @@ class ConfigService {
         }
 
         // Return default value if not found.
-        if(!value && defaultValue !== undefined) {
+        if (!value && defaultValue !== undefined) {
             return defaultValue;
         }
 
@@ -32,20 +44,24 @@ class ConfigService {
     }
 
     public getSenderMail() {
-        return this.getValue('SENDER_MAIL', true)
+        return this.getValue('SENDER_MAIL', true);
     }
 
     public getFrontendEncryptionKey() {
-        return this.getValue('FRONTEND_ENCRYPTION_KEY', true)
+        return this.getValue('FRONTEND_ENCRYPTION_KEY', true);
     }
- 
+
     public isProduction() {
         const mode = this.getValue('MODE', false);
         return mode != 'DEV';
     }
 
     public isGraphqlPlaygroundEnabled() {
-        const enableFlag = this.getValue('GRAPHQL_PLAYGROUND_ENABLED', false, 'false');
+        const enableFlag = this.getValue(
+            'GRAPHQL_PLAYGROUND_ENABLED',
+            false,
+            'false',
+        );
         return enableFlag.toLowerCase() === 'true';
     }
 
@@ -62,13 +78,8 @@ class ConfigService {
         };
     }
 
-    public getTypeOrmConfig(): any {
-        const entities: any = [
-            __dirname + this.getValue('TYPEORM_ENTITIES_DIR'),
-        ];
-        const migrationsDir: string[] = [
-            __dirname + this.getValue('TYPEORM_MIGRATIONS_DIR'),
-        ];
+    /** The Postgres connection, from the TYPEORM_* variables, for the app and the migration CLI alike. */
+    private getTypeOrmConnection() {
         return {
             type: this.getValue('TYPEORM_CONNECTION') as 'postgres',
             host: this.getValue('TYPEORM_HOST'),
@@ -76,29 +87,69 @@ class ConfigService {
             username: this.getValue('TYPEORM_USERNAME'),
             password: this.getValue('TYPEORM_PASSWORD'),
             database: this.getValue('TYPEORM_DATABASE'),
+            // TypeORM 0.2 compared a null value with IS NULL; 0.3 drops the
+            // condition unless told otherwise, and on undefined finds the
+            // first row, where 0.2 found none. undefined throws instead.
+            invalidWhereValuesBehavior: TYPEORM_WHERE_VALUES,
+        };
+    }
+
+    public getTypeOrmConfig(): any {
+        const entities: any = [
+            __dirname + this.getValue('TYPEORM_ENTITIES_DIR'),
+        ];
+        return {
+            ...this.getTypeOrmConnection(),
             entities,
-            synchronize: this.getValue('TYPEORM_SYNCHRONIZE') === 'true',
+            // The app never synchronizes its schema, whatever
+            // TYPEORM_SYNCHRONIZE says (ticket 07, decision I).
+            synchronize: false,
             logging: this.getValue('TYPEORM_LOGGING') === 'true',
-            cli: {
-                migrationsDir,
-            },
             migrationsRun: this.getValue('TYPEORM_MIGRATIONS_RUN') === 'true',
+            // Finds no migration (the migration CLI in start.sh runs them),
+            // and creates the default-named table empty, as v1.1.6 does.
             migrations: ['../dist/migrations/*.{js}'],
+        };
+    }
+
+    /**
+     * The migration CLI's DataSource (src/data-source.ts, start.sh): the
+     * variables TypeORM 0.2's CLI read itself, and no entity, since no
+     * migration uses one. TYPEORM_MIGRATIONS_TABLE_NAME names the history
+     * table as it did, default `migrations` (ticket 07, decision I). The
+     * CLI itself switches synchronize off and logs every query, on 0.3 as
+     * on 0.2.
+     */
+    public getMigrationDataSourceOptions(): DataSourceOptions {
+        return {
+            ...this.getTypeOrmConnection(),
+            // A comma-separated list, as TypeORM 0.2's CLI read it.
+            migrations: this.getValue('TYPEORM_MIGRATIONS', false, '')
+                .split(',')
+                .map(glob => glob.trim())
+                .filter(Boolean),
+            migrationsTableName: this.getValue(
+                'TYPEORM_MIGRATIONS_TABLE_NAME',
+                false,
+                'migrations',
+            ),
         };
     }
 
     public getMailerConfig(): any {
         return {
             transport: {
-              host: this.getValue('MAIL_HOST'),
-              secure: this.getValue('MAIL_SECURE') && this.getValue('MAIL_SECURE').toLowerCase() === 'true',
-              port: this.getValue('MAIL_PORT'),
-              auth: {
-                user: this.getValue('MAIL_USER'),
-                pass: this.getValue('MAIL_PASS')
-              },
+                host: this.getValue('MAIL_HOST'),
+                secure:
+                    this.getValue('MAIL_SECURE') &&
+                    this.getValue('MAIL_SECURE').toLowerCase() === 'true',
+                port: this.getValue('MAIL_PORT'),
+                auth: {
+                    user: this.getValue('MAIL_USER'),
+                    pass: this.getValue('MAIL_PASS'),
+                },
             },
-        }
+        };
     }
 
     public getStorageConfig(): any {

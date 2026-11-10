@@ -15,13 +15,12 @@ export function formatError(error: GraphQLError): GraphQLError {
         typeof error.message === 'string'
             ? error.message
             : error.message['message'],
-        null,
-        null,
-        null,
-        error.path,
-        error,
-        isNullOrMissingVariableError(error)
-            ? { ...extensions, code: 'INTERNAL_SERVER_ERROR' }
-            : extensions,
+        {
+            path: error.path,
+            originalError: error,
+            extensions: isNullOrMissingVariableError(error)
+                ? { ...extensions, code: 'INTERNAL_SERVER_ERROR' }
+                : extensions,
+        },
     );
 }

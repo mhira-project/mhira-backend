@@ -22,6 +22,13 @@ import { UserCrudService } from '../providers/user-crud.service';
 import { PermissionService } from '../../permission/providers/permission.service';
 import { Permission } from 'src/modules/permission/models/permission.model';
 import { DeleteOneUserInput } from '../dto/delete-one-user.input';
+import {
+    AddDepartmentsToUserArgs,
+    AddRolesToUserArgs,
+    RemoveDepartmentsFromUserArgs,
+    RemoveRolesFromUserArgs,
+} from '../dto/user-relations.input';
+import { DEFAULT_AUTHORIZER_FILTERS } from 'src/shared/relation-mutations';
 
 @Resolver(() => User)
 @UseGuards(GqlAuthGuard, PermissionGuard)
@@ -86,6 +93,56 @@ export class UserCrudResolver extends CRUDResolver(User, {
 
         // Delegate further actions to service
         return this.service.deleteOneUser(Number(id), currentUser);
+    }
+
+    // The fork generates `add…` and `set…` together; setRolesOnUser and
+    // setDepartmentsOnUser go (ticket 06, decision 2), so these four are
+    // written here as the fork generated them: the same inputs, validation,
+    // guards and service call.
+    @Mutation(() => User)
+    addRolesToUser(@Args() { input }: AddRolesToUserArgs): Promise<User> {
+        return this.service.addRelations(
+            'roles',
+            input.id,
+            input.relationIds,
+            DEFAULT_AUTHORIZER_FILTERS,
+        );
+    }
+
+    @Mutation(() => User)
+    removeRolesFromUser(
+        @Args() { input }: RemoveRolesFromUserArgs,
+    ): Promise<User> {
+        return this.service.removeRelations(
+            'roles',
+            input.id,
+            input.relationIds,
+            DEFAULT_AUTHORIZER_FILTERS,
+        );
+    }
+
+    @Mutation(() => User)
+    addDepartmentsToUser(
+        @Args() { input }: AddDepartmentsToUserArgs,
+    ): Promise<User> {
+        return this.service.addRelations(
+            'departments',
+            input.id,
+            input.relationIds,
+            DEFAULT_AUTHORIZER_FILTERS,
+        );
+    }
+
+    @Mutation(() => User)
+    removeDepartmentsFromUser(
+        @Args() { input }: RemoveDepartmentsFromUserArgs,
+    ): Promise<User> {
+        return this.service.removeRelations(
+            'departments',
+            input.id,
+            input.relationIds,
+            DEFAULT_AUTHORIZER_FILTERS,
+        );
     }
 
     @ResolveField(() => Boolean)

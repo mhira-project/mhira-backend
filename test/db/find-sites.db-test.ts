@@ -11,7 +11,7 @@ import { QuestionnaireScript } from 'src/modules/questionnaire/models/questionna
 import { QuestionnaireScriptService } from 'src/modules/questionnaire/services/questionnaire-script.service';
 import { Report } from 'src/modules/report/models/report.model';
 import { ReportService } from 'src/modules/report/services/report.service';
-import { lookupModule, StatementRecorder } from './database';
+import { lookupModule, StatementRecorder, whereLive } from './database';
 
 // Ticket 07, 07_D, P1 (T2): the five `find` calls TypeORM 0.2 filters by
 // their conditions shorthand, `find({ field })`, which 0.3 would run
@@ -58,7 +58,10 @@ describe('find with conditions (P1, T2)', () => {
         expect(result.map(type => type.id).sort()).toEqual([1, 2]);
         expect(result.map(type => type.id)).not.toContain(inactive.id);
         expect(sql).toEqual([
-            'SELECT ... FROM "assessment_type" "AssessmentType" WHERE ( "AssessmentType"."status" = $1 ) AND ( "AssessmentType"."deletedAt" IS NULL ) -- ["ACTIVE"]',
+            `SELECT ... FROM "assessment_type" "AssessmentType" ${whereLive(
+                'AssessmentType',
+                '"AssessmentType"."status" = $1',
+            )} -- ["ACTIVE"]`,
         ]);
     });
 
@@ -86,7 +89,10 @@ describe('find with conditions (P1, T2)', () => {
             live.map(row => row.id),
         );
         expect(sql).toEqual([
-            'SELECT ... FROM "questionnaire_script" "QuestionnaireScript" WHERE ( "QuestionnaireScript"."questionnaireId" = $1 ) AND ( "QuestionnaireScript"."deletedAt" IS NULL ) -- ["66e7dbe00d4e4a002309bb6b"]',
+            `SELECT ... FROM "questionnaire_script" "QuestionnaireScript" ${whereLive(
+                'QuestionnaireScript',
+                '"QuestionnaireScript"."questionnaireId" = $1',
+            )} -- ["66e7dbe00d4e4a002309bb6b"]`,
         ]);
     });
 
@@ -114,7 +120,10 @@ describe('find with conditions (P1, T2)', () => {
         });
         expect(stored.reports.map(report => report.id).sort()).toEqual([2, 4]);
         expect(sql).toContain(
-            'SELECT ... FROM "report" "Report" WHERE ( "Report"."id" IN ($1, $2) ) AND ( "Report"."deletedAt" IS NULL ) -- [2,4]',
+            `SELECT ... FROM "report" "Report" ${whereLive(
+                'Report',
+                '"Report"."id" IN ($1, $2)',
+            )} -- [2,4]`,
         );
     });
 
@@ -134,7 +143,10 @@ describe('find with conditions (P1, T2)', () => {
             .findOne({ where: { id: result.id }, relations: ['roles'] });
         expect(stored.roles.map(role => role.id).sort()).toEqual([3, 5]);
         expect(sql).toContain(
-            'SELECT ... FROM "role" "Role" WHERE ( "Role"."id" IN ($1, $2) ) AND ( "Role"."deletedAt" IS NULL ) -- [3,5]',
+            `SELECT ... FROM "role" "Role" ${whereLive(
+                'Role',
+                '"Role"."id" IN ($1, $2)',
+            )} -- [3,5]`,
         );
     });
 
@@ -157,7 +169,10 @@ describe('find with conditions (P1, T2)', () => {
             .findOne({ where: { id: 1 }, relations: ['roles'] });
         expect(stored.roles.map(role => role.id).sort()).toEqual([4, 6]);
         expect(sql).toContain(
-            'SELECT ... FROM "role" "Role" WHERE ( "Role"."id" IN ($1, $2) ) AND ( "Role"."deletedAt" IS NULL ) -- [4,6]',
+            `SELECT ... FROM "role" "Role" ${whereLive(
+                'Role',
+                '"Role"."id" IN ($1, $2)',
+            )} -- [4,6]`,
         );
     });
 });

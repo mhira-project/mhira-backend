@@ -13,23 +13,24 @@ import { QuestionnaireAssessmentService } from 'src/modules/questionnaire/servic
 import { QuestionnaireScriptService } from 'src/modules/questionnaire/services/questionnaire-script.service';
 import { User } from 'src/modules/user/models/user.model';
 import { UserCrudService } from 'src/modules/user/providers/user-crud.service';
-import { lookupModule, StatementRecorder } from './database';
+import { lookupModule, StatementRecorder, whereLive } from './database';
 
 // Ticket 07, 07_D, P1 (T2): the `findOne({ field })` calls on roles and
 // patients, with a value that exists and one that does not: the role codes
 // the backend seeds and gives new users, a role's name, and a new patient's
 // medical record number.
 
-/** TypeORM 0.2's statement for `findOne({ column: value })` on a soft-deletable entity. */
+/** The statement of `findOne({ where: { column: value } })` on a soft-deletable entity. */
 function byColumn(
     table: string,
     entity: string,
     column: string,
     value: string,
 ): string {
-    return `SELECT ... FROM "${table}" "${entity}" WHERE ( "${entity}"."${column}" = $1 ) AND ( "${entity}"."deletedAt" IS NULL ) LIMIT 1 -- ${JSON.stringify(
-        [value],
-    )}`;
+    return `SELECT ... FROM "${table}" "${entity}" ${whereLive(
+        entity,
+        `"${entity}"."${column}" = $1`,
+    )} LIMIT 1 -- ${JSON.stringify([value])}`;
 }
 
 const SUPER_ADMIN = { id: 1 } as User;

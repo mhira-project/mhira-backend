@@ -1,7 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityNotFoundError, Repository } from 'typeorm';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
 import { AssessmentType } from 'src/modules/assessment/models/assessment-type.model';
 import { AssessmentTypeEnum } from 'src/modules/assessment/enums/assessment-type.enum';
@@ -18,7 +18,12 @@ import { QuestionnaireAssessmentService } from 'src/modules/questionnaire/servic
 import { Setting } from 'src/modules/setting/models/setting.model';
 import { SettingService } from 'src/modules/setting/providers/setting.service';
 import { User } from 'src/modules/user/models/user.model';
-import { lookupModule, StatementRecorder } from './database';
+import {
+    conditions,
+    lookupModule,
+    StatementRecorder,
+    whereLive,
+} from './database';
 
 // Ticket 07, 07_D, P1 (T2): the `findOne` and `findOneOrFail` calls TypeORM
 // 0.3 no longer accepts in their 0.2 forms (an id, or a conditions object
@@ -37,19 +42,22 @@ const DOCUMENT_ID = '63c67b43ea6e670024c8bca1';
  * the same row, and for an `Int!` id no error that could carry the SQL.
  */
 function byId(table: string, entity: string, id: number): string {
-    return `SELECT ... FROM "${table}" "${entity}" WHERE ( "${entity}"."id" = $1 ) AND ( "${entity}"."deletedAt" IS NULL ) LIMIT 1 -- [${id}]`;
+    return `SELECT ... FROM "${table}" "${entity}" ${whereLive(
+        entity,
+        `"${entity}"."id" = $1`,
+    )} LIMIT 1 -- [${id}]`;
 }
 
-/** TypeORM 0.2's statement for `findOne({ column: value })` on an entity without soft delete. */
+/** The statement of `findOne({ where: { column: value } })` on an entity without soft delete. */
 function byColumn(
     table: string,
     entity: string,
     column: string,
     value: string,
 ): string {
-    return `SELECT ... FROM "${table}" "${entity}" WHERE "${entity}"."${column}" = $1 LIMIT 1 -- ${JSON.stringify(
-        [value],
-    )}`;
+    return `SELECT ... FROM "${table}" "${entity}" WHERE ${conditions(
+        `"${entity}"."${column}" = $1`,
+    )} LIMIT 1 -- ${JSON.stringify([value])}`;
 }
 
 /** The Mongo side of an assessment, stubbed: these tests are about Postgres. */
@@ -190,7 +198,7 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
                     assessmentInput({ assessmentId: MISSING }),
                 ),
             );
-            expect(noAssessment.error.name).toBe('EntityNotFound');
+            expect(noAssessment.error).toBeInstanceOf(EntityNotFoundError);
             expect(noAssessment.error.message).toBe(
                 `Could not find any entity of type "Assessment" matching: ${MISSING}`,
             );
@@ -233,7 +241,7 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
             const missing = await recorder.observe(() =>
                 service.archiveOneAssessment(MISSING),
             );
-            expect(missing.error.name).toBe('EntityNotFound');
+            expect(missing.error).toBeInstanceOf(EntityNotFoundError);
             expect(missing.error.message).toBe(
                 `Could not find any entity of type "Assessment" matching: ${MISSING}`,
             );
@@ -256,7 +264,7 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
             const missing = await recorder.observe(() =>
                 service.getEmailTemplate(MISSING),
             );
-            expect(missing.error.name).toBe('EntityNotFound');
+            expect(missing.error).toBeInstanceOf(EntityNotFoundError);
             expect(missing.error.message).toBe(
                 `Could not find any entity of type "MailTemplate" matching: ${MISSING}`,
             );

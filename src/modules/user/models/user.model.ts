@@ -27,9 +27,11 @@ import {Patient} from 'src/modules/patient/models/patient.model';
 
 @ObjectType()
 @KeySet(['id'])
-@FilterableUnPagedRelation('roles', () => Role)
+// The add… and remove… mutations of roles and departments are written by
+// hand in UserCrudResolver, without setRolesOnUser and setDepartmentsOnUser.
+@FilterableUnPagedRelation('roles', () => Role, { disableUpdate: true, disableRemove: true })
 @UnPagedRelation('permissions', () => Permission, { disableUpdate: true, disableRemove: true })
-@FilterableUnPagedRelation('departments', () => Department)
+@FilterableUnPagedRelation('departments', () => Department, { disableUpdate: true, disableRemove: true })
 @Entity({synchronize: true})
 export class User extends BaseEntity {
     static searchable = [

@@ -3,15 +3,20 @@ import { getConnectionToken } from '@nestjs/typeorm';
 import { Patient } from 'src/modules/patient/models/patient.model';
 import { CaseManagerService } from 'src/modules/patient/providers/case-manager.service';
 import { User } from 'src/modules/user/models/user.model';
-import { lookupModule, StatementRecorder } from './database';
+import { lookupModule, StatementRecorder, TYPEORM_0_3 } from './database';
 
 // Ticket 07, 07_D: assigning and unassigning a case manager writes the
 // join table patient_case_manager through a query builder without an
 // entity. The seed links patient 6 with user 3.
 
+/** The conditions on a link: TypeORM 0.3 puts them in parentheses, with the same values. */
+const LINK = TYPEORM_0_3
+    ? '("patient_case_manager"."patientId" = $1 AND "patient_case_manager"."userId" = $2)'
+    : '"patient_case_manager"."patientId" = $1 AND "patient_case_manager"."userId" = $2';
+
 /** The lookup of a link before it is added. */
 function lookup(patientId: number, userId: number): string {
-    return `SELECT ... FROM "patient_case_manager" "patient_case_manager" WHERE "patient_case_manager"."patientId" = $1 AND "patient_case_manager"."userId" = $2 -- [${patientId},${userId}]`;
+    return `SELECT ... FROM "patient_case_manager" "patient_case_manager" WHERE ${LINK} -- [${patientId},${userId}]`;
 }
 
 describe('case managers', () => {
@@ -69,7 +74,9 @@ describe('case managers', () => {
         expect(removed.result).toBe(true);
         expect(await links()).toEqual(['6-3']);
         expect(removed.sql).toEqual([
-            'DELETE FROM "patient_case_manager" WHERE "patientId" = $1 AND "userId" = $2 -- [1,2]',
+            TYPEORM_0_3
+                ? 'DELETE FROM "patient_case_manager" WHERE ("patientId" = $1 AND "userId" = $2) -- [1,2]'
+                : 'DELETE FROM "patient_case_manager" WHERE "patientId" = $1 AND "userId" = $2 -- [1,2]',
         ]);
 
         const absent = await recorder.observe(() =>
