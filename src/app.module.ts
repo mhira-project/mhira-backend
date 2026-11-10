@@ -6,6 +6,7 @@ import { UserModule } from './modules/user/user.module';
 import { configService } from './config/config.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { SharedModule } from './shared/shared.module';
+import { withoutHttpExceptionName } from './shared/exception';
 import { PermissionModule } from './modules/permission/permission.module';
 import { PatientModule } from './modules/patient/patient.module';
 import { GraphQLError } from 'graphql';
@@ -38,6 +39,10 @@ import { ScheduleModule } from '@nestjs/schedule';
             context: ({ req }) => ({ req }),
             debug: false, // disables stack trace
             uploads: false,
+            // @nestjs/graphql 8 turns an HttpException into an Apollo error
+            // for its status unless this is off; v1.1.6 (7.x) leaves it to
+            // formatError below, and the clients see that shape.
+            autoTransformHttpErrors: false,
             formatError: (error: GraphQLError) => {
                 if (typeof error.message === 'string') {
                     return new GraphQLError(
@@ -47,7 +52,7 @@ import { ScheduleModule } from '@nestjs/schedule';
                         null,
                         error.path,
                         error,
-                        error.extensions,
+                        withoutHttpExceptionName(error),
                     );
                 }
                 return new GraphQLError(
@@ -57,7 +62,7 @@ import { ScheduleModule } from '@nestjs/schedule';
                     null,
                     error.path,
                     error,
-                    error.extensions,
+                    withoutHttpExceptionName(error),
                 );
             },
         }),
