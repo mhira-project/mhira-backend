@@ -12,6 +12,21 @@ export enum QuestionnaireStatus {
     PRIVATE = 'PRIVATE',
 }
 
+/**
+ * Compatibility measure: up to Mongoose 7 the enum validator refuses `null`
+ * (`updateQuestionnaire` with `status: null`); from Mongoose 8 it lets `null`
+ * through for an optional path, and the questionnaire would be stored with
+ * it. This validator keeps the refusal, and is declared like the enum
+ * validator (type and enum values) so the error, including what reaches the
+ * client, is the one the enum validator gives.
+ */
+const statusIsNotNull = {
+    validator: (status: QuestionnaireStatus | null) => status !== null,
+    message: '`null` is not a valid enum value for path `status`.',
+    type: 'enum',
+    enumValues: Object.values(QuestionnaireStatus),
+};
+
 @ObjectType()
 @Schema({ collection: 'questionnaires', timestamps: {} })
 export class Questionnaire extends Document {
@@ -27,6 +42,7 @@ export class Questionnaire extends Document {
         type: 'string',
         enum: Object.values(QuestionnaireStatus),
         default: QuestionnaireStatus.DRAFT,
+        validate: statusIsNotNull,
     })
     status: QuestionnaireStatus;
 
