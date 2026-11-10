@@ -49,28 +49,18 @@ import { ScheduleModule } from '@nestjs/schedule';
             // for its status unless this is off; v1.1.6 (7.x) leaves it to
             // formatError below, and the clients see that shape.
             autoTransformHttpErrors: false,
-            formatError: (error: GraphQLError) => {
-                if (typeof error.message === 'string') {
-                    return new GraphQLError(
-                        error.message,
-                        null,
-                        null,
-                        null,
-                        error.path,
-                        error,
-                        withoutHttpExceptionName(error),
-                    );
-                }
-                return new GraphQLError(
-                    error.message['message'],
+            formatError: (error: GraphQLError) =>
+                new GraphQLError(
+                    typeof error.message === 'string'
+                        ? error.message
+                        : error.message['message'],
                     null,
                     null,
                     null,
                     error.path,
                     error,
                     withoutHttpExceptionName(error),
-                );
-            },
+                ),
         }),
         UserModule,
         AuthModule,
