@@ -16,6 +16,7 @@ import { AssessmentModule } from './modules/assessment/assessment.module';
 import { SettingModule } from './modules/setting/setting.module';
 import { DepartmentModule } from './modules/department/department.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { mongooseConnectionFactory } from './config/mongoose-connection.factory';
 import { CaregiverModule } from './modules/caregiver/caregiver.module';
 import { ReportModule } from './modules/report/report.module';
 import { DisclaimerModule } from './modules/disclaimer/disclaimer.module';
@@ -34,6 +35,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         // questiongroups, questionnaire_bundle) must not appear.
         MongooseModule.forRoot(configService.getMongoConnectionString(), {
             autoCreate: false,
+            connectionFactory: mongooseConnectionFactory,
         }),
         TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
         GraphQLModule.forRoot({
