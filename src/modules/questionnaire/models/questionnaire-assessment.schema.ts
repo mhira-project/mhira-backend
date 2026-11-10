@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Answer, AnswerSchema } from './answer.schema';
-import { Document, Types } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Questionnaire } from './questionnaire.schema';
 import { AssessmentStatus } from '../enums/assessment-status.enum';
@@ -25,11 +25,14 @@ export class QuestionnaireAssessment extends Document {
     status: AssessmentStatus;
 
     @Field(() => [Questionnaire])
-    @Prop({ type: [Types.ObjectId], ref: Questionnaire.name })
+    @Prop({ type: [MongooseSchema.Types.ObjectId], ref: Questionnaire.name })
     questionnaires: Types.ObjectId[] | Questionnaire[];
 
     @Field(() => [QuestionnaireBundle])
-    @Prop({ type: [Types.ObjectId], ref: QuestionnaireBundle.name })
+    @Prop({
+        type: [MongooseSchema.Types.ObjectId],
+        ref: QuestionnaireBundle.name,
+    })
     questionnaireBundles: Types.ObjectId[] | QuestionnaireBundle[];
 
     @Field(() => [Answer])

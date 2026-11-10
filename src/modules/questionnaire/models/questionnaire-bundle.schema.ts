@@ -1,7 +1,7 @@
 import { FilterableField } from "@nestjs-query/query-graphql";
 import { Field, ObjectType } from "@nestjs/graphql";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Types } from "mongoose";
+import { Document, Schema as MongooseSchema, Types } from "mongoose";
 import { Questionnaire } from "./questionnaire.schema";
 
 @ObjectType()
@@ -15,7 +15,7 @@ export class QuestionnaireBundle extends Document {
     name: string;
 
     @Field(() => [Questionnaire])
-    @Prop({ type: [Types.ObjectId], ref: Questionnaire.name })
+    @Prop({ type: [MongooseSchema.Types.ObjectId], ref: Questionnaire.name })
     questionnaires: Types.ObjectId[] | Questionnaire[];
 
     @Field(() => [Number], { nullable: true })
