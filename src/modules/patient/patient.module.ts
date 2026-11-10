@@ -1,6 +1,6 @@
-import { SortDirection } from '@nestjs-query/core';
-import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
-import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
+import { SortDirection } from '@ptc-org/nestjs-query-core';
+import { NestjsQueryGraphQLModule } from '@ptc-org/nestjs-query-graphql';
+import { NestjsQueryTypeOrmModule } from '@ptc-org/nestjs-query-typeorm';
 import { Module } from '@nestjs/common';
 import { GqlAuthGuard } from '../auth/auth.guard';
 import { UsePermission } from '../permission/decorators/permission.decorator';
@@ -14,6 +14,7 @@ import { PatientStatus } from './models/patient-status.model';
 import { Patient } from './models/patient.model';
 import { CaseManagerService } from './providers/case-manager.service';
 import { CaseManagerResolver } from './resolvers/case-manager.resolver';
+import { InformantResolver } from './resolvers/informant.resolver';
 import { PatientResolver } from './resolvers/patient.resolver';
 import { PatientQueryService } from './providers/patient-query.service';
 import { QuestionnaireAssessmentService } from '../questionnaire/services/questionnaire-assessment.service';
@@ -80,6 +81,9 @@ const guards = [GqlAuthGuard, PermissionGuard];
                         defaultSort: [
                             { field: 'id', direction: SortDirection.DESC },
                         ],
+                        // InformantResolver: the fork's find-by-id never
+                        // returns null.
+                        one: { disabled: true },
                         decorators: [
                             UsePermission(PermissionEnum.VIEW_PATIENTS),
                         ],
@@ -142,6 +146,7 @@ const guards = [GqlAuthGuard, PermissionGuard];
         CaseManagerService,
         CaseManagerResolver,
         PatientResolver,
+        InformantResolver,
         PatientQueryService,
         QuestionnaireAssessmentService,
         PatientStatusService,

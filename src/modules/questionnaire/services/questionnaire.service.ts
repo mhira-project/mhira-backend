@@ -14,7 +14,7 @@ import { QuestionGroup } from '../models/question-group.schema';
 import { XLSForm } from '../helpers/xlsform-reader.helper';
 import { XlsFormQuestionFactory } from '../helpers/xlsform-questions.factory';
 import { FileUpload } from 'graphql-upload';
-import { applyQuery } from '@nestjs-query/core';
+import { applyQuery } from '@ptc-org/nestjs-query-core';
 import { QuestionniareQuery } from '../resolvers/questionnaire.resolver';
 import { FileData } from '../dtos/xlsform.dto';
 

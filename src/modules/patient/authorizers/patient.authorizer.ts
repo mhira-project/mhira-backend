@@ -1,4 +1,4 @@
-import { Filter } from '@nestjs-query/core';
+import { Filter } from '@ptc-org/nestjs-query-core';
 import { Patient } from "../models/patient.model";
 import { User } from "src/modules/user/models/user.model";
 import { PermissionService } from 'src/modules/permission/providers/permission.service';

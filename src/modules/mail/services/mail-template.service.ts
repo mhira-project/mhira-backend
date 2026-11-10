@@ -1,4 +1,4 @@
-import { ConnectionType } from '@nestjs-query/query-graphql';
+import { ConnectionType } from '@ptc-org/nestjs-query-graphql';
 import {
     Injectable,
 } from '@nestjs/common';
@@ -17,7 +17,7 @@ import {
     InjectQueryService,
     QueryService,
     SortDirection,
-} from '@nestjs-query/core';
+} from '@ptc-org/nestjs-query-core';
 import { Department } from 'src/modules/department/models/department.model';
 import { Patient } from 'src/modules/patient/models/patient.model';
 import { AssessmentTypeEnum } from 'src/modules/assessment/enums/assessment-type.enum';

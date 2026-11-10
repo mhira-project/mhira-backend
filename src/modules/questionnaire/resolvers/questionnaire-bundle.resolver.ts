@@ -1,9 +1,9 @@
-import { QueryArgsType } from '@nestjs-query/query-graphql';
+import { QueryArgsType } from '@ptc-org/nestjs-query-graphql';
 import { Args, ArgsType, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Types } from 'mongoose';
 import { QuestionnaireBundle } from '../models/questionnaire-bundle.schema';
 import { QuestionnaireBundleService } from '../services/questionnaire-bundle.service';
-import { SortDirection } from '@nestjs-query/core';
+import { SortDirection } from '@ptc-org/nestjs-query-core';
 import { CreateQuestionnaireBundleInput, UpdateQuestionnaireBundleInput } from '../dtos/questionnaire-bundle.input';
 import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
 import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';

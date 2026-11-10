@@ -11,9 +11,9 @@ import {
     mergeFilter,
     QueryService,
     SortDirection,
-} from '@nestjs-query/core';
+} from '@ptc-org/nestjs-query-core';
 import { FullAssessment } from '../models/assessment.model';
-import { ConnectionType } from '@nestjs-query/query-graphql';
+import { ConnectionType } from '@ptc-org/nestjs-query-graphql';
 import { AssessmentType } from '../models/assessment-type.model';
 import {
     AssessmentTypeConnection,

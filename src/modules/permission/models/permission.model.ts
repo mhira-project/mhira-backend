@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Role } from './role.model';
-import { FilterableField, UnPagedRelation } from '@nestjs-query/query-graphql';
+import { FilterableField, UnPagedRelation } from '@ptc-org/nestjs-query-graphql';
 import { User } from 'src/modules/user/models/user.model';
 
 @ObjectType()

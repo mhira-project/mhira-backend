@@ -1,11 +1,11 @@
-import { mergeFilter, SortDirection } from '@nestjs-query/core';
+import { mergeFilter, SortDirection } from '@ptc-org/nestjs-query-core';
 import {
     ConnectionType,
     CreateOneInputType,
     DeleteOneInputType,
     QueryArgsType,
     UpdateOneInputType,
-} from '@nestjs-query/query-graphql';
+} from '@ptc-org/nestjs-query-graphql';
 import { BadRequestException, Inject, UseGuards } from '@nestjs/common';
 import {
     Args,

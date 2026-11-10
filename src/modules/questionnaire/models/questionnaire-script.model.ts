@@ -11,7 +11,7 @@ import {
     JoinColumn,
     JoinTable,
 } from 'typeorm';
-import { FilterableField, UnPagedRelation } from '@nestjs-query/query-graphql';
+import { FilterableField, UnPagedRelation } from '@ptc-org/nestjs-query-graphql';
 import { Report } from 'src/modules/report/models/report.model';
 
 @ObjectType()

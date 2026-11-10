@@ -1,4 +1,4 @@
-import { TypeOrmQueryService } from "@nestjs-query/query-typeorm";
+import { TypeOrmQueryService } from "@ptc-org/nestjs-query-typeorm";
 import { ConflictException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";

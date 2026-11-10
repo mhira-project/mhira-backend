@@ -1,4 +1,4 @@
-import { UpdateOneInputType } from '@nestjs-query/query-graphql';
+import { UpdateOneInputType } from '@ptc-org/nestjs-query-graphql';
 import { Field, InputType, OmitType, PartialType } from '@nestjs/graphql';
 import { User } from '../models/user.model';
 import { CreateUserInput } from './create-user.input';

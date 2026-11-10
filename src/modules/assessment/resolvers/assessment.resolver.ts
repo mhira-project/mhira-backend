@@ -19,7 +19,7 @@ import {
     UpdateFullAssessmentInput,
 } from '../dtos/create-assessment.input';
 import { QuestionnaireAssessment } from '../../questionnaire/models/questionnaire-assessment.schema';
-import { ConnectionType } from '@nestjs-query/query-graphql';
+import { ConnectionType } from '@ptc-org/nestjs-query-graphql';
 import { CurrentUser } from 'src/modules/auth/auth-user.decorator';
 import { User } from 'src/modules/user/models/user.model';
 import {

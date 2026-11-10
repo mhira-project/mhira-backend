@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
-import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
+import { NestjsQueryGraphQLModule } from '@ptc-org/nestjs-query-graphql';
+import { NestjsQueryTypeOrmModule } from '@ptc-org/nestjs-query-typeorm';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { User } from './models/user.model';

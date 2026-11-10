@@ -1,7 +1,7 @@
 import {
     FilterableField,
     FilterableUnPagedRelation,
-} from '@nestjs-query/query-graphql';
+} from '@ptc-org/nestjs-query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
 import {

@@ -1,5 +1,5 @@
-import { SortDirection } from '@nestjs-query/core';
-import { CRUDResolver } from '@nestjs-query/query-graphql';
+import { SortDirection } from '@ptc-org/nestjs-query-core';
+import { CRUDResolver } from '@ptc-org/nestjs-query-graphql';
 import { BadRequestException, UseGuards } from '@nestjs/common';
 import { Resolver, Args, Mutation } from '@nestjs/graphql';
 import { CurrentUser } from 'src/modules/auth/auth-user.decorator';

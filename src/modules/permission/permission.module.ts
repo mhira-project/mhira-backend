@@ -1,6 +1,6 @@
-import { SortDirection } from '@nestjs-query/core';
-import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
-import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
+import { SortDirection } from '@ptc-org/nestjs-query-core';
+import { NestjsQueryGraphQLModule } from '@ptc-org/nestjs-query-graphql';
+import { NestjsQueryTypeOrmModule } from '@ptc-org/nestjs-query-typeorm';
 import { Module } from '@nestjs/common';
 import { GqlAuthGuard } from '../auth/auth.guard';
 import { UsePermission } from './decorators/permission.decorator';

@@ -1,5 +1,5 @@
-import { SortDirection } from '@nestjs-query/core';
-import { CRUDResolver } from '@nestjs-query/query-graphql';
+import { SortDirection } from '@ptc-org/nestjs-query-core';
+import { CRUDResolver } from '@ptc-org/nestjs-query-graphql';
 import { UseGuards } from '@nestjs/common';
 import {
     Resolver,

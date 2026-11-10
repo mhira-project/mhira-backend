@@ -2,7 +2,7 @@ import {
     CreateOneInputType,
     DeleteOneInputType,
     UpdateOneInputType,
-} from '@nestjs-query/query-graphql';
+} from '@ptc-org/nestjs-query-graphql';
 import { Field, InputType, Int } from '@nestjs/graphql';
 import { Report } from '../models/report.model';
 

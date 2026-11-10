@@ -12,7 +12,7 @@ import {
     MailTemplateConnection,
     MailTemplateQuery,
 } from '../dtos/mail-template.query';
-import { ConnectionType } from '@nestjs-query/query-graphql';
+import { ConnectionType } from '@ptc-org/nestjs-query-graphql';
 import { SendMailService } from '../services/send-mail.service';
 import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
 import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';

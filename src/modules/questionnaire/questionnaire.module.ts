@@ -23,11 +23,11 @@ import {
     QuestionnaireAssessment,
     AssessmentSchema,
 } from './models/questionnaire-assessment.schema';
-import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
+import { NestjsQueryGraphQLModule } from '@ptc-org/nestjs-query-graphql';
 import { QuestionnaireScript } from './models/questionnaire-script.model';
 import { QuestionnaireScriptsResolver } from './resolvers/questionnaire-script.resolver';
 import { QuestionnaireScriptService } from './services/questionnaire-script.service';
-import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
+import { NestjsQueryTypeOrmModule } from '@ptc-org/nestjs-query-typeorm';
 import { PermissionGuard } from '../permission/guards/permission.guard';
 import { GqlAuthGuard } from '../auth/auth.guard';
 import { Assessment } from '../assessment/models/assessment.model';

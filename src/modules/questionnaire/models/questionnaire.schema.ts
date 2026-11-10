@@ -4,7 +4,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { QuestionnaireChoice } from 'src/modules/patient/dto/patient-report.response';
-import { FilterableField } from '@nestjs-query/query-graphql';
+import { FilterableField } from '@ptc-org/nestjs-query-graphql';
 
 export enum QuestionnaireStatus {
     DRAFT = 'DRAFT',

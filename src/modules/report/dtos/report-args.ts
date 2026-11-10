@@ -1,4 +1,4 @@
-import { QueryArgsType, QueryOptions } from '@nestjs-query/query-graphql';
+import { QueryArgsType, QueryOptions } from '@ptc-org/nestjs-query-graphql';
 import { ArgsType } from '@nestjs/graphql';
 import { Report } from '../models/report.model';
 

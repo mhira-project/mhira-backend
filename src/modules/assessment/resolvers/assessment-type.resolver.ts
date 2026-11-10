@@ -19,7 +19,7 @@ import { AssessmentType } from '../models/assessment-type.model';
 import { Assessment, FullAssessment } from '../models/assessment.model';
 import { AssessmentTypeService } from '../services/assessment-type.service';
 import { AssessmentService } from '../services/assessment.service';
-import { ConnectionType } from '@nestjs-query/query-graphql';
+import { ConnectionType } from '@ptc-org/nestjs-query-graphql';
 import {
     CreateAssessmentTypeInput,
     UpdateAssessmentTypeInput,

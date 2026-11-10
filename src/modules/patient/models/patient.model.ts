@@ -2,7 +2,7 @@ import {
     FilterableField,
     FilterableRelation,
     FilterableUnPagedRelation,
-} from '@nestjs-query/query-graphql';
+} from '@ptc-org/nestjs-query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { PatientCaregiver } from 'src/modules/caregiver/models/patient-caregiver.model';
 import {

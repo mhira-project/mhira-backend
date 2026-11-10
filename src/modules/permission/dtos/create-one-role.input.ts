@@ -1,4 +1,4 @@
-import { CreateOneInputType } from "@nestjs-query/query-graphql";
+import { CreateOneInputType } from "@ptc-org/nestjs-query-graphql";
 import { InputType } from "@nestjs/graphql";
 import { RoleInput } from "./role.input";
 

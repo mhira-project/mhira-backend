@@ -12,8 +12,8 @@ import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
 import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
 import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
-import { QueryArgsType } from '@nestjs-query/query-graphql';
-import { SortDirection } from '@nestjs-query/core';
+import { QueryArgsType } from '@ptc-org/nestjs-query-graphql';
+import { SortDirection } from '@ptc-org/nestjs-query-core';
 
 @ArgsType()
 export class QuestionniareQuery extends QueryArgsType(Questionnaire) {}

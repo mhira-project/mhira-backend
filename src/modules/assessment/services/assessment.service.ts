@@ -14,14 +14,14 @@ import {
     mergeFilter,
     QueryService,
     SortDirection,
-} from '@nestjs-query/core';
+} from '@ptc-org/nestjs-query-core';
 import {
     AssessmentConnection,
     AssessmentQuery,
 } from '../dtos/assessment.query';
 import { PatientAuthorizer } from 'src/modules/patient/authorizers/patient.authorizer';
 import { User } from 'src/modules/user/models/user.model';
-import { ConnectionType } from '@nestjs-query/query-graphql';
+import { ConnectionType } from '@ptc-org/nestjs-query-graphql';
 import { PatientQueryService } from 'src/modules/patient/providers/patient-query.service';
 import { Caregiver } from 'src/modules/caregiver/models/caregiver.model';
 import { AssessmentStatus } from 'src/modules/questionnaire/enums/assessment-status.enum';

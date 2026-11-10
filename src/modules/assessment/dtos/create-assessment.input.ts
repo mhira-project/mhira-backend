@@ -1,4 +1,4 @@
-import { FilterableField } from '@nestjs-query/query-graphql';
+import { FilterableField } from '@ptc-org/nestjs-query-graphql';
 import { Field, GraphQLISODateTime, InputType, Int } from '@nestjs/graphql';
 import { ArrayNotEmpty } from 'class-validator';
 import { Types } from 'mongoose';

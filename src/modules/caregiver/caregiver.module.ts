@@ -1,11 +1,11 @@
-import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
-import { NestjsQueryTypeOrmModule } from '@nestjs-query/query-typeorm';
+import { NestjsQueryGraphQLModule } from '@ptc-org/nestjs-query-graphql';
+import { NestjsQueryTypeOrmModule } from '@ptc-org/nestjs-query-typeorm';
 import { Module } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
 import { Caregiver } from './models/caregiver.model';
 import { CaregiverService } from './services/caregiver.service';
-import { SortDirection } from '@nestjs-query/core';
+import { SortDirection } from '@ptc-org/nestjs-query-core';
 import { UsePermission } from 'src/modules/permission/decorators/permission.decorator';
 import { PermissionEnum } from 'src/modules/permission/enums/permission.enum';
 import { PatientCaregiver } from './models/patient-caregiver.model';

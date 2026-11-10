@@ -10,7 +10,7 @@ import {
     ManyToMany,
     JoinTable,
 } from 'typeorm';
-import { FilterableField, FilterableUnPagedRelation, KeySet } from '@nestjs-query/query-graphql';
+import { FilterableField, FilterableUnPagedRelation, KeySet } from '@ptc-org/nestjs-query-graphql';
 import { User } from 'src/modules/user/models/user.model';
 import { Patient } from 'src/modules/patient/models/patient.model';
 import { MailTemplate } from 'src/modules/mail/models/mail-template.model';

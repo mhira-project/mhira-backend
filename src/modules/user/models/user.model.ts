@@ -19,7 +19,7 @@ import {
     KeySet,
     FilterableUnPagedRelation,
     UnPagedRelation,
-} from '@nestjs-query/query-graphql';
+} from '@ptc-org/nestjs-query-graphql';
 import {Role} from 'src/modules/permission/models/role.model';
 import {UserPreviousPassword} from './user-previous-password.model';
 import {Department} from 'src/modules/department/models/department.model';

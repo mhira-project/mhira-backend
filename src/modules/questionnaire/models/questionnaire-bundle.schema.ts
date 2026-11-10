@@ -1,4 +1,4 @@
-import { FilterableField } from "@nestjs-query/query-graphql";
+import { FilterableField } from "@ptc-org/nestjs-query-graphql";
 import { Field, ObjectType } from "@nestjs/graphql";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as MongooseSchema, Types } from "mongoose";

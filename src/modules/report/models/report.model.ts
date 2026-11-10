@@ -2,7 +2,7 @@ import {
     FilterableField,
     QueryOptions,
     UnPagedRelation,
-} from '@nestjs-query/query-graphql';
+} from '@ptc-org/nestjs-query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { Role } from 'src/modules/permission/models/role.model';
 import {
@@ -16,7 +16,7 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
-import { SortDirection } from '@nestjs-query/core';
+import { SortDirection } from '@ptc-org/nestjs-query-core';
 
 @ObjectType()
 @UnPagedRelation('roles', () => Role, { disableUpdate: true, disableRemove: true })

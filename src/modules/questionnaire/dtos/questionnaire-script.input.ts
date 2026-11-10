@@ -1,7 +1,7 @@
 import {
     DeleteOneInputType,
     UpdateOneInputType,
-} from '@nestjs-query/query-graphql';
+} from '@ptc-org/nestjs-query-graphql';
 import { Field, InputType, Int, OmitType } from '@nestjs/graphql';
 import { Exclude } from 'class-transformer';
 import { GraphQLUpload, FileUpload } from 'graphql-upload';

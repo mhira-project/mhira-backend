@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from 'src/modules/permission/models/role.model';
 import { In, Repository } from 'typeorm';
 import { ReportInput, UpdateOneReportInput } from '../dtos/report-input';
-import { InjectQueryService, QueryService } from '@nestjs-query/core';
-import { ConnectionType } from '@nestjs-query/query-graphql';
+import { InjectQueryService, QueryService } from '@ptc-org/nestjs-query-core';
+import { ConnectionType } from '@ptc-org/nestjs-query-graphql';
 
 import { Report } from '../models/report.model';
 import { ReportQueryConnection } from '../dtos/report-args';

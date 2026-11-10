@@ -1,7 +1,7 @@
 import { InputType, PartialType } from '@nestjs/graphql';
 import { CreatePatientInput } from './create-patient.input';
 import { Field, ObjectType } from '@nestjs/graphql';
-import { CreateOneInputType } from '@nestjs-query/query-graphql';
+import { CreateOneInputType } from '@ptc-org/nestjs-query-graphql';
 
 @InputType()
 export class CreatePatientStatus {

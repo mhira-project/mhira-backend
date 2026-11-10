@@ -7,12 +7,12 @@ import {
 } from '../dtos/questionnaire-script.input';
 import { QuestionnaireScript } from '../models/questionnaire-script.model';
 import { Report } from 'src/modules/report/models/report.model';
-import { ConnectionType } from '@nestjs-query/query-graphql';
+import { ConnectionType } from '@ptc-org/nestjs-query-graphql';
 import {
     InjectQueryService,
     QueryService,
     mergeFilter,
-} from '@nestjs-query/core';
+} from '@ptc-org/nestjs-query-core';
 
 import { QuestionnaireScriptConnection } from '../dtos/questionnaire-scripts.args';
 import { Model } from 'mongoose';

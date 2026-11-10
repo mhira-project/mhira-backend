@@ -6,7 +6,7 @@ import { PermissionEnum } from "src/modules/permission/enums/permission.enum";
 import { UsePermission } from "src/modules/permission/decorators/permission.decorator";
 import { PatientCaregiver } from "../models/patient-caregiver.model";
 import { PatientCaregiverService } from "../services/patient.caregiver.service";
-import { CreateOneInputType } from "@nestjs-query/query-graphql";
+import { CreateOneInputType } from "@ptc-org/nestjs-query-graphql";
 import { PatientCaregiverInput } from "../dtos/patient.caregiver.input";
 
 @InputType()

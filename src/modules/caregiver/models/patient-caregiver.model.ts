@@ -1,6 +1,6 @@
 import {
     FilterableField, FilterableRelation,
-} from '@nestjs-query/query-graphql';
+} from '@ptc-org/nestjs-query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { Patient } from 'src/modules/patient/models/patient.model';
 import {

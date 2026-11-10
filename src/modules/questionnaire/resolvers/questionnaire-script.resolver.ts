@@ -1,4 +1,4 @@
-import { ConnectionType } from '@nestjs-query/query-graphql';
+import { ConnectionType } from '@ptc-org/nestjs-query-graphql';
 import { UseGuards } from '@nestjs/common';
 import {
     Args,

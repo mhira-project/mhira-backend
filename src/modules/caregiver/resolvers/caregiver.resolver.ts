@@ -1,11 +1,11 @@
-import { CreateOneInputType, QueryArgsType } from "@nestjs-query/query-graphql";
+import { CreateOneInputType, QueryArgsType } from "@ptc-org/nestjs-query-graphql";
 import { UseGuards } from "@nestjs/common";
 import { Args, ArgsType, Resolver, Query, InputType, Mutation } from "@nestjs/graphql";
 import { GqlAuthGuard } from "src/modules/auth/auth.guard";
 import { PermissionGuard } from "src/modules/permission/guards/permission.guard";
 import { Caregiver } from "../models/caregiver.model";
 import { CaregiverService } from "../services/caregiver.service";
-import { SortDirection } from '@nestjs-query/core';
+import { SortDirection } from '@ptc-org/nestjs-query-core';
 import { PermissionEnum } from "src/modules/permission/enums/permission.enum";
 import { UsePermission } from "src/modules/permission/decorators/permission.decorator";
 import { CaregiverInput } from "../dtos/caregiver.input";
