@@ -22,14 +22,15 @@ export class AssessmentResolver {
     constructor(private assessmentService: QuestionnaireAssessmentService) {}
 
     @Mutation(() => QuestionnaireAssessment)
-    addAnswer(
+    async addAnswer(
         @Args('assessment') assessmentInput: AnswerAssessmentInput,
     ): Promise<QuestionnaireAssessment> {
-        // Not awaited, so it races the answer's save of the same document
-        // (BUGS.md, B02). From Node 15 on an unhandled rejection ends the
-        // process; the failure is logged here instead, and the race is left
-        // as it is.
-        this.assessmentService
+        // The status change is awaited before the answer's save loads the
+        // document, so the two saves no longer race (BUGS.md, B02). As
+        // before, it comes first, also for an answer that is then refused,
+        // and a failed status change is logged and dropped without stopping
+        // the answer.
+        await this.assessmentService
             .changeAssessmentStatus(
                 assessmentInput.assessmentId,
                 AssessmentStatus.PARTIALLY_COMPLETED,
