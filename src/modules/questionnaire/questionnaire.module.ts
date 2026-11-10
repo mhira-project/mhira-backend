@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { Answer, AnswerSchema } from './models/answer.schema';
 import {
     QuestionGroup,
@@ -22,7 +23,6 @@ import {
     QuestionnaireAssessment,
     AssessmentSchema,
 } from './models/questionnaire-assessment.schema';
-import { NestjsQueryMongooseModule } from '@nestjs-query/query-mongoose';
 import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
 import { QuestionnaireScript } from './models/questionnaire-script.model';
 import { QuestionnaireScriptsResolver } from './resolvers/questionnaire-script.resolver';
@@ -48,41 +48,34 @@ const guards = [GqlAuthGuard, PermissionGuard];
                     QuestionnaireScript,
                     Assessment,
                 ]),
-                NestjsQueryMongooseModule.forFeature([
+                MongooseModule.forFeature([
                     {
                         name: Questionnaire.name,
                         schema: QuestionnaireSchema,
-                        document: Questionnaire,
                     },
                     {
                         name: Question.name,
                         schema: QuestionSchema,
-                        document: Question,
                     },
                     {
                         name: QuestionGroup.name,
                         schema: QuestionGroupSchema,
-                        document: QuestionGroup,
                     },
                     {
                         name: Answer.name,
                         schema: AnswerSchema,
-                        document: Answer,
                     },
                     {
                         name: Choice.name,
                         schema: ChoiceSchema,
-                        document: Choice,
                     },
                     {
                         name: QuestionnaireAssessment.name,
                         schema: AssessmentSchema,
-                        document: QuestionnaireAssessment,
                     },
                     {
                         name: QuestionnaireBundle.name,
                         schema: QuestionnaireBundleSchema,
-                        document: QuestionnaireBundle,
                     },
                 ]),
             ],
