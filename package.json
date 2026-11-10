@@ -50,7 +50,7 @@
         "crypto-js": "^4.1.1",
         "dataloader": "^2.0.0",
         "graphql": "^15.8.0",
-        "graphql-upload": "^11.0.0",
+        "graphql-upload": "^13.0.0",
         "handlebars": "^4.7.7",
         "moment": "^2.27.0",
         "mongoose": "^8.24.8",
