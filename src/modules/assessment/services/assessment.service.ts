@@ -200,7 +200,7 @@ export class AssessmentService {
                 assessmentArray.push(assessment);
             } catch (err) {
                 // undo mongo assessment and rethrow
-                await questionnaireAssessment.remove();
+                await questionnaireAssessment.deleteOne();
                 throw err;
             }
         }
