@@ -6,7 +6,7 @@ import { GqlBadRequestHandler } from './shared/exception/gql-bad-request.handler
 import { configService } from './config/config.service';
 import { GqlUnauthorizedHandler } from './shared/exception/gql-unauthorized.handler';
 import { restoreBooleanComparisons } from './shared/boolean-comparisons';
-import { NestedMessagesValidationPipe } from './shared/validation/nested-messages-validation.pipe';
+import { V116MessagesValidationPipe } from './shared/validation/v116-messages-validation.pipe';
 
 async function bootstrap() {
     restoreBooleanComparisons();
@@ -18,7 +18,7 @@ async function bootstrap() {
     app.enableCors(corsConfig);
     app.useGlobalFilters(new GqlBadRequestHandler());
     app.useGlobalFilters(new GqlUnauthorizedHandler());
-    app.useGlobalPipes(new NestedMessagesValidationPipe());
+    app.useGlobalPipes(new V116MessagesValidationPipe());
 
     await app.listen(port);
     logger.log(`Application started on port ${port}`);

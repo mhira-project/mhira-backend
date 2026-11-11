@@ -1,12 +1,15 @@
 import { ValidationPipe } from '@nestjs/common';
 import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, ValidateNested } from 'class-validator';
-import { NestedMessagesValidationPipe } from './nested-messages-validation.pipe';
+import { getOrCreateCursorPagingType } from '@ptc-org/nestjs-query-graphql/src/types/query/paging';
+import { V116MessagesValidationPipe } from './v116-messages-validation.pipe';
 
 // Ticket 07, step 14: the messages v1.1.6 (class-validator 0.13) gave for a
 // @ValidateNested value that is neither an object nor an array. The
 // expected messages were measured on v1.1.6 (an explicit `filter: null`,
 // follow-up item 8) or follow from 0.13's tree as Nest's pipe flattens it.
+// Step 16: the order of a cursor paging `last`'s messages, measured on
+// v1.1.6 with the resolver library's own paging input.
 
 class Paging {
     @IsInt()
@@ -43,8 +46,8 @@ async function messages(
     return 'passed';
 }
 
-describe('NestedMessagesValidationPipe', () => {
-    const pipe = new NestedMessagesValidationPipe();
+describe('V116MessagesValidationPipe', () => {
+    const pipe = new V116MessagesValidationPipe();
 
     it("an explicit null gives v1.1.6's message, with the property as its path", async () => {
         expect(
@@ -94,5 +97,55 @@ describe('NestedMessagesValidationPipe', () => {
                 paging: { first: 1 },
             }),
         ).toBe('passed');
+    });
+});
+
+const CursorPaging = getOrCreateCursorPagingType({});
+
+class CursorArgs {
+    @ValidateNested()
+    @Type(() => CursorPaging)
+    paging: InstanceType<typeof CursorPaging>;
+}
+
+describe('V116MessagesValidationPipe on cursor paging', () => {
+    const pipe = new V116MessagesValidationPipe();
+
+    it("gives a `last` below 1 v1.1.6's order, positive first", async () => {
+        expect(
+            await messages(pipe, CursorArgs, {
+                paging: { last: 0, before: 'YXJyYXljb25uZWN0aW9uOjE=' },
+            }),
+        ).toEqual([
+            'paging.last must be a positive number',
+            'paging.last must not be less than 1',
+        ]);
+        expect(
+            await messages(pipe, CursorArgs, { paging: { last: -1 } }),
+        ).toEqual([
+            'paging.last must be a positive number',
+            'paging.last must not be less than 1',
+            'paging.Cannot be used without `before`.',
+        ]);
+    });
+
+    it('the resolver library alone would give the other order', async () => {
+        expect(
+            await messages(new ValidationPipe(), CursorArgs, {
+                paging: { last: 0, before: 'YXJyYXljb25uZWN0aW9uOjE=' },
+            }),
+        ).toEqual([
+            'paging.last must not be less than 1',
+            'paging.last must be a positive number',
+        ]);
+    });
+
+    it('leaves `first` in its own order, the same as on v1.1.6', async () => {
+        expect(
+            await messages(pipe, CursorArgs, { paging: { first: 0 } }),
+        ).toEqual([
+            'paging.first must not be less than 1',
+            'paging.first must be a positive number',
+        ]);
     });
 });
