@@ -1,4 +1,4 @@
-import { CacheModuleOptions } from "@nestjs/common";
+import { CacheModuleOptions } from "@nestjs/cache-manager";
 import { redisConfig } from "./redis.config";
 import * as redisStore from 'cache-manager-redis-store';
 // cache-manager-mongodb 0.3 replaces the global Promise with Bluebird when it
