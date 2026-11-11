@@ -13,13 +13,13 @@ describe('assertPatchedForkVersion', () => {
     });
 
     it('refuses another fork version, naming the measure', () => {
-        jest.doMock(FORK_PACKAGE, () => ({ version: '2.0.2' }));
+        jest.doMock(FORK_PACKAGE, () => ({ version: '2.4.1' }));
         jest.isolateModules(() => {
             const isolated: typeof import('./fork-version') = require('./fork-version');
             expect(() =>
                 isolated.assertPatchedForkVersion('a measure'),
             ).toThrow(
-                'a measure was checked against @ptc-org/nestjs-query-typeorm 2.0.1, and 2.0.2 is installed',
+                'a measure was checked against @ptc-org/nestjs-query-typeorm 2.4.0, and 2.4.1 is installed',
             );
         });
     });

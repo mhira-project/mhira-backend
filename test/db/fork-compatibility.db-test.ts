@@ -32,7 +32,7 @@ class Reports {
     ) {}
 }
 
-describe('the fork 2.0, kept as v1.1.6 (step 11)', () => {
+describe('the fork, kept as v1.1.6 (steps 11 and 13)', () => {
     let module: TestingModule;
     let recorder: StatementRecorder;
 
