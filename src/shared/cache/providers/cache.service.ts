@@ -9,20 +9,30 @@ export class CacheService {
 
     /** The stored value; a missing key reads as it did on the same store on v1.1.6 (`null` on Redis, `undefined` elsewhere). */
     async get<T>(key: string): Promise<T | null | undefined> {
-        const value = await this.store.keyv.get<T>(key);
+        const value = await this.call(() => this.store.keyv.get<T>(key));
         return value === undefined ? this.store.missingValue : value;
     }
 
     /** Stores the value for `ttlSeconds`, or for the store's default TTL. */
     async set(key: string, value: unknown, ttlSeconds?: number): Promise<void> {
-        await this.store.keyv.set(
-            key,
-            value,
-            ttlSeconds === undefined ? undefined : ttlSeconds * 1000,
+        await this.call(() =>
+            this.store.keyv.set(
+                key,
+                value,
+                ttlSeconds === undefined ? undefined : ttlSeconds * 1000,
+            ),
         );
     }
 
     async del(key: string): Promise<void> {
-        await this.store.keyv.delete(key);
+        await this.call(() => this.store.keyv.delete(key));
+    }
+
+    private async call<R>(operation: () => Promise<R>): Promise<R> {
+        try {
+            return await operation();
+        } catch (error) {
+            throw this.store.explainFailure(error);
+        }
     }
 }

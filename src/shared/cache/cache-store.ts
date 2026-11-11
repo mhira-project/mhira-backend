@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import KeyvRedis from '@keyv/redis';
+import KeyvRedis, { defaultReconnectStrategy } from '@keyv/redis';
 import { Keyv } from 'keyv';
 import { Connection } from 'mongoose';
 import { redisConfig } from 'src/config/redis.config';
@@ -8,11 +8,21 @@ import { MongoCacheStore } from './stores/mongo-cache.store';
 /** Injection token of the configured {@link CacheStoreHandle}. */
 export const CACHE_STORE = Symbol('CACHE_STORE');
 
-/** The cache's Keyv, and what a missing key read as on the same store on v1.1.6. */
+/** The cache's Keyv, what a missing key read as on the same store on v1.1.6, and what a failed call rejects with. */
 export interface CacheStoreHandle {
     keyv: Keyv;
     missingValue: null | undefined;
+    explainFailure: (error: unknown) => unknown;
 }
+
+/** The message a request that needs Redis fails with while Redis cannot be reached (Ronan, 2026-11-11). */
+export const REDIS_UNREACHABLE_MESSAGE =
+    'Redis is not reachable, and this request needs it. Please try again later.';
+
+/** How long the first call waits for a connection before it fails. */
+const REDIS_CONNECTION_TIMEOUT_MS = 2 * 1000;
+
+const unchanged = (error: unknown): unknown => error;
 
 /** NestJS's CacheModule default TTL (5 s), which v1.1.6's Redis store and its fallback store applied to `set` without a TTL. */
 const NEST_DEFAULT_TTL_MS = 5 * 1000;
@@ -25,14 +35,32 @@ const MONGO_STORE_DEFAULT_TTL_MS = 60 * 1000 * 1000;
  * `<prefix><key>` (prefix `mhira:production:default:` by default) and the
  * value `JSON.stringify(value)`, with Redis expiring the key itself. Keyv
  * wraps values as `{ value, expires }`, so it serialises the value alone.
+ *
+ * While Redis cannot be reached, a call fails at once with
+ * REDIS_UNREACHABLE_MESSAGE instead of waiting (no offline queue; the
+ * first connection gives up after REDIS_CONNECTION_TIMEOUT_MS), and the
+ * client keeps reconnecting, so calls succeed again as soon as Redis is
+ * back, in the same process. v1.1.6 ended the process instead (an `error`
+ * event nobody listened to) and crash-looped; this difference is
+ * registered (Ronan, 2026-11-11). An error Redis itself answers (such as
+ * WRONGTYPE) is passed on as it is.
  */
-function redisKeyv(): Keyv {
+function redisStore(): CacheStoreHandle {
     const { host, port, db, password, prefix } = redisConfig.default;
     const store = new KeyvRedis(
-        { socket: { host, port }, database: db, password },
-        { keyPrefixSeparator: ':', throwOnErrors: true },
+        {
+            socket: { host, port, reconnectStrategy: defaultReconnectStrategy },
+            database: db,
+            password,
+            disableOfflineQueue: true,
+        },
+        {
+            keyPrefixSeparator: ':',
+            throwOnErrors: true,
+            connectionTimeout: REDIS_CONNECTION_TIMEOUT_MS,
+        },
     );
-    return new Keyv({
+    const keyv = new Keyv({
         store,
         namespace: prefix.replace(/:$/, ''),
         useKeyPrefix: false,
@@ -41,6 +69,13 @@ function redisKeyv(): Keyv {
         deserialize: (raw: string) => ({ value: JSON.parse(raw) }),
         throwOnErrors: true,
     });
+    const client = store.client as { isReady: boolean };
+    return {
+        keyv,
+        missingValue: null,
+        explainFailure: error =>
+            client.isReady ? error : new Error(REDIS_UNREACHABLE_MESSAGE),
+    };
 }
 
 /** Keyv's own events drop an error nobody listens to; v1.1.6's Redis client made every connection error visible. */
@@ -74,7 +109,7 @@ export function createCacheStore(
 function storeFor(store: string, connection: Connection): CacheStoreHandle {
     switch (store) {
         case 'redis':
-            return { keyv: redisKeyv(), missingValue: null };
+            return redisStore();
         case 'mongo':
             return {
                 keyv: new Keyv({
@@ -87,6 +122,7 @@ function storeFor(store: string, connection: Connection): CacheStoreHandle {
                     throwOnErrors: true,
                 }),
                 missingValue: undefined,
+                explainFailure: unchanged,
             };
         case 'memory':
             // v1.1.6 configured it with `ttl: null`, so no default expiry
@@ -94,6 +130,7 @@ function storeFor(store: string, connection: Connection): CacheStoreHandle {
             return {
                 keyv: new Keyv({ throwOnErrors: true }),
                 missingValue: undefined,
+                explainFailure: unchanged,
             };
         default:
             // v1.1.6 registered the cache with the options of no store, and
@@ -105,6 +142,7 @@ function storeFor(store: string, connection: Connection): CacheStoreHandle {
                     throwOnErrors: true,
                 }),
                 missingValue: undefined,
+                explainFailure: unchanged,
             };
     }
 }

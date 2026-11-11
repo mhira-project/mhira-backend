@@ -1,4 +1,4 @@
-import KeyvRedis, { createClient } from '@keyv/redis';
+import { createClient } from '@keyv/redis';
 import { createCacheStore } from 'src/shared/cache/cache-store';
 import { CacheService } from 'src/shared/cache/providers/cache.service';
 import { Connection } from 'mongoose';
@@ -73,10 +73,11 @@ describe('the Redis cache store', () => {
         );
     });
 
-    it('logs the errors of a Redis it cannot reach, which Keyv alone would drop', async () => {
+    it('fails at once with a clear message, and logs why, when Redis cannot be reached', async () => {
         const port = process.env.REDIS_PORT;
         process.env.REDIS_PORT = '1';
-        let unreachable: ReturnType<typeof createCacheStore>;
+        let unreachable: CacheService;
+        let message: string;
         let logged: jest.SpyInstance;
         jest.isolateModules(() => {
             const isolatedNest: typeof import('@nestjs/common') = require('@nestjs/common');
@@ -84,16 +85,20 @@ describe('the Redis cache store', () => {
                 .spyOn(isolatedNest.Logger.prototype, 'error')
                 .mockImplementation(() => undefined);
             const isolated: typeof import('src/shared/cache/cache-store') = require('src/shared/cache/cache-store');
-            unreachable = isolated.createCacheStore('redis', UNUSED_CONNECTION);
+            const isolatedService: typeof import('src/shared/cache/providers/cache.service') = require('src/shared/cache/providers/cache.service');
+            message = isolated.REDIS_UNREACHABLE_MESSAGE;
+            unreachable = new isolatedService.CacheService(
+                isolated.createCacheStore('redis', UNUSED_CONNECTION),
+            );
         });
         process.env.REDIS_PORT = port;
-        unreachable.keyv.get('active-sessions:a-jti').catch(() => undefined);
-        for (let i = 0; i < 30 && logged.mock.calls.length === 0; i++) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-        }
+        const started = Date.now();
+        await expect(unreachable.get('active-sessions:a-jti')).rejects.toThrow(
+            message,
+        );
+        expect(Date.now() - started).toBeLessThan(3000);
         expect(logged).toHaveBeenCalledWith(
             expect.stringMatching(/^redis: .*ECONNREFUSED/),
         );
-        await (unreachable.keyv.store as KeyvRedis<unknown>).client.destroy();
     });
 });
