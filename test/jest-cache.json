@@ -1,0 +1,13 @@
+{
+    "moduleFileExtensions": ["js", "json", "ts"],
+    "rootDir": "..",
+    "roots": ["<rootDir>/test/cache"],
+    "testEnvironment": "node",
+    "testRegex": "\\.cache-test\\.ts$",
+    "transform": {
+        "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "moduleNameMapper": {
+        "^src/(.*)$": "<rootDir>/src/$1"
+    }
+}

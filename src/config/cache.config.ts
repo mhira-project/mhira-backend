@@ -1,61 +1,36 @@
-import { CacheModuleOptions } from "@nestjs/cache-manager";
-import { redisConfig } from "./redis.config";
-import * as redisStore from 'cache-manager-redis-store';
-// cache-manager-mongodb 0.3 replaces the global Promise with Bluebird when it
-// loads (`Promise = require('bluebird')`, undeclared, in its index.js), and
-// the backend has always run that way. Mongoose 8's driver declares a
-// subclass of Promise when it loads, which Bluebird refuses to construct, so
-// Mongoose is loaded first, while Promise is still the native one.
-import 'mongoose';
-import * as mongoStore from 'cache-manager-mongodb';
-import { configService } from "./config.service";
+import './bluebird-global';
 
 export type CacheStore = 'memory' | 'redis' | 'mongo';
 
+const CACHE_STORES: readonly CacheStore[] = ['memory', 'redis', 'mongo'];
+
+function cacheStoreFromEnv(value: string): CacheStore {
+    const store = CACHE_STORES.find(name => name === value);
+    if (store === undefined) {
+        throw new Error(
+            `CACHE_STORE is "${value}"; it must be one of ${CACHE_STORES.join(
+                ', ',
+            )}.`,
+        );
+    }
+    return store;
+}
 
 /**
  * Cache config
  */
 export const cacheConfig = {
-
     /**
      * The Cache store to be used.
-     * 
+     *
      * valid options:
      *  - 'memory'
-     *          for local development, stores data in-memory array. 
+     *          for local development, stores data in-memory.
      *          Note: Cache is cleared on app restart.
      *  - 'redis' - for staging/production environments using redis store.
      *  - 'mongo' - for staging/production environments using mongodb store.
-     * 
+     *
      * default = 'mongo'
-     * 
      */
-    defaultStore: process.env.CACHE_STORE || 'mongo' as CacheStore,
-
-    stores: {
-
-        memory: {
-            ttl: null, // seconds;  null to use default
-            max: null, // maximum number of items in cache; null to use default
-        },
-
-        redis: {
-            store: redisStore,
-            ...redisConfig.default,
-        },
-
-        mongo: {
-            store: mongoStore,
-            uri: configService.getMongoConnectionString(),
-            options: {
-                collection: 'cacheManager',
-                compression: false,
-                poolSize: 5,
-                autoReconnect: true
-            }
-        }
-
-    } as { [key in CacheStore]: CacheModuleOptions }
-
+    defaultStore: cacheStoreFromEnv(process.env.CACHE_STORE || 'mongo'),
 };

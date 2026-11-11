@@ -93,24 +93,22 @@ export class AccessTokenService {
         return accessToken;
     }
 
-    protected async setTokenActivity(tokenId: string): Promise<number> {
+    protected async setTokenActivity(tokenId: string): Promise<void> {
         const cacheKey = this.getTokenActivityCacheKey(tokenId);
         const inactivityTimeout = authConfig.inactivityTimeout;
 
-        return this.cacheService
-            .manager()
-            .set(cacheKey, 1, { ttl: inactivityTimeout });
+        await this.cacheService.set(cacheKey, 1, inactivityTimeout);
     }
 
-    protected async revokeTokenActivity(tokenId: string): Promise<number> {
+    protected async revokeTokenActivity(tokenId: string): Promise<void> {
         const cacheKey = this.getTokenActivityCacheKey(tokenId);
 
-        return this.cacheService.manager().del(cacheKey);
+        await this.cacheService.del(cacheKey);
     }
 
     protected async validateTokenActivity(tokenId: string) {
         const cacheKey = this.getTokenActivityCacheKey(tokenId);
-        const active = await this.cacheService.manager().get<number>(cacheKey);
+        const active = await this.cacheService.get<number>(cacheKey);
 
         if (active !== 1) {
             throw new AuthenticationError('Session expired! Please login.');

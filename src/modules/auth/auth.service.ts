@@ -79,7 +79,7 @@ export class AuthService {
         }
 
         // Unset failed passwords key
-        await this.cacheService.manager().del(`login-attempts:${user.id}`);
+        await this.cacheService.del(`login-attempts:${user.id}`);
 
         return user;
     }
@@ -94,9 +94,9 @@ export class AuthService {
     ) {
         const loginAttemptsKey = `login-attempts:${user.id}`;
 
-        const cacheValue = await this.cacheService
-            .manager()
-            .get<string>(loginAttemptsKey);
+        const cacheValue = await this.cacheService.get<string>(
+            loginAttemptsKey,
+        );
 
         if (!cacheValue) {
             return;
@@ -123,9 +123,7 @@ export class AuthService {
     private async executeInvalidLoginAttempt(user: User) {
         const loginAttemptsKey = `login-attempts:${user.id}`;
 
-        let attempts = await this.cacheService
-            .manager()
-            .get<number>(loginAttemptsKey);
+        let attempts = await this.cacheService.get<number>(loginAttemptsKey);
 
         attempts = attempts + 1;
 
@@ -134,7 +132,7 @@ export class AuthService {
             lastAttemptAt: moment().toString(),
         });
 
-        await this.cacheService.manager().set(loginAttemptsKey, cacheValue);
+        await this.cacheService.set(loginAttemptsKey, cacheValue);
 
         return attempts;
     }
