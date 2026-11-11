@@ -11,16 +11,11 @@ import { withoutHttpExceptionName } from './without-http-exception-name';
  */
 export function formatError(error: GraphQLError): GraphQLError {
     const extensions = withoutHttpExceptionName(error);
-    return new GraphQLError(
-        typeof error.message === 'string'
-            ? error.message
-            : error.message['message'],
-        {
-            path: error.path,
-            originalError: error,
-            extensions: isNullOrMissingVariableError(error)
-                ? { ...extensions, code: 'INTERNAL_SERVER_ERROR' }
-                : extensions,
-        },
-    );
+    return new GraphQLError(error.message, {
+        path: error.path,
+        originalError: error,
+        extensions: isNullOrMissingVariableError(error)
+            ? { ...extensions, code: 'INTERNAL_SERVER_ERROR' }
+            : extensions,
+    });
 }
