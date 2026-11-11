@@ -1,9 +1,9 @@
-/** The version of @ptc-org/nestjs-query-typeorm that package.json pins and that restoreBooleanComparisons and restoreBatchRelationMatching were checked against. */
-export const PATCHED_FORK_VERSION = '2.4.0';
+/** The version of @ptc-org/nestjs-query-typeorm that package.json pins and that restoreBooleanComparisons was checked against. */
+export const PATCHED_FORK_VERSION = '2.5.0';
 
 /**
  * Refuses to apply a compatibility measure to another version of the fork.
- * The measures replace private methods and read private fields; a later
+ * Such a measure replaces private methods and reads private fields; a later
  * version can keep a method's name and change what it reads, and the
  * measure would then fail silently (in step 11's first attempt, every
  * batched relation list came back empty). Ticket 07, step 11.

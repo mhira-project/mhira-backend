@@ -17,8 +17,6 @@ import { Patient } from "./patient.model";
 @Relation('patient', () => Patient,
     {
         nullable: true,
-        disableUpdate: true,
-        disableRemove: true
     }
 )
 @Entity()

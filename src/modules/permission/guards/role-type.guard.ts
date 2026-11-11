@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { ForbiddenError } from 'apollo-server-express';
+import { ForbiddenError } from 'src/shared/exception/graphql-errors';
 import { User } from 'src/modules/user/models/user.model';
 
 @Injectable()

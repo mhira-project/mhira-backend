@@ -1,6 +1,6 @@
 import { Catch, HttpException, UnauthorizedException } from '@nestjs/common';
 import { GqlExceptionFilter } from '@nestjs/graphql';
-import { ForbiddenError } from 'apollo-server-express';
+import { ForbiddenError } from './graphql-errors';
 
 @Catch(UnauthorizedException)
 export class GqlUnauthorizedHandler implements GqlExceptionFilter {

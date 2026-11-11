@@ -9,7 +9,7 @@ import {
 } from '../models/questionnaire.schema';
 import { QuestionValidatorFactory } from '../helpers/question-validator.factory';
 import { AssessmentStatus } from '../enums/assessment-status.enum';
-import { UserInputError } from 'apollo-server-express';
+import { UserInputError } from 'src/shared/exception/graphql-errors';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
 import { Repository } from 'typeorm';

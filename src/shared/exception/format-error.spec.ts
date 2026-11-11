@@ -1,21 +1,18 @@
 import { NotFoundException } from '@nestjs/common';
-import { ApolloServer, UserInputError } from 'apollo-server-express';
+import { ApolloServer, GraphQLResponse } from '@apollo/server';
+import { GraphQLFormattedError } from 'graphql';
 import { DatabaseError } from 'pg-protocol';
-import * as typeorm from 'typeorm';
 import { EntityNotFoundError, QueryFailedError } from 'typeorm';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
 import { formatError } from './format-error';
+import { UserInputError } from './graphql-errors';
 
 // Ticket 07: what a client receives for an error, from the installed Apollo
-// Server running the module's formatError with `debug: false`, as
+// Server running the module's formatError without stack traces, as
 // app.module.ts configures it. Pinned per error kind (07_D, T3): the code,
-// the top-level message, the path and `extensions.exception` as the
-// register allows it for the installed libraries. formatError builds its
-// error without the query's nodes, so no error carries `locations`, as on
-// v1.1.6.
-
-/** Whether TypeORM 0.3 is installed (DataSource came with it). */
-const TYPEORM_0_3 = 'DataSource' in typeorm;
+// the top-level message and the path. From Apollo 4 (step 15) no error
+// carries `extensions.exception` (decision F), and formatError leaves out
+// the `locations` Apollo 4 adds, which v1.1.6 never sent.
 
 /** Apollo Server with one query, `assessment(id: Int!)`, whose resolver throws what `throwing` gives. */
 async function server(throwing: () => Error = () => new Error('unused')) {
@@ -29,7 +26,7 @@ async function server(throwing: () => Error = () => new Error('unused')) {
             },
         },
         formatError,
-        debug: false,
+        includeStacktraceInErrorResponses: false,
     });
     await apollo.start();
     return apollo;
@@ -37,14 +34,24 @@ async function server(throwing: () => Error = () => new Error('unused')) {
 
 const QUERY = 'query ($id: Int!) { assessment(id: $id) }';
 
+/** The errors of a single result. */
+function errorsOf(response: GraphQLResponse): readonly GraphQLFormattedError[] {
+    if (response.body.kind !== 'single') {
+        throw new Error('expected a single result');
+    }
+    return response.body.singleResult.errors ?? [];
+}
+
 /** The error a client receives, as JSON, when the resolver throws `thrown`. */
 async function received(thrown: Error) {
-    const response = await (await server(() => thrown)).executeOperation({
-        query: QUERY,
-        variables: { id: 1 },
-    });
-    expect(response.errors).toHaveLength(1);
-    return JSON.parse(JSON.stringify(response.errors[0]));
+    const errors = errorsOf(
+        await (await server(() => thrown)).executeOperation({
+            query: QUERY,
+            variables: { id: 1 },
+        }),
+    );
+    expect(errors).toHaveLength(1);
+    return JSON.parse(JSON.stringify(errors[0]));
 }
 
 /** A pg error as the driver raises it for a value that is not an integer. */
@@ -64,22 +71,14 @@ function invalidInteger(): DatabaseError {
     return error;
 }
 
-const PG_FIELDS = {
-    length: 104,
-    severity: 'ERROR',
-    code: '22P02',
-    file: 'numutils.c',
-    line: '320',
-    routine: 'pg_strtoint32',
-};
 const SQL =
     'SELECT "Patient"."id" FROM "patient" "Patient" WHERE "Patient"."id" = $1';
 
 describe('formatError through Apollo Server', () => {
-    // Step 08: Apollo 3 relabels a missing or null variable BAD_USER_INPUT;
-    // v1.1.6 (Apollo 2) sent INTERNAL_SERVER_ERROR, recorded for eight
-    // operations with a null id (ticket 04's wrong-input section), and
-    // relabelled only a value its type refuses, recorded for fourteen.
+    // Step 08: Apollo 3 and 4 relabel a missing or null variable
+    // BAD_USER_INPUT; v1.1.6 (Apollo 2) sent INTERNAL_SERVER_ERROR, recorded
+    // for eight operations with a null id (ticket 04's wrong-input section),
+    // and relabelled only a value its type refuses, recorded for fourteen.
     it.each([
         [
             'null for a non-null variable',
@@ -102,13 +101,13 @@ describe('formatError through Apollo Server', () => {
     ])(
         "a variable coercion error keeps v1.1.6's code: %s",
         async (_, variables, message, code) => {
-            const response = await (await server()).executeOperation({
-                query: QUERY,
-                variables,
-            });
-            expect(response.errors).toEqual([
-                expect.objectContaining({ message, extensions: { code } }),
-            ]);
+            const errors = errorsOf(
+                await (await server()).executeOperation({
+                    query: QUERY,
+                    variables,
+                }),
+            );
+            expect(errors).toEqual([{ message, extensions: { code } }]);
         },
     );
 
@@ -122,28 +121,17 @@ describe('formatError through Apollo Server', () => {
         });
     });
 
-    it('an uncaught HttpException keeps the shape v1.1.6 sent, without the keys NestJS 8 and 9 add (T3)', async () => {
+    it('an uncaught HttpException keeps its message and code, without exception (decision F, T3)', async () => {
         expect(
             await received(new NotFoundException('No patient found')),
         ).toEqual({
             message: 'No patient found',
             path: ['assessment'],
-            extensions: {
-                code: 'INTERNAL_SERVER_ERROR',
-                exception: {
-                    response: {
-                        statusCode: 404,
-                        message: 'No patient found',
-                        error: 'Not Found',
-                    },
-                    status: 404,
-                    message: 'No patient found',
-                },
-            },
+            extensions: { code: 'INTERNAL_SERVER_ERROR' },
         });
     });
 
-    it('the input check: messages stay, exception is gone from Apollo 3 on (decision F, T3)', async () => {
+    it('the input check: messages stay, without exception (decision F, T3)', async () => {
         const messages = [
             'input.name must be shorter than or equal to 15 characters',
         ];
@@ -157,58 +145,30 @@ describe('formatError through Apollo Server', () => {
         ).toEqual({
             message: 'name must be shorter than or equal to 15 characters',
             path: ['assessment'],
-            extensions: { code: 'BAD_USER_INPUT', messages },
+            extensions: { messages, code: 'BAD_USER_INPUT' },
         });
     });
 
-    it("TypeORM's EntityNotFoundError: the message stays; exception as the installed TypeORM puts it (decision K, T3)", async () => {
-        const message =
-            'Could not find any entity of type "Assessment" matching: 999999';
+    it("TypeORM's EntityNotFoundError keeps its message and code, without exception (decisions F and K, T3)", async () => {
         expect(
             await received(new EntityNotFoundError(Assessment, 999999)),
         ).toEqual({
-            message,
+            message:
+                'Could not find any entity of type "Assessment" matching: 999999',
             path: ['assessment'],
-            extensions: {
-                code: 'INTERNAL_SERVER_ERROR',
-                // TypeORM 0.3: `name` is a getter on the prototype and the
-                // criteria are an own property (register, decision K).
-                exception: TYPEORM_0_3
-                    ? { criteria: 999999, message }
-                    : { name: 'EntityNotFound', message },
-            },
+            extensions: { code: 'INTERNAL_SERVER_ERROR' },
         });
     });
 
-    it("TypeORM's QueryFailedError: the message stays; exception as the installed TypeORM puts it (decision K, T3)", async () => {
-        const message = 'invalid input syntax for type integer: "abc"';
-        const error = await received(
-            new QueryFailedError(SQL, ['abc'], invalidInteger()),
-        );
-        expect(error.message).toBe(message);
-        expect(error.path).toEqual(['assessment']);
-        expect(error.extensions.code).toBe('INTERNAL_SERVER_ERROR');
-        if (TYPEORM_0_3) {
-            // TypeORM 0.3 (register, decision K): no `name`, no `message`,
-            // `driverError` added, holding nothing the payload lacks.
-            expect(error.extensions.exception).toEqual({
-                query: SQL,
-                parameters: ['abc'],
-                driverError: { ...PG_FIELDS, name: 'error' },
-                ...PG_FIELDS,
-            });
-            const { driverError, ...rest } = error.extensions.exception;
-            for (const [key, value] of Object.entries(driverError)) {
-                if (key !== 'name') expect(rest[key]).toEqual(value);
-            }
-        } else {
-            expect(error.extensions.exception).toEqual({
-                message,
-                ...PG_FIELDS,
-                name: 'QueryFailedError',
-                query: SQL,
-                parameters: ['abc'],
-            });
-        }
+    it("TypeORM's QueryFailedError keeps its message and code, and no longer sends the SQL (decision F, B55, T3)", async () => {
+        expect(
+            await received(
+                new QueryFailedError(SQL, ['abc'], invalidInteger()),
+            ),
+        ).toEqual({
+            message: 'invalid input syntax for type integer: "abc"',
+            path: ['assessment'],
+            extensions: { code: 'INTERNAL_SERVER_ERROR' },
+        });
     });
 });

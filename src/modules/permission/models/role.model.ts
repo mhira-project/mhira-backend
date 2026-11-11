@@ -21,8 +21,8 @@ import { MAX_ROLE_HIERARCHY } from '../constants';
 import { Report } from 'src/modules/report/models/report.model';
 
 @ObjectType()
-@UnPagedRelation('permissions', () => Permission, {disableUpdate: true, disableRemove: true})
-@UnPagedRelation('users', () => User, { disableUpdate: true, disableRemove: true })
+@UnPagedRelation('permissions', () => Permission)
+@UnPagedRelation('users', () => User)
 @Entity()
 export class Role extends BaseEntity {
     @FilterableField(() => Int)

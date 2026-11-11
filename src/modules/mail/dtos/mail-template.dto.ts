@@ -22,7 +22,7 @@ export class CreateEmailTemplate {
     @Field(() => TemplateModuleEnum)
     module: TemplateModuleEnum;
 
-    @Field(() => Boolean, { defaultValue: false })
+    @Field(() => Boolean, { nullable: true, defaultValue: false })
     isPublic: boolean;
 
     @Field(() => [Int], { nullable: true })

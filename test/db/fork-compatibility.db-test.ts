@@ -14,7 +14,6 @@ import { PatientResolver } from 'src/modules/patient/resolvers/patient.resolver'
 import { QuestionnaireAssessmentService } from 'src/modules/questionnaire/services/questionnaire-assessment.service';
 import { QuestionnaireScriptService } from 'src/modules/questionnaire/services/questionnaire-script.service';
 import { Report } from 'src/modules/report/models/report.model';
-import { restoreBatchRelationMatching } from 'src/shared/batch-relations';
 import { restoreBooleanComparisons } from 'src/shared/boolean-comparisons';
 import { Department } from 'src/modules/department/models/department.model';
 import { Role } from 'src/modules/permission/models/role.model';
@@ -32,13 +31,12 @@ class Reports {
     ) {}
 }
 
-describe('the fork, kept as v1.1.6 (steps 11 and 13)', () => {
+describe('the fork, kept as v1.1.6 (steps 11, 14 and 15)', () => {
     let module: TestingModule;
     let recorder: StatementRecorder;
 
     beforeAll(async () => {
         restoreBooleanComparisons();
-        restoreBatchRelationMatching();
         ({ module, recorder } = await lookupModule(
             'lookups_fork',
             [Assessment, Department, Patient, Report, Role, User],

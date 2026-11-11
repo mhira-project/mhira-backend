@@ -1,6 +1,6 @@
 import { Catch, BadRequestException, HttpException } from '@nestjs/common';
 import { GqlExceptionFilter } from '@nestjs/graphql';
-import { UserInputError } from 'apollo-server-express';
+import { UserInputError } from './graphql-errors';
 
 
 @Catch(BadRequestException)

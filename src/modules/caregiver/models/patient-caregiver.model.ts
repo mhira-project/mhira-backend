@@ -18,8 +18,8 @@ import { Caregiver } from './caregiver.model';
 
 
 @ObjectType()
-@FilterableRelation('patient', () => Patient, { nullable: true, disableUpdate: true, disableRemove: true })
-@FilterableRelation('caregiver', () => Caregiver, { nullable: true, disableUpdate: true, disableRemove: true })
+@FilterableRelation('patient', () => Patient, { nullable: true })
+@FilterableRelation('caregiver', () => Caregiver, { nullable: true })
 @Unique(["patientId", "caregiverId"])
 @Entity()
 export class PatientCaregiver extends BaseEntity {

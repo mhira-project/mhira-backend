@@ -10,7 +10,8 @@ export class ChangePasswordInput {
     @Field(() => String)
     newPasswordConfirmation: string;
 
-    @Field(() => String, { defaultValue: true })
-    requirePasswordChangeOnLogin?: boolean;
+    // A String in the schema since v1.1.6, read as a truthy value.
+    @Field(() => String, { nullable: true, defaultValue: 'true' })
+    requirePasswordChangeOnLogin?: string;
 
 }

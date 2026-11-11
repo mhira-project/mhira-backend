@@ -1,21 +1,23 @@
-import { GraphQLError } from 'graphql';
+import { GraphQLFormattedError } from 'graphql';
 import { isNullOrMissingVariableError } from './null-or-missing-variable-error';
-import { withoutNestHttpExceptionKeys } from './without-nest-http-exception-keys';
 
 /**
- * The GraphQL module's `formatError`: every error reaches the client as a
- * GraphQLError with Apollo's message, path and extensions, apart from two
- * compatibility measures of ticket 07 that keep v1.1.6's shape: without the
- * keys NestJS 8 and 9 add to an HttpException (withoutNestHttpExceptionKeys), and
- * a missing or null variable with v1.1.6's code (isNullOrMissingVariableError).
+ * The GraphQL module's `formatError`: every error reaches the client with
+ * the message, path and extensions Apollo Server formatted, and without
+ * the `locations` Apollo 4 adds, which v1.1.6 never sent. One compatibility
+ * measure of ticket 07: a missing or null variable keeps v1.1.6's code
+ * (isNullOrMissingVariableError).
  */
-export function formatError(error: GraphQLError): GraphQLError {
-    const extensions = withoutNestHttpExceptionKeys(error);
-    return new GraphQLError(error.message, {
-        path: error.path,
-        originalError: error,
+export function formatError(
+    formattedError: GraphQLFormattedError,
+    error: unknown,
+): GraphQLFormattedError {
+    const { message, path, extensions } = formattedError;
+    return {
+        message,
+        ...(path && { path }),
         extensions: isNullOrMissingVariableError(error)
             ? { ...extensions, code: 'INTERNAL_SERVER_ERROR' }
             : extensions,
-    });
+    };
 }

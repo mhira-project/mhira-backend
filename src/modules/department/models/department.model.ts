@@ -17,9 +17,9 @@ import { MailTemplate } from 'src/modules/mail/models/mail-template.model';
 
 @ObjectType()
 @KeySet(['id'])
-@FilterableUnPagedRelation('users', () => User, { disableUpdate: true, disableRemove: true })
-@FilterableUnPagedRelation('patients', () => Patient, { disableUpdate: true, disableRemove: true })
-@FilterableUnPagedRelation('mailTemplates', () => MailTemplate, { disableUpdate: true, disableRemove: true })
+@FilterableUnPagedRelation('users', () => User)
+@FilterableUnPagedRelation('patients', () => Patient)
+@FilterableUnPagedRelation('mailTemplates', () => MailTemplate)
 @Entity()
 export class Department extends BaseEntity {
 

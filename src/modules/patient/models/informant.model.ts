@@ -17,15 +17,11 @@ import { RelationshipType } from "./relationship-type.model";
 @Relation('patient', () => Patient,
     {
         nullable: true,
-        disableUpdate: true,
-        disableRemove: true
     }
 )
 @Relation('relationshipType', () => RelationshipType,
     {
         nullable: true,
-        disableUpdate: true,
-        disableRemove: true
     }
 )
 @Entity()

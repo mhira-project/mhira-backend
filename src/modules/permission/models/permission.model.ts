@@ -14,14 +14,8 @@ import { FilterableField, UnPagedRelation } from '@ptc-org/nestjs-query-graphql'
 import { User } from 'src/modules/user/models/user.model';
 
 @ObjectType()
-@UnPagedRelation('roles', () => Role, {
-    disableRemove: true,
-    disableUpdate: true,
-})
-@UnPagedRelation('users', () => User, {
-    disableRemove: true,
-    disableUpdate: true,
-})
+@UnPagedRelation('roles', () => Role)
+@UnPagedRelation('users', () => User)
 @Entity()
 export class Permission extends BaseEntity {
     @FilterableField(() => Int)

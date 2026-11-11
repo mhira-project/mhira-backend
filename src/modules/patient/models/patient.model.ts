@@ -34,42 +34,28 @@ import { QuestionnaireScript } from 'src/modules/questionnaire/models/questionna
 @ObjectType()
 @FilterableRelation('status', () => PatientStatus, {
     nullable: true,
-    disableUpdate: true,
-    disableRemove: true,
 })
 @FilterableUnPagedRelation('caseManagers', () => User, {
     nullable: true,
-    disableUpdate: true,
-    disableRemove: true,
 })
 @FilterableUnPagedRelation('informants', () => Informant, {
     nullable: true,
-    disableUpdate: true,
-    disableRemove: true,
 })
 @FilterableUnPagedRelation('emergencyContacts', () => EmergencyContact, {
     nullable: true,
-    disableUpdate: true,
-    disableRemove: true,
 })
 // addDepartmentsToPatient and removeDepartmentsFromPatient are written by
 // hand in PatientResolver, without setDepartmentsOnPatient.
 @FilterableUnPagedRelation('departments', () => Department, {
     nullable: true,
-    disableUpdate: true,
-    disableRemove: true,
 })
 @FilterableUnPagedRelation('patientCaregivers', () => PatientCaregiver, {
     nullable: true,
-    disableUpdate: true,
-    disableRemove: true,
 })
 // Patient.assessments, one assessment, is resolved in PatientResolver.
 @FilterableRelation('assessments', () => Assessment, {
     nullable: true,
     disableRead: true,
-    disableUpdate: true,
-    disableRemove: true,
 })
 @Entity()
 export class Patient extends BaseEntity {

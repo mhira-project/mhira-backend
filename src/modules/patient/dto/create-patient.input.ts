@@ -4,7 +4,7 @@ import { GenderEnum } from '../models/gender.enum';
 
 @InputType()
 export class CreatePatientInput {
-    @Field({ defaultValue: true })
+    @Field({ nullable: true, defaultValue: true })
     active: boolean;
 
     @Field({ nullable: true })

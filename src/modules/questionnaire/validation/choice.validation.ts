@@ -1,7 +1,7 @@
 import { Answer } from '../models/answer.schema';
 import { QuestionType } from '../models/question.schema';
 import { BasicValidator } from './basic.validation';
-import { UserInputError } from 'apollo-server-express';
+import { UserInputError } from 'src/shared/exception/graphql-errors';
 
 export class ChoiceQuestionValidator extends BasicValidator {
     protected validate(answer: Answer) {

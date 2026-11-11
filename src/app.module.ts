@@ -8,6 +8,7 @@ import { configService } from './config/config.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { SharedModule } from './shared/shared.module';
 import { formatError } from './shared/exception';
+import { nullableDefaultedArguments } from './shared/graphql/nullable-defaulted-arguments';
 import { PermissionModule } from './modules/permission/permission.module';
 import { PatientModule } from './modules/patient/patient.module';
 import { graphqlUploadExpress } from 'graphql-upload';
@@ -44,12 +45,29 @@ import { ScheduleModule } from '@nestjs/schedule';
             playground: configService.isGraphqlPlaygroundEnabled(),
             autoSchemaFile: join(process.cwd(), 'src/schema/schema.gql'),
             context: ({ req }) => ({ req }),
-            debug: false, // disables stack trace
+            transformSchema: nullableDefaultedArguments,
+            transformAutoSchemaFile: true,
             // The Apollo driver turns an HttpException into an Apollo error
             // for its status unless this is off (@nestjs/graphql 8 on);
             // v1.1.6 (7.x) leaves it to formatError below, and the clients
             // see that shape.
             autoTransformHttpErrors: false,
+            includeStacktraceInErrorResponses: false,
+            // v1.1.6 (Apollo 2) answers an operation that fails before it
+            // runs, a variable coercion error among them, with HTTP 400;
+            // Apollo 4 answers 200 unless this is on.
+            status400ForVariableCoercionErrors: true,
+            // Apollo 4 refuses requests a browser may send without a
+            // preflight unless they carry one of these headers. A logged-in
+            // client sends Authorization, which is not CORS-safelisted, so
+            // it is a valid signal too; JSON requests need none (decision H).
+            csrfPrevention: {
+                requestHeaders: [
+                    'x-apollo-operation-name',
+                    'apollo-require-preflight',
+                    'authorization',
+                ],
+            },
             formatError,
         }),
         UserModule,

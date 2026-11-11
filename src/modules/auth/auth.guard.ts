@@ -2,7 +2,7 @@ import { ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthGuard } from '@nestjs/passport';
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
-import { AuthenticationError } from 'apollo-server-express';
+import { AuthenticationError } from 'src/shared/exception/graphql-errors';
 import { Reflector } from '@nestjs/core';
 
 @Injectable()

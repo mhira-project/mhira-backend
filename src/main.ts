@@ -5,13 +5,11 @@ import { corsConfig } from './config/cors.config';
 import { GqlBadRequestHandler } from './shared/exception/gql-bad-request.handler';
 import { configService } from './config/config.service';
 import { GqlUnauthorizedHandler } from './shared/exception/gql-unauthorized.handler';
-import { restoreBatchRelationMatching } from './shared/batch-relations';
 import { restoreBooleanComparisons } from './shared/boolean-comparisons';
 import { NestedMessagesValidationPipe } from './shared/validation/nested-messages-validation.pipe';
 
 async function bootstrap() {
     restoreBooleanComparisons();
-    restoreBatchRelationMatching();
     const app = await NestFactory.create(AppModule);
 
     const port = configService.getPort();

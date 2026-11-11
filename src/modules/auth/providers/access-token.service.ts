@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
-import { AuthenticationError } from 'apollo-server-express';
+import { AuthenticationError } from 'src/shared/exception/graphql-errors';
 import * as moment from 'moment';
 import { authConfig } from 'src/config/auth.config';
 import { User } from 'src/modules/user/models/user.model';

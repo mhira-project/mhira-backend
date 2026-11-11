@@ -17,7 +17,7 @@ import {
 import { TemplateModuleEnum } from '../enums/template-module.enum';
 
 @ObjectType()
-@FilterableUnPagedRelation('departments', () => Department, { disableUpdate: true, disableRemove: true })
+@FilterableUnPagedRelation('departments', () => Department)
 @Entity()
 export class MailTemplate extends BaseEntity {
 

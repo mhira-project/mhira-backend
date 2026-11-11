@@ -2,7 +2,7 @@ import { ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { AuthenticationError } from 'apollo-server-express';
+import { AuthenticationError } from 'src/shared/exception/graphql-errors';
 import { Repository } from 'typeorm';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
 import { AssessmentType } from 'src/modules/assessment/models/assessment-type.model';

@@ -15,8 +15,6 @@ import { Patient } from './patient.model';
 @ObjectType()
 @UnPagedRelation('patients', () => Patient, {
     nullable: true,
-    disableUpdate: true,
-    disableRemove: true,
 })
 @Entity()
 export class PatientStatus extends BaseEntity {

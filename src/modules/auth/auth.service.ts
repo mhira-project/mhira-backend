@@ -3,7 +3,7 @@ import { User } from 'src/modules/user/models/user.model';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { LoginRequestDto } from './dto/login-request.dto';
 import { Hash } from 'src/shared/helpers/hash.helper';
-import { AuthenticationError } from 'apollo-server-express';
+import { AuthenticationError } from 'src/shared/exception/graphql-errors';
 import { Permission } from '../permission/models/permission.model';
 import { Any } from 'typeorm';
 import { Role } from '../permission/models/role.model';

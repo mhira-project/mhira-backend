@@ -1,6 +1,6 @@
 import { Answer } from '../models/answer.schema';
 import { Question, QuestionType } from '../models/question.schema';
-import { UserInputError } from 'apollo-server-express';
+import { UserInputError } from 'src/shared/exception/graphql-errors';
 
 export abstract class BasicValidator {
     constructor(protected question: Question) { }
