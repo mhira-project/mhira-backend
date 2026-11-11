@@ -1,5 +1,6 @@
 import { RelationQueryBuilder } from '@ptc-org/nestjs-query-typeorm/src/query';
 import { DriverUtils } from 'typeorm/driver/DriverUtils';
+import { assertPatchedForkVersion } from './fork-version';
 
 /** The fork's method this module replaces (private in its typings), and what it reads. */
 interface PrimaryKeyColumns {
@@ -30,11 +31,13 @@ interface PrimaryKeyColumns {
  * dropped, the name reads `id`, no row matches, and every record gets an
  * empty list (seen in step 11's first `record-both`). This gives the fork's
  * method the call TypeORM 0.3.31 expects, so the relations are matched as
- * the fork intends and as v1.1.6 returned them. A compatibility measure of ticket 07 (step 11),
- * applied once before the app starts; it refuses to run on a fork version
- * without this method.
+ * the fork intends and as v1.1.6 returned them. A compatibility measure of
+ * ticket 07 (step 11), applied once before the app starts; it refuses to
+ * run on another fork version (assertPatchedForkVersion) or one without
+ * this method.
  */
 export function restoreBatchRelationMatching(): void {
+    assertPatchedForkVersion('restoreBatchRelationMatching');
     const prototype = (RelationQueryBuilder.prototype as unknown) as PrimaryKeyColumns;
     if (
         typeof prototype.getRelationPrimaryKeysPropertyNameAndColumnsName !==

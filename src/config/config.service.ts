@@ -94,13 +94,10 @@ class ConfigService {
         };
     }
 
-    public getTypeOrmConfig(): any {
-        const entities: any = [
-            __dirname + this.getValue('TYPEORM_ENTITIES_DIR'),
-        ];
+    public getTypeOrmConfig(): DataSourceOptions {
         return {
             ...this.getTypeOrmConnection(),
-            entities,
+            entities: [__dirname + this.getValue('TYPEORM_ENTITIES_DIR')],
             // The app never synchronizes its schema, whatever
             // TYPEORM_SYNCHRONIZE says (ticket 07, decision I).
             synchronize: false,

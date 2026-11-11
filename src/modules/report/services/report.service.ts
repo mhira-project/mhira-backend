@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from 'src/modules/permission/models/role.model';
 import { In, Repository } from 'typeorm';
+import { idAsSent } from 'src/shared/helpers/graphql-id.helper';
 import { ReportInput, UpdateOneReportInput } from '../dtos/report-input';
 import { InjectQueryService, QueryService } from '@ptc-org/nestjs-query-core';
 import { ConnectionType } from '@ptc-org/nestjs-query-graphql';
@@ -49,10 +50,7 @@ export class ReportService {
         const { roles, ...rest } = update;
         const report = await this.reportRepository.findOne({
             relations: ['roles'],
-            // The GraphQL ID, a string at run time, goes to Postgres as it
-            // came, as v1.1.6 sends it: Postgres casts it, and refuses "abc"
-            // with v1.1.6's message. Number() would not.
-            where: { id: id as Report['id'] },
+            where: { id: idAsSent(id) },
         });
 
         const findRoles = await this.roleRepository.find({

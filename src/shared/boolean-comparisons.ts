@@ -1,4 +1,5 @@
 import { SQLComparisonBuilder } from '@ptc-org/nestjs-query-typeorm/src/query';
+import { assertPatchedForkVersion } from './fork-version';
 
 type ComparisonSql = (
     column: string,
@@ -31,9 +32,11 @@ function booleanComparison(operator: 'is' | 'isNot'): ComparisonSql {
  * The fork 2.0 writes `= TRUE`, `!= TRUE` and so on, and `isNot` then
  * leaves out the rows whose column is NULL. A compatibility measure of
  * ticket 07 (step 11), applied once before the app starts; it refuses to
- * run on a fork version without these two methods.
+ * run on another fork version (assertPatchedForkVersion) or one without
+ * these two methods.
  */
 export function restoreBooleanComparisons(): void {
+    assertPatchedForkVersion('restoreBooleanComparisons');
     const prototype = (SQLComparisonBuilder.prototype as unknown) as BooleanComparisons;
     if (
         typeof prototype.isComparisonSQL !== 'function' ||

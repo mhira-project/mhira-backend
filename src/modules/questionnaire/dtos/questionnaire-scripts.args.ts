@@ -1,4 +1,4 @@
-import { QueryArgsType, Relation } from '@ptc-org/nestjs-query-graphql';
+import { QueryArgsType } from '@ptc-org/nestjs-query-graphql';
 import { ArgsType, Field, InputType, Int } from '@nestjs/graphql';
 import { QuestionnaireScript } from '../models/questionnaire-script.model';
 

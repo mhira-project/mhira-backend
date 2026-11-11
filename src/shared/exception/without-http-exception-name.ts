@@ -5,15 +5,14 @@ import { GraphQLError } from 'graphql';
  * The extensions of a GraphQL error without the `name` that NestJS 8 adds
  * to an `HttpException`, so the client gets the shape v1.1.6 sent.
  *
- * Apollo Server 2 copies an error's own enumerable properties into
- * `extensions.exception`. NestJS 7 left `HttpException`'s `name` on the
- * prototype; NestJS 8 sets it on the instance (`initName`), so every
- * uncaught `HttpException` would reach the client with
+ * Apollo Server (2 and 3, `enrichError`) copies an error's own enumerable
+ * properties into `extensions.exception`. NestJS 7 left `HttpException`'s
+ * `name` on the prototype; NestJS 8 sets it on the instance (`initName`),
+ * so every uncaught `HttpException` would reach the client with
  * `extensions.exception.name` added. Only that key, and only for an
  * `HttpException`: any other error keeps what Apollo built. A
- * compatibility measure of ticket 07 (step 04); Apollo 3 changes how
- * `exception` is built (decision F, step 08), and this goes or changes
- * with it.
+ * compatibility measure of ticket 07 (step 04), still needed on Apollo 3
+ * (step 08's `record-both`).
  */
 export function withoutHttpExceptionName(
     error: GraphQLError,

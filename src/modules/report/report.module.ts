@@ -3,7 +3,6 @@ import { NestjsQueryTypeOrmModule } from '@ptc-org/nestjs-query-typeorm';
 import { Module } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/modules/auth/auth.guard';
 import { PermissionGuard } from 'src/modules/permission/guards/permission.guard';
-import { SortDirection } from '@ptc-org/nestjs-query-core';
 import { Report } from './models/report.model';
 import { ReportService } from './services/report.service';
 import { ReportResolver } from './resolvers/report.resolver';

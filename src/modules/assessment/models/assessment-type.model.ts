@@ -1,4 +1,4 @@
-import { FilterableField, UnPagedRelation } from '@ptc-org/nestjs-query-graphql';
+import { FilterableField } from '@ptc-org/nestjs-query-graphql';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import {
     BaseEntity,

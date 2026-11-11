@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import { idAsSent } from 'src/shared/helpers/graphql-id.helper';
 import {
     CreateQuestionnaireScriptInput,
     UpdateQuestionnaireScriptInput,
@@ -111,10 +112,7 @@ export class QuestionnaireScriptService {
         const questionnaireScript = await this.questionnaireScriptRepository.findOne(
             {
                 relations: ['reports'],
-                // The GraphQL ID, a string at run time, goes to Postgres as
-                // it came, as v1.1.6 sends it: Postgres casts it, and refuses
-                // "abc" with v1.1.6's message. Number() would not.
-                where: { id: id as QuestionnaireScript['id'] },
+                where: { id: idAsSent(id) },
             },
         );
 
