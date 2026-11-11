@@ -16,7 +16,7 @@ describe('the in-memory cache stores', () => {
 
     async function afterSixSeconds(store: string): Promise<unknown> {
         const cache = new CacheService(
-            createCacheStore(store, UNUSED_CONNECTION),
+            await createCacheStore(store, UNUSED_CONNECTION),
         );
         await cache.set('login-attempts:1', '{"attempts":1}');
         jest.advanceTimersByTime(6 * 1000);
@@ -34,7 +34,7 @@ describe('the in-memory cache stores', () => {
     it('a TTL given in seconds still applies on both', async () => {
         for (const store of ['memory', 'unknown']) {
             const cache = new CacheService(
-                createCacheStore(store, UNUSED_CONNECTION),
+                await createCacheStore(store, UNUSED_CONNECTION),
             );
             await cache.set('active-sessions:a', 1, 1800);
             jest.advanceTimersByTime(1799 * 1000);

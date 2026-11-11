@@ -19,11 +19,15 @@ describe('the Redis cache store', () => {
             port: Number(process.env.REDIS_PORT),
         },
     });
-    const store = createCacheStore('redis', UNUSED_CONNECTION);
-    const cache = new CacheService(store);
+    let cache: CacheService;
 
-    beforeAll(() => redis.connect());
-    afterAll(() => Promise.all([redis.quit(), store.keyv.disconnect()]));
+    beforeAll(async () => {
+        await redis.connect();
+        cache = new CacheService(
+            await createCacheStore('redis', UNUSED_CONNECTION),
+        );
+    });
+    afterAll(() => Promise.all([redis.quit(), cache.onModuleDestroy()]));
     beforeEach(() => redis.flushDb());
 
     it('stores a session as v1.1.6 did: key, JSON value, the TTL given in seconds', async () => {
@@ -60,6 +64,17 @@ describe('the Redis cache store', () => {
         expect(await cache.get('login-attempts:9')).toBeNull();
     });
 
+    it('answers calls made all at once right after the start', async () => {
+        const fresh = new CacheService(
+            await createCacheStore('redis', UNUSED_CONNECTION),
+        );
+        await Promise.all(
+            ['a', 'b', 'c'].map(id => fresh.set(`active-sessions:${id}`, 1, 60)),
+        );
+        expect(await fresh.get('active-sessions:c')).toBe(1);
+        await fresh.onModuleDestroy();
+    });
+
     it('deletes', async () => {
         await cache.set('active-sessions:gone', 1, 1800);
         await cache.del('active-sessions:gone');
@@ -73,10 +88,10 @@ describe('the Redis cache store', () => {
         );
     });
 
-    it('fails at once with a clear message, and logs why, when Redis cannot be reached', async () => {
+    it('fails each call at once with a clear message, and logs each failure once, when Redis cannot be reached', async () => {
         const port = process.env.REDIS_PORT;
         process.env.REDIS_PORT = '1';
-        let unreachable: CacheService;
+        let createUnreachable: () => Promise<CacheService>;
         let message: string;
         let logged: jest.SpyInstance;
         jest.isolateModules(() => {
@@ -87,18 +102,31 @@ describe('the Redis cache store', () => {
             const isolated: typeof import('src/shared/cache/cache-store') = require('src/shared/cache/cache-store');
             const isolatedService: typeof import('src/shared/cache/providers/cache.service') = require('src/shared/cache/providers/cache.service');
             message = isolated.REDIS_UNREACHABLE_MESSAGE;
-            unreachable = new isolatedService.CacheService(
-                isolated.createCacheStore('redis', UNUSED_CONNECTION),
-            );
+            createUnreachable = async () =>
+                new isolatedService.CacheService(
+                    await isolated.createCacheStore('redis', UNUSED_CONNECTION),
+                );
         });
+        const startedAt = Date.now();
+        const unreachable = await createUnreachable();
         process.env.REDIS_PORT = port;
-        const started = Date.now();
-        await expect(unreachable.get('active-sessions:a-jti')).rejects.toThrow(
-            message,
-        );
-        expect(Date.now() - started).toBeLessThan(3000);
+        expect(Date.now() - startedAt).toBeLessThan(3000);
         expect(logged).toHaveBeenCalledWith(
             expect.stringMatching(/^redis: .*ECONNREFUSED/),
         );
+        for (const call of [1, 2]) {
+            logged.mockClear();
+            const started = Date.now();
+            await expect(
+                unreachable.get(`active-sessions:${call}`),
+            ).rejects.toThrow(message);
+            expect(Date.now() - started).toBeLessThan(100);
+            expect(
+                logged.mock.calls.filter(([line]) =>
+                    /The client is offline/.test(line),
+                ),
+            ).toHaveLength(1);
+        }
+        await unreachable.onModuleDestroy();
     });
 });

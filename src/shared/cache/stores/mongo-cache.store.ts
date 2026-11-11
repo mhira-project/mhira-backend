@@ -5,6 +5,9 @@ import { Connection, mongo } from 'mongoose';
 /** The collection v1.1.6's Mongo cache store (cache-manager-mongodb 0.3) was configured with. */
 export const MONGO_CACHE_COLLECTION = 'cacheManager';
 
+/** cache-manager-mongodb 0.3's own default TTL (60,000 s), for a `set` without a TTL or with 0; Nest's default never reached that store. */
+const DEFAULT_TTL_MS = 60 * 1000 * 1000;
+
 /** A cache entry as v1.1.6 stored it: the raw value, not serialised. */
 interface CacheDocument {
     key: string;
@@ -25,10 +28,12 @@ interface UnserialisedEntry {
  * as v1.1.6's cache-manager-mongodb 0.3 did, on the application's Mongoose
  * connection: one document `{ key, value, expire }` per key, written with
  * an upsert on `key`; a read ignores a document whose `expire` has passed
- * before Mongo's TTL monitor removes it; the collection, when it does not
- * exist yet, is created on first use with the TTL index on `expire` and the
- * unique index on `key`. Sessions and failed-login counters written by
- * either version are read by the other (decision C, ticket 07 step 17).
+ * before Mongo's TTL monitor removes it. On first use it makes sure of
+ * v1.1.6's two indexes, the TTL index on `expire` and the unique index on
+ * `key`, which creates the collection if it does not exist yet; v1.1.6
+ * made them only when it created the collection itself. Sessions and
+ * failed-login counters written by either version are read by the other
+ * (decision C, ticket 07 step 17).
  */
 export class MongoCacheStore extends EventEmitter implements KeyvStoreAdapter {
     readonly opts = { collection: MONGO_CACHE_COLLECTION };
@@ -50,14 +55,14 @@ export class MongoCacheStore extends EventEmitter implements KeyvStoreAdapter {
         return { value: document.value as Value };
     }
 
-    /** `ttl` in milliseconds; Keyv always passes one, its configured default if the caller gave none. */
+    /** `ttl` in milliseconds; Keyv passes none when the caller gave none or 0, and v1.1.6 applied its default to both. */
     async set(
         key: string,
         entry: UnserialisedEntry,
-        ttl: number,
+        ttl?: number,
     ): Promise<void> {
         const collection = await this.getCollection();
-        const expire = new Date(Date.now() + ttl);
+        const expire = new Date(Date.now() + (ttl ?? DEFAULT_TTL_MS));
         await collection.updateOne(
             { key },
             { $set: { key, value: entry.value, expire } },
@@ -86,22 +91,28 @@ export class MongoCacheStore extends EventEmitter implements KeyvStoreAdapter {
         return this.collection;
     }
 
+    /**
+     * Creating an index that exists already changes nothing, so this is
+     * safe however many instances start at once. A collection whose
+     * contents keep an index from being made (duplicate keys) stays usable,
+     * as on v1.1.6, and the failure is emitted to be logged.
+     */
     private async openCollection(): Promise<mongo.Collection<CacheDocument>> {
-        const db = this.connection.db;
-        const existing = await db
-            .listCollections(
-                { name: MONGO_CACHE_COLLECTION },
-                { nameOnly: true },
-            )
-            .toArray();
-        if (existing.length > 0) {
-            return db.collection<CacheDocument>(MONGO_CACHE_COLLECTION);
-        }
-        const collection = await db.createCollection<CacheDocument>(
+        const collection = this.connection.db.collection<CacheDocument>(
             MONGO_CACHE_COLLECTION,
         );
-        await collection.createIndex({ expire: 1 }, { expireAfterSeconds: 0 });
-        await collection.createIndex({ key: 1 }, { unique: true });
+        try {
+            await collection.createIndex(
+                { expire: 1 },
+                { expireAfterSeconds: 0 },
+            );
+            await collection.createIndex({ key: 1 }, { unique: true });
+        } catch (error) {
+            if (!(error instanceof mongo.MongoServerError)) {
+                throw error;
+            }
+            this.emit('error', error);
+        }
         return collection;
     }
 }

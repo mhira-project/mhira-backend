@@ -123,7 +123,7 @@ export class AuthService {
     private async executeInvalidLoginAttempt(user: User) {
         const loginAttemptsKey = `login-attempts:${user.id}`;
 
-        let attempts = await this.cacheService.get<number>(loginAttemptsKey);
+        let attempts = await this.cacheService.get<string>(loginAttemptsKey);
 
         attempts = attempts + 1;
 

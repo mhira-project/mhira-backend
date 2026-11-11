@@ -1,3 +1,5 @@
+// v1.1.6's Mongo cache store made Bluebird the global Promise when this
+// file loaded it; bluebird-global.ts keeps that at the same point.
 import './bluebird-global';
 
 /**

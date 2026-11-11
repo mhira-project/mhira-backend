@@ -15,6 +15,8 @@ abstract class GraphQLErrorWithCode extends GraphQLError {
         extensions?: Record<string, unknown>,
     ) {
         super(message, { extensions: { ...extensions, code } });
+        // Apollo 3's classes named themselves, which logs and stack traces show.
+        this.name = new.target.name;
     }
 }
 

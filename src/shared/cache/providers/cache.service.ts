@@ -1,8 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
 import { CACHE_STORE, CacheStoreHandle } from '../cache-store';
 
 @Injectable()
-export class CacheService {
+export class CacheService implements OnModuleDestroy {
     constructor(
         @Inject(CACHE_STORE) private readonly store: CacheStoreHandle,
     ) {}
@@ -26,6 +26,11 @@ export class CacheService {
 
     async del(key: string): Promise<void> {
         await this.call(() => this.store.keyv.delete(key));
+    }
+
+    /** Closes the store's connection, if it has one of its own (Redis), so the process can end. */
+    async onModuleDestroy(): Promise<void> {
+        await this.store.keyv.disconnect();
     }
 
     private async call<R>(operation: () => Promise<R>): Promise<R> {

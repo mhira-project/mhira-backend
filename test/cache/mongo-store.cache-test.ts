@@ -22,7 +22,7 @@ describe('the Mongo cache store', () => {
             process.env.MHIRA_TEST_MONGO_URL,
         ).asPromise();
         await connection.db.dropDatabase();
-        cache = new CacheService(createCacheStore('mongo', connection));
+        cache = new CacheService(await createCacheStore('mongo', connection));
     });
 
     afterEach(() => connection.close());
@@ -41,12 +41,32 @@ describe('the Mongo cache store', () => {
         ]);
     });
 
-    it('leaves an existing collection and its indexes as they are', async () => {
+    it("gives an existing collection without them v1.1.6's indexes", async () => {
         await connection.db.createCollection(MONGO_CACHE_COLLECTION);
         await cache.get('active-sessions:none');
-        expect(await collection().indexes()).toEqual([
-            { v: 2, key: { _id: 1 }, name: '_id_' },
+        expect(
+            (await collection().indexes()).map(index => index.name),
+        ).toEqual(['_id_', 'expire_1', 'key_1']);
+    });
+
+    it('stays usable, as on v1.1.6, when duplicate keys keep the unique index from being made', async () => {
+        await collection().insertMany([
+            { key: 'login-attempts:3', expire: new Date(0), value: 'a' },
+            { key: 'login-attempts:3', expire: new Date(0), value: 'b' },
         ]);
+        await cache.set('active-sessions:kept', 1, 1800);
+        expect(await cache.get('active-sessions:kept')).toBe(1);
+    });
+
+    it('starts on a fresh database from several callers at once', async () => {
+        const second = new CacheService(
+            await createCacheStore('mongo', connection),
+        );
+        await Promise.all([
+            cache.get('active-sessions:none'),
+            second.get('active-sessions:none'),
+        ]);
+        expect(await collection().indexes()).toHaveLength(3);
     });
 
     it('stores a session as v1.1.6 did: the raw value as an int32, expiring after the TTL in seconds', async () => {
@@ -79,6 +99,18 @@ describe('the Mongo cache store', () => {
         const expire = (document.expire as Date).getTime();
         expect(expire).toBeGreaterThanOrEqual(before + 60000 * 1000);
         expect(expire).toBeLessThanOrEqual(Date.now() + 60000 * 1000);
+    });
+
+    it("stores a value with a TTL of 0 for the store's default, as v1.1.6 did", async () => {
+        const before = Date.now();
+        await cache.set('active-sessions:zero', 1, 0);
+        const document = await collection().findOne({
+            key: 'active-sessions:zero',
+        });
+        expect((document.expire as Date).getTime()).toBeGreaterThanOrEqual(
+            before + 60000 * 1000,
+        );
+        expect(await cache.get('active-sessions:zero')).toBe(1);
     });
 
     it('overwrites a key in place', async () => {
