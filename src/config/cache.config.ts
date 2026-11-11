@@ -1,21 +1,5 @@
 import './bluebird-global';
 
-export type CacheStore = 'memory' | 'redis' | 'mongo';
-
-const CACHE_STORES: readonly CacheStore[] = ['memory', 'redis', 'mongo'];
-
-function cacheStoreFromEnv(value: string): CacheStore {
-    const store = CACHE_STORES.find(name => name === value);
-    if (store === undefined) {
-        throw new Error(
-            `CACHE_STORE is "${value}"; it must be one of ${CACHE_STORES.join(
-                ', ',
-            )}.`,
-        );
-    }
-    return store;
-}
-
 /**
  * Cache config
  */
@@ -30,7 +14,8 @@ export const cacheConfig = {
      *  - 'redis' - for staging/production environments using redis store.
      *  - 'mongo' - for staging/production environments using mongodb store.
      *
-     * default = 'mongo'
+     * default = 'mongo'. Any other value gives an in-memory cache with a
+     * default TTL of 5 s, as on v1.1.6 (createCacheStore).
      */
-    defaultStore: cacheStoreFromEnv(process.env.CACHE_STORE || 'mongo'),
+    defaultStore: process.env.CACHE_STORE || 'mongo',
 };

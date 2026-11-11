@@ -1,4 +1,4 @@
-import { createClient } from '@keyv/redis';
+import KeyvRedis, { createClient } from '@keyv/redis';
 import { createCacheStore } from 'src/shared/cache/cache-store';
 import { CacheService } from 'src/shared/cache/providers/cache.service';
 import { Connection } from 'mongoose';
@@ -71,5 +71,29 @@ describe('the Redis cache store', () => {
         await expect(cache.get('active-sessions:a-hash')).rejects.toThrow(
             /WRONGTYPE/,
         );
+    });
+
+    it('logs the errors of a Redis it cannot reach, which Keyv alone would drop', async () => {
+        const port = process.env.REDIS_PORT;
+        process.env.REDIS_PORT = '1';
+        let unreachable: ReturnType<typeof createCacheStore>;
+        let logged: jest.SpyInstance;
+        jest.isolateModules(() => {
+            const isolatedNest: typeof import('@nestjs/common') = require('@nestjs/common');
+            logged = jest
+                .spyOn(isolatedNest.Logger.prototype, 'error')
+                .mockImplementation(() => undefined);
+            const isolated: typeof import('src/shared/cache/cache-store') = require('src/shared/cache/cache-store');
+            unreachable = isolated.createCacheStore('redis', UNUSED_CONNECTION);
+        });
+        process.env.REDIS_PORT = port;
+        unreachable.keyv.get('active-sessions:a-jti').catch(() => undefined);
+        for (let i = 0; i < 30 && logged.mock.calls.length === 0; i++) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        expect(logged).toHaveBeenCalledWith(
+            expect.stringMatching(/^redis: .*ECONNREFUSED/),
+        );
+        await (unreachable.keyv.store as KeyvRedis<unknown>).client.destroy();
     });
 });

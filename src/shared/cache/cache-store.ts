@@ -1,7 +1,7 @@
+import { Logger } from '@nestjs/common';
 import KeyvRedis from '@keyv/redis';
 import { Keyv } from 'keyv';
 import { Connection } from 'mongoose';
-import { CacheStore } from 'src/config/cache.config';
 import { redisConfig } from 'src/config/redis.config';
 import { MongoCacheStore } from './stores/mongo-cache.store';
 
@@ -14,7 +14,7 @@ export interface CacheStoreHandle {
     missingValue: null | undefined;
 }
 
-/** NestJS 9's CacheModule default TTL (5 s), which v1.1.6's Redis and memory stores applied to `set` without a TTL. */
+/** NestJS's CacheModule default TTL (5 s), which v1.1.6's Redis store and its fallback store applied to `set` without a TTL. */
 const NEST_DEFAULT_TTL_MS = 5 * 1000;
 
 /** cache-manager-mongodb 0.3's own default TTL (60,000 s); Nest's default never reached that store. */
@@ -43,15 +43,35 @@ function redisKeyv(): Keyv {
     });
 }
 
+/** Keyv's own events drop an error nobody listens to; v1.1.6's Redis client made every connection error visible. */
+function withLoggedErrors(
+    handle: CacheStoreHandle,
+    store: string,
+): CacheStoreHandle {
+    const logger = new Logger('CacheStore');
+    handle.keyv.on('error', (error: unknown) =>
+        logger.error(
+            `${store}: ${
+                error instanceof Error ? error.message : String(error)
+            }`,
+        ),
+    );
+    return handle;
+}
+
 /**
  * The cache store `CACHE_STORE` names, configured so that it stores what
  * v1.1.6 stored, with the same keys, values and TTLs, and so that a store
  * error rejects as it did on v1.1.6 (ticket 07 step 17).
  */
 export function createCacheStore(
-    store: CacheStore,
+    store: string,
     connection: Connection,
 ): CacheStoreHandle {
+    return withLoggedErrors(storeFor(store, connection), store);
+}
+
+function storeFor(store: string, connection: Connection): CacheStoreHandle {
     switch (store) {
         case 'redis':
             return { keyv: redisKeyv(), missingValue: null };
@@ -69,6 +89,16 @@ export function createCacheStore(
                 missingValue: undefined,
             };
         case 'memory':
+            // v1.1.6 configured it with `ttl: null`, so no default expiry
+            // (its LRU limit of 500 entries is not reproduced).
+            return {
+                keyv: new Keyv({ throwOnErrors: true }),
+                missingValue: undefined,
+            };
+        default:
+            // v1.1.6 registered the cache with the options of no store, and
+            // NestJS fell back to an in-memory store with its defaults (5 s;
+            // the LRU limit of 100 entries is not reproduced).
             return {
                 keyv: new Keyv({
                     ttl: NEST_DEFAULT_TTL_MS,
