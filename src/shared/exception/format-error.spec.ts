@@ -122,7 +122,7 @@ describe('formatError through Apollo Server', () => {
         });
     });
 
-    it('an uncaught HttpException keeps the shape v1.1.6 sent, without the name NestJS 8 adds (T3)', async () => {
+    it('an uncaught HttpException keeps the shape v1.1.6 sent, without the keys NestJS 8 and 9 add (T3)', async () => {
         expect(
             await received(new NotFoundException('No patient found')),
         ).toEqual({

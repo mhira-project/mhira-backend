@@ -1,10 +1,11 @@
 import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { GraphQLError } from 'graphql';
-import { withoutHttpExceptionName } from './without-http-exception-name';
+import { withoutNestHttpExceptionKeys } from './without-nest-http-exception-keys';
 
-// Ticket 07, step 04: an uncaught HttpException reaches the client with the
-// extensions v1.1.6 sent, without the `name` NestJS 8 sets on the instance.
-// Any other error keeps what Apollo built.
+// Ticket 07, steps 04 and 12: an uncaught HttpException reaches the client
+// with the extensions v1.1.6 sent, without the `name` NestJS 8 and the
+// `options` NestJS 9 set on the instance. Any other error keeps what Apollo
+// built.
 
 /** The error formatError receives: Apollo Server's enrichError (2 and 3) builds `exception` from the original error's own enumerable properties. */
 function asApolloFormats(originalError: Error): GraphQLError {
@@ -21,18 +22,19 @@ function exceptionOf(error: GraphQLError): Record<string, unknown> {
     return error.extensions.exception as Record<string, unknown>;
 }
 
-describe('withoutHttpExceptionName', () => {
+describe('withoutNestHttpExceptionKeys', () => {
     it.each([
         ['UnauthorizedException', new UnauthorizedException()],
         ['NotFoundException', new NotFoundException('No patient found')],
     ])(
-        'leaves out the name NestJS 8 adds to an %s, and keeps the rest',
+        'leaves out the name and options NestJS adds to an %s, and keeps the rest',
         (_, exception) => {
             const error = asApolloFormats(exception);
             expect(exceptionOf(error).name).toBe(exception.constructor.name);
+            expect(exceptionOf(error).options).toEqual({});
 
-            const { name, ...asInV116 } = exceptionOf(error);
-            expect(withoutHttpExceptionName(error)).toEqual({
+            const { name, options, ...asInV116 } = exceptionOf(error);
+            expect(withoutNestHttpExceptionKeys(error)).toEqual({
                 code: 'INTERNAL_SERVER_ERROR',
                 exception: asInV116,
             });
@@ -42,6 +44,7 @@ describe('withoutHttpExceptionName', () => {
                 'status',
             ]);
             expect(name).toBe(exception.constructor.name);
+            expect(options).toEqual({});
         },
     );
 
@@ -54,7 +57,7 @@ describe('withoutHttpExceptionName', () => {
             }
         }
         const error = asApolloFormats(new QueryFailedError());
-        expect(withoutHttpExceptionName(error)).toBe(error.extensions);
+        expect(withoutNestHttpExceptionKeys(error)).toBe(error.extensions);
         expect(exceptionOf(error).name).toBe('QueryFailedError');
     });
 
@@ -63,6 +66,6 @@ describe('withoutHttpExceptionName', () => {
             'Variable "$id" of required type "Int!" was not provided.',
             { extensions: { code: 'INTERNAL_SERVER_ERROR' } },
         );
-        expect(withoutHttpExceptionName(error)).toBe(error.extensions);
+        expect(withoutNestHttpExceptionKeys(error)).toBe(error.extensions);
     });
 });
