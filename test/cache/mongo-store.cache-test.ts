@@ -1,3 +1,4 @@
+import * as os from 'os';
 import { createConnection, Connection, mongo } from 'mongoose';
 import { createCacheStore } from 'src/shared/cache/cache-store';
 import { CacheService } from 'src/shared/cache/providers/cache.service';
@@ -18,9 +19,13 @@ describe('the Mongo cache store', () => {
     }
 
     beforeEach(async () => {
-        connection = await createConnection(
-            process.env.MHIRA_TEST_MONGO_URL,
-        ).asPromise();
+        // From driver 7 the client loads Node's `os` with a dynamic import(),
+        // which Jest's CommonJS sandbox refuses, and the handshake then goes
+        // out without its client metadata. Handing the driver the module it
+        // would import keeps the test on the driver's own code path.
+        connection = await createConnection(process.env.MHIRA_TEST_MONGO_URL, {
+            runtimeAdapters: { os },
+        }).asPromise();
         await connection.db.dropDatabase();
         cache = new CacheService(await createCacheStore('mongo', connection));
     });

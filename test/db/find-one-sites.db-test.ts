@@ -1,6 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { Types } from 'mongoose';
 import { EntityNotFoundError, Repository } from 'typeorm';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
 import { AssessmentType } from 'src/modules/assessment/models/assessment-type.model';
@@ -60,9 +61,13 @@ function byColumn(
     )} LIMIT 1 -- ${JSON.stringify([value])}`;
 }
 
-/** The Mongo side of an assessment, stubbed: these tests are about Postgres. */
+/**
+ * The Mongo side of an assessment, stubbed: these tests are about Postgres.
+ * The document carries its `_id` and the `id` virtual, as a real one does.
+ */
 function questionnaireAssessments(deleteAssessment = jest.fn()) {
     const document = {
+        _id: new Types.ObjectId(DOCUMENT_ID),
         id: DOCUMENT_ID,
         questionnaires: [],
         deleteOne: jest.fn(),

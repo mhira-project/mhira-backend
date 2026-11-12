@@ -268,7 +268,7 @@ export class AssessmentService {
 
         if (!assessmentInput.deliveryDate || d1 < d2) {
             await this.questionnaireAssessmentService.changeAssessmentStatus(
-                questionnaireAssessment.id,
+                questionnaireAssessment._id.toString(),
                 AssessmentStatus.OPEN_FOR_COMPLETION,
             );
         }
@@ -279,7 +279,7 @@ export class AssessmentService {
             assessment.patientId = assessmentInput.patientId;
             assessment.clinicianId = assessmentInput.clinicianId;
             assessment.informantType = assessmentInput.informantType;
-            assessment.questionnaireAssessmentId = questionnaireAssessment.id;
+            assessment.questionnaireAssessmentId = questionnaireAssessment._id.toString();
             assessment.expirationDate = assessmentInput.expirationDate;
             assessment.deliveryDate = assessmentInput.deliveryDate;
             assessment.note = assessmentInput.note;

@@ -1,6 +1,6 @@
-// Mongoose 8's driver declares a subclass of the global Promise when it
-// loads, which Bluebird refuses to construct, so Mongoose is loaded first,
-// while Promise is still the native one.
+// Mongoose's driver (from Mongoose 8 on) declares a subclass of the global
+// Promise when it loads, which Bluebird refuses to construct, so Mongoose is
+// loaded first, while Promise is still the native one.
 import 'mongoose';
 import * as Bluebird from 'bluebird';
 

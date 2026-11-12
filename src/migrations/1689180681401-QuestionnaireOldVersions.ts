@@ -89,7 +89,12 @@ export class QuestionnaireOldVersions1689180681401
                     },
                 },
             );
-            await db.dropCollection('questionnaires')
+            // Compatibility measure: the `drop` command, not dropCollection(),
+            // which from driver 7 on treats a missing collection as dropped.
+            // Up to driver 6 the drop of a missing `questionnaires` failed
+            // and left `questionnaire_versions` unrenamed; the command keeps
+            // that, error included.
+            await db.command({ drop: 'questionnaires' })
 
             await db.renameCollection('questionnaire_versions', 'questionnaires')
 
