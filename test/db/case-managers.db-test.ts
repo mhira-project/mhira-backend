@@ -1,86 +1,93 @@
 import { TestingModule } from '@nestjs/testing';
-import { getConnectionToken } from '@nestjs/typeorm';
+import { getDataSourceToken } from '@nestjs/typeorm';
 import { Patient } from 'src/modules/patient/models/patient.model';
 import { CaseManagerService } from 'src/modules/patient/providers/case-manager.service';
 import { User } from 'src/modules/user/models/user.model';
-import { lookupModule, StatementRecorder, TYPEORM_0_3 } from './database';
+import { lookupModule, StatementRecorder } from './database';
+import { newPatient, newUser } from './rows';
 
-// Ticket 07, 07_D: assigning and unassigning a case manager writes the
-// join table patient_case_manager through a query builder without an
-// entity. The seed links patient 6 with user 3.
-
-/** The conditions on a link: TypeORM 0.3 puts them in parentheses, with the same values. */
-const LINK = TYPEORM_0_3
-    ? '("patient_case_manager"."patientId" = $1 AND "patient_case_manager"."userId" = $2)'
-    : '"patient_case_manager"."patientId" = $1 AND "patient_case_manager"."userId" = $2';
+// Assigning and unassigning a case manager writes the join table
+// patient_case_manager through a query builder without an entity.
 
 /** The lookup of a link before it is added. */
-function lookup(patientId: number, userId: number): string {
-    return `SELECT ... FROM "patient_case_manager" "patient_case_manager" WHERE ${LINK} -- [${patientId},${userId}]`;
+function lookup(patient: Patient, user: User): string {
+    return `SELECT ... FROM "patient_case_manager" "patient_case_manager" WHERE ("patient_case_manager"."patientId" = $1 AND "patient_case_manager"."userId" = $2) -- [${patient.id},${user.id}]`;
 }
 
 describe('case managers', () => {
     let module: TestingModule;
     let recorder: StatementRecorder;
+    let service: CaseManagerService;
+    let patient: Patient;
+    let user: User;
 
     beforeAll(async () => {
         ({ module, recorder } = await lookupModule(
-            'lookups_case_managers',
+            'mhira_test_case_managers',
             [Patient, User],
             [CaseManagerService],
         ));
+        service = module.get(CaseManagerService);
+    });
+
+    beforeEach(async () => {
+        patient = await newPatient();
+        user = await newUser();
     });
 
     afterAll(() => module.close());
 
-    async function links(): Promise<string[]> {
-        const rows: { patientId: number; userId: number }[] = await module
-            .get(getConnectionToken())
+    /** The ids of the patient's case managers. */
+    async function caseManagers(): Promise<number[]> {
+        const rows: { userId: number }[] = await module
+            .get(getDataSourceToken())
             .query(
-                'SELECT "patientId", "userId" FROM patient_case_manager ORDER BY 1, 2',
+                'SELECT "userId" FROM patient_case_manager WHERE "patientId" = $1',
+                [patient.id],
             );
-        return rows.map(row => `${row.patientId}-${row.userId}`);
+        return rows.map(row => row.userId);
     }
-
-    it('assigning an existing case manager finds the link and writes nothing', async () => {
-        const { result, error, sql } = await recorder.observe(() =>
-            module.get(CaseManagerService).assignPatientCaseManager(6, 3),
-        );
-        expect(error).toBeUndefined();
-        expect(result).toBe(true);
-        expect(await links()).toEqual(['6-3']);
-        expect(sql).toEqual([lookup(6, 3)]);
-    });
 
     it('assigning a new case manager adds the link', async () => {
         const { result, error, sql } = await recorder.observe(() =>
-            module.get(CaseManagerService).assignPatientCaseManager(1, 2),
+            service.assignPatientCaseManager(patient.id, user.id),
         );
         expect(error).toBeUndefined();
         expect(result).toBe(true);
-        expect(await links()).toEqual(['1-2', '6-3']);
+        expect(await caseManagers()).toEqual([user.id]);
         expect(sql).toEqual([
-            lookup(1, 2),
-            'INSERT INTO "patient_case_manager"("patientId", "userId") VALUES ($1, $2) -- [1,2]',
+            lookup(patient, user),
+            `INSERT INTO "patient_case_manager"("patientId", "userId") VALUES ($1, $2) -- [${patient.id},${user.id}]`,
         ]);
     });
 
+    it('assigning an existing case manager finds the link and writes nothing', async () => {
+        await service.assignPatientCaseManager(patient.id, user.id);
+
+        const { result, error, sql } = await recorder.observe(() =>
+            service.assignPatientCaseManager(patient.id, user.id),
+        );
+        expect(error).toBeUndefined();
+        expect(result).toBe(true);
+        expect(await caseManagers()).toEqual([user.id]);
+        expect(sql).toEqual([lookup(patient, user)]);
+    });
+
     it('unassigning removes the link, and says whether there was one', async () => {
-        const service = module.get(CaseManagerService);
+        await service.assignPatientCaseManager(patient.id, user.id);
+
         const removed = await recorder.observe(() =>
-            service.unassignPatientCaseManager(1, 2),
+            service.unassignPatientCaseManager(patient.id, user.id),
         );
         expect(removed.error).toBeUndefined();
         expect(removed.result).toBe(true);
-        expect(await links()).toEqual(['6-3']);
+        expect(await caseManagers()).toEqual([]);
         expect(removed.sql).toEqual([
-            TYPEORM_0_3
-                ? 'DELETE FROM "patient_case_manager" WHERE ("patientId" = $1 AND "userId" = $2) -- [1,2]'
-                : 'DELETE FROM "patient_case_manager" WHERE "patientId" = $1 AND "userId" = $2 -- [1,2]',
+            `DELETE FROM "patient_case_manager" WHERE ("patientId" = $1 AND "userId" = $2) -- [${patient.id},${user.id}]`,
         ]);
 
         const absent = await recorder.observe(() =>
-            service.unassignPatientCaseManager(1, 2),
+            service.unassignPatientCaseManager(patient.id, user.id),
         );
         expect(absent.result).toBe(false);
     });

@@ -1,8 +1,8 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { Types } from 'mongoose';
-import { EntityNotFoundError, Repository } from 'typeorm';
+import { EntityNotFoundError } from 'typeorm';
+import { UpdateFullAssessmentInput } from 'src/modules/assessment/dtos/create-assessment.input';
 import { Assessment } from 'src/modules/assessment/models/assessment.model';
 import { AssessmentType } from 'src/modules/assessment/models/assessment-type.model';
 import { AssessmentTypeEnum } from 'src/modules/assessment/enums/assessment-type.enum';
@@ -25,23 +25,16 @@ import {
     StatementRecorder,
     whereLive,
 } from './database';
+import { newAssessment, newAssessmentType, newPatient, newUser } from './rows';
 
-// Ticket 07, 07_D, P1 (T2): the `findOne` and `findOneOrFail` calls TypeORM
-// 0.3 no longer accepts in their 0.2 forms (an id, or a conditions object
-// without `where`), each with an existing and a missing value: the row it
-// finds or the error it throws, and the lookup's statement. The ids come
-// from `Int!` arguments and the conditions from required arguments or
-// constants, so `undefined` does not reach them (research, section 8).
+// The services' lookups of one row, by id or by a column, each with a value
+// that exists and one that does not: the row it finds or the error it
+// throws, and the lookup's statement.
 
 const MISSING = 999999;
 const DOCUMENT_ID = '63c67b43ea6e670024c8bca1';
 
-/**
- * The statement of a lookup by id on a soft-deletable entity, in the form
- * P2 writes it, `findOne({ where: { id } })`. v1.1.6's `findOne(id)` and
- * `findOneOrFail(id)` sent `WHERE ( "X"."id" IN ($1) )` without a LIMIT:
- * the same row, and for an `Int!` id no error that could carry the SQL.
- */
+/** The statement of `findOne({ where: { id } })` on a soft-deletable entity. */
 function byId(table: string, entity: string, id: number): string {
     return `SELECT ... FROM "${table}" "${entity}" ${whereLive(
         entity,
@@ -81,31 +74,35 @@ function questionnaireAssessments(deleteAssessment = jest.fn()) {
     };
 }
 
-function assessmentInput(overrides: Record<string, unknown> = {}) {
-    return {
-        assessmentTypeId: 1,
-        patientId: 1,
-        clinicianId: 1,
-        mailTemplateId: null,
-        informantType: 'PATIENT',
-        note: 'P1',
-        questionnaires: [],
-        questionnaireBundles: [],
-        dates: [{ deliveryDate: null, expirationDate: null }],
-        emailReminder: false,
-        receiverEmail: null,
-        ...overrides,
-    } as any;
-}
-
-describe('findOne and findOneOrFail (P1, T2)', () => {
+describe('lookups of one row', () => {
     let module: TestingModule;
     let recorder: StatementRecorder;
+    let patient: Patient;
+    let clinician: User;
+    let type: AssessmentType;
     const mongo = questionnaireAssessments();
+
+    /** The input of createNewAssessment and updateAssessment, for the patient, clinician and type above unless overridden. */
+    function assessmentInput(
+        overrides: Partial<UpdateFullAssessmentInput> = {},
+    ): UpdateFullAssessmentInput {
+        return {
+            assessmentTypeId: type.id,
+            patientId: patient.id,
+            clinicianId: clinician.id,
+            informantType: 'PATIENT',
+            note: 'Invented',
+            questionnaires: [],
+            questionnaireBundles: [],
+            dates: [{ deliveryDate: null, expirationDate: null }],
+            emailReminder: false,
+            ...overrides,
+        } as UpdateFullAssessmentInput;
+    }
 
     beforeAll(async () => {
         ({ module, recorder } = await lookupModule(
-            'lookups_find_one',
+            'mhira_test_find_one',
             [
                 Assessment,
                 AssessmentType,
@@ -124,6 +121,9 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
                 { provide: PatientQueryService, useValue: {} },
             ],
         ));
+        patient = await newPatient();
+        clinician = await newUser();
+        type = await newAssessmentType();
     });
 
     afterAll(() => module.close());
@@ -133,15 +133,15 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
             const service = module.get(AssessmentTypeService);
             const found = await recorder.observe(() =>
                 service.updateAssessmentType({
-                    assessmentTypeId: 2,
-                    name: 't0',
+                    assessmentTypeId: type.id,
+                    name: 'Renamed',
                     status: AssessmentTypeEnum.ACTIVE,
                 }),
             );
             expect(found.error).toBeUndefined();
-            expect(found.result.id).toBe(2);
+            expect(found.result.id).toBe(type.id);
             expect(found.sql[0]).toBe(
-                byId('assessment_type', 'AssessmentType', 2),
+                byId('assessment_type', 'AssessmentType', type.id),
             );
 
             const missing = await recorder.observe(() =>
@@ -165,9 +165,9 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
                 service.createNewAssessment(assessmentInput()),
             );
             expect(found.error).toBeUndefined();
-            expect(found.result.assessmentType.id).toBe(1);
+            expect(found.result.assessmentType.id).toBe(type.id);
             expect(found.sql[0]).toBe(
-                byId('assessment_type', 'AssessmentType', 1),
+                byId('assessment_type', 'AssessmentType', type.id),
             );
 
             const missing = await recorder.observe(() =>
@@ -185,17 +185,18 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
 
         it('updateAssessment finds the assessment and its type, or refuses either missing', async () => {
             const service = module.get(AssessmentService);
+            const assessment = await newAssessment(patient);
             const found = await recorder.observe(() =>
                 service.updateAssessment(
-                    assessmentInput({ assessmentId: 3, assessmentTypeId: 2 }),
+                    assessmentInput({ assessmentId: assessment.id }),
                 ),
             );
             expect(found.error).toBeUndefined();
-            expect(found.result.id).toBe(3);
-            expect(found.result.assessmentType.id).toBe(2);
+            expect(found.result.id).toBe(assessment.id);
+            expect(found.result.assessmentType.id).toBe(type.id);
             expect(found.sql.slice(0, 2)).toEqual([
-                byId('assessment', 'Assessment', 3),
-                byId('assessment_type', 'AssessmentType', 2),
+                byId('assessment', 'Assessment', assessment.id),
+                byId('assessment_type', 'AssessmentType', type.id),
             ]);
 
             const noAssessment = await recorder.observe(() =>
@@ -214,7 +215,7 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
             const noType = await recorder.observe(() =>
                 service.updateAssessment(
                     assessmentInput({
-                        assessmentId: 3,
+                        assessmentId: assessment.id,
                         assessmentTypeId: MISSING,
                     }),
                 ),
@@ -223,25 +224,24 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
                 new NotFoundException('Assessment type not found!'),
             );
             expect(noType.sql).toEqual([
-                byId('assessment', 'Assessment', 3),
+                byId('assessment', 'Assessment', assessment.id),
                 byId('assessment_type', 'AssessmentType', MISSING),
             ]);
         });
 
         it('archiveOneAssessment finds the assessment, or refuses a missing one', async () => {
             const service = module.get(AssessmentService);
+            const assessment = await newAssessment(patient);
             const found = await recorder.observe(() =>
-                service.archiveOneAssessment(4),
+                service.archiveOneAssessment(assessment.id),
             );
             expect(found.error).toBeUndefined();
-            expect(found.result.id).toBe(4);
-            const assessments = module.get<Repository<Assessment>>(
-                getRepositoryToken(Assessment),
+            expect(found.result.id).toBe(assessment.id);
+            await assessment.reload();
+            expect(assessment.deleted).toBe(true);
+            expect(found.sql[0]).toBe(
+                byId('assessment', 'Assessment', assessment.id),
             );
-            expect(
-                (await assessments.findOne({ where: { id: 4 } })).deleted,
-            ).toBe(true);
-            expect(found.sql[0]).toBe(byId('assessment', 'Assessment', 4));
 
             const missing = await recorder.observe(() =>
                 service.archiveOneAssessment(MISSING),
@@ -257,13 +257,15 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
 
         it('getEmailTemplate finds the template, or refuses a missing one', async () => {
             const service = module.get(MailTemplateService);
+            // The template the migrations create.
+            const [template] = await MailTemplate.find();
             const found = await recorder.observe(() =>
-                service.getEmailTemplate(2),
+                service.getEmailTemplate(template.id),
             );
             expect(found.error).toBeUndefined();
-            expect(found.result.id).toBe(2);
+            expect(found.result.id).toBe(template.id);
             expect(found.sql).toEqual([
-                byId('mail_template', 'MailTemplate', 2),
+                byId('mail_template', 'MailTemplate', template.id),
             ]);
 
             const missing = await recorder.observe(() =>
@@ -282,14 +284,16 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
     describe('by conditions', () => {
         it('createNewAssessment and updateAssessment find the informant clinician, or refuse a missing one', async () => {
             const service = module.get(AssessmentService);
+            const informant = await newUser();
+            const assessment = await newAssessment(patient);
             const created = await recorder.observe(() =>
                 service.createNewAssessment(
-                    assessmentInput({ informantClinicianId: 2 }),
+                    assessmentInput({ informantClinicianId: informant.id }),
                 ),
             );
             expect(created.error).toBeUndefined();
-            expect(created.result.informantClinician.id).toBe(2);
-            expect(created.sql[1]).toBe(byId('user', 'User', 2));
+            expect(created.result.informantClinician.id).toBe(informant.id);
+            expect(created.sql[1]).toBe(byId('user', 'User', informant.id));
 
             const createMissing = await recorder.observe(() =>
                 service.createNewAssessment(
@@ -304,19 +308,19 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
             const updated = await recorder.observe(() =>
                 service.updateAssessment(
                     assessmentInput({
-                        assessmentId: 3,
-                        informantClinicianId: 3,
+                        assessmentId: assessment.id,
+                        informantClinicianId: informant.id,
                     }),
                 ),
             );
             expect(updated.error).toBeUndefined();
-            expect(updated.result.informantClinician.id).toBe(3);
-            expect(updated.sql[2]).toBe(byId('user', 'User', 3));
+            expect(updated.result.informantClinician.id).toBe(informant.id);
+            expect(updated.sql[2]).toBe(byId('user', 'User', informant.id));
 
             const updateMissing = await recorder.observe(() =>
                 service.updateAssessment(
                     assessmentInput({
-                        assessmentId: 3,
+                        assessmentId: assessment.id,
                         informantClinicianId: MISSING,
                     }),
                 ),
@@ -329,17 +333,18 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
 
         it('updateDisclaimer finds the disclaimer by type, or refuses a missing one', async () => {
             const service = module.get(DisclaimerService);
+            // The migrations create the disclaimer `expiredText`.
             const found = await recorder.observe(() =>
                 service.updateDisclaimer({
                     type: 'expiredText',
-                    description: 'P1',
+                    description: 'Invented',
                 }),
             );
             expect(found.error).toBeUndefined();
             expect(
                 (await Disclaimer.findOne({ where: { type: 'expiredText' } }))
                     .description,
-            ).toBe('P1');
+            ).toBe('Invented');
             expect(found.sql[0]).toBe(
                 byColumn('disclaimer', 'Disclaimer', 'type', 'expiredText'),
             );
@@ -347,7 +352,7 @@ describe('findOne and findOneOrFail (P1, T2)', () => {
             const missing = await recorder.observe(() =>
                 service.updateDisclaimer({
                     type: 'noSuchText',
-                    description: 'P1',
+                    description: 'Invented',
                 }),
             );
             expect(missing.error).toEqual(

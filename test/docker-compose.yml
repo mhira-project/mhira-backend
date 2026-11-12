@@ -1,0 +1,45 @@
+# The servers the database and cache tests run against: `npm run test:services`
+# starts them, `npm run test:services:down` removes them with their data.
+# They hold nothing but what the tests create, listen on this machine only,
+# and use ports of their own so they never collide with a development stack.
+# test/services.ts holds the matching addresses.
+
+name: mhira-backend-test
+
+services:
+  postgres:
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_USER=mhira
+      - POSTGRES_PASSWORD=mhira
+    ports:
+      - "127.0.0.1:54329:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mhira"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+  mongo:
+    image: mongo:5
+    ports:
+      - "127.0.0.1:27029:27017"
+    tmpfs:
+      - /data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "127.0.0.1:63799:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 30

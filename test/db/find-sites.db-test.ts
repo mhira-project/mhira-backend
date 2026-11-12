@@ -1,7 +1,6 @@
 import { getModelToken } from '@nestjs/mongoose';
 import { TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Types } from 'mongoose';
 import { AssessmentTypeEnum } from 'src/modules/assessment/enums/assessment-type.enum';
 import { AssessmentType } from 'src/modules/assessment/models/assessment-type.model';
 import { AssessmentTypeService } from 'src/modules/assessment/services/assessment-type.service';
@@ -12,21 +11,24 @@ import { QuestionnaireScriptService } from 'src/modules/questionnaire/services/q
 import { Report } from 'src/modules/report/models/report.model';
 import { ReportService } from 'src/modules/report/services/report.service';
 import { lookupModule, StatementRecorder, whereLive } from './database';
+import {
+    newAssessmentType,
+    newQuestionnaireScript,
+    newReport,
+    newRole,
+} from './rows';
 
-// Ticket 07, 07_D, P1 (T2): the five `find` calls TypeORM 0.2 filters by
-// their conditions shorthand, `find({ field })`, which 0.3 would run
-// unfiltered. Each runs against data that has rows it must not return; the
-// rows it returns or stores and the lookup's statement are pinned. P2
-// rewrites the calls as `find({ where: { field } })`; 0.2 sends the same
-// statements for both.
+// The services' lookups of several rows by a condition. Each runs against
+// data that has rows it must not return; the rows it returns or stores and
+// the lookup's statement are checked.
 
-describe('find with conditions (P1, T2)', () => {
+describe('lookups of several rows', () => {
     let module: TestingModule;
     let recorder: StatementRecorder;
 
     beforeAll(async () => {
         ({ module, recorder } = await lookupModule(
-            'lookups_find',
+            'mhira_test_find',
             [AssessmentType, QuestionnaireScript, Report, Role],
             [
                 AssessmentTypeService,
@@ -39,24 +41,24 @@ describe('find with conditions (P1, T2)', () => {
 
     afterAll(() => module.close());
 
+    /** Three roles, so that naming the first and the third leaves one out. */
+    async function threeRoles(): Promise<Role[]> {
+        return [await newRole(), await newRole(), await newRole()];
+    }
+
     it('getActiveAssessmentTypes leaves out an inactive type', async () => {
-        const types = module.get<Repository<AssessmentType>>(
-            getRepositoryToken(AssessmentType),
-        );
-        const inactive = await types.save(
-            types.create({
-                name: 'Inactive type',
-                status: AssessmentTypeEnum.INACTIVE,
-            }),
-        );
+        const active = [await newAssessmentType(), await newAssessmentType()];
+        await newAssessmentType({ status: AssessmentTypeEnum.INACTIVE });
+        await (await newAssessmentType()).softRemove();
 
         const { result, error, sql } = await recorder.observe(() =>
             module.get(AssessmentTypeService).getActiveAssessmentTypes(),
         );
 
         expect(error).toBeUndefined();
-        expect(result.map(type => type.id).sort()).toEqual([1, 2]);
-        expect(result.map(type => type.id)).not.toContain(inactive.id);
+        expect(result.map(type => type.id).sort()).toEqual(
+            active.map(type => type.id),
+        );
         expect(sql).toEqual([
             `SELECT ... FROM "assessment_type" "AssessmentType" ${whereLive(
                 'AssessmentType',
@@ -66,16 +68,13 @@ describe('find with conditions (P1, T2)', () => {
     });
 
     it("getQuestionnaireScriptsById returns only that questionnaire's live scripts", async () => {
-        const questionnaireId = '66e7dbe00d4e4a002309bb6b';
-        const scripts = module.get<Repository<QuestionnaireScript>>(
-            getRepositoryToken(QuestionnaireScript),
-        );
-        const live: {
-            id: number;
-        }[] = await scripts.query(
-            'SELECT id FROM questionnaire_script WHERE "questionnaireId" = $1 AND "deletedAt" IS NULL ORDER BY id',
-            [questionnaireId],
-        );
+        const questionnaireId = new Types.ObjectId().toHexString();
+        const live = [
+            await newQuestionnaireScript({ questionnaireId }),
+            await newQuestionnaireScript({ questionnaireId }),
+        ];
+        await (await newQuestionnaireScript({ questionnaireId })).softRemove();
+        await newQuestionnaireScript();
 
         const { result, error, sql } = await recorder.observe(() =>
             module
@@ -84,95 +83,106 @@ describe('find with conditions (P1, T2)', () => {
         );
 
         expect(error).toBeUndefined();
-        expect(live).toHaveLength(2);
-        expect(result.map(script => script.id).sort((a, b) => a - b)).toEqual(
-            live.map(row => row.id),
+        expect(result.map(script => script.id).sort()).toEqual(
+            live.map(script => script.id),
         );
         expect(sql).toEqual([
             `SELECT ... FROM "questionnaire_script" "QuestionnaireScript" ${whereLive(
                 'QuestionnaireScript',
                 '"QuestionnaireScript"."questionnaireId" = $1',
-            )} -- ["66e7dbe00d4e4a002309bb6b"]`,
+            )} -- ["${questionnaireId}"]`,
         ]);
     });
 
     it('updateQuestionnaireScripts links exactly the reports named', async () => {
-        const scripts = module.get<Repository<QuestionnaireScript>>(
-            getRepositoryToken(QuestionnaireScript),
-        );
-        const [script] = await scripts.find({
-            where: { questionnaireId: '66e7dbe00d4e4a002309bb6b' },
-            take: 1,
-            order: { id: 'ASC' },
-        });
+        const script = await newQuestionnaireScript();
+        const [first, , second] = [
+            await newReport(),
+            await newReport(),
+            await newReport(),
+        ];
 
         const { error, sql } = await recorder.observe(() =>
             module.get(QuestionnaireScriptService).updateQuestionnaireScripts({
                 id: script.id,
-                update: { reportIds: [2, 4, 2] },
+                update: { reportIds: [first.id, second.id, first.id] },
             }),
         );
 
         expect(error).toBeUndefined();
-        const stored = await scripts.findOne({
+        const stored = await QuestionnaireScript.findOne({
             where: { id: script.id },
             relations: ['reports'],
         });
-        expect(stored.reports.map(report => report.id).sort()).toEqual([2, 4]);
+        expect(stored.reports.map(report => report.id).sort()).toEqual([
+            first.id,
+            second.id,
+        ]);
         expect(sql).toContain(
             `SELECT ... FROM "report" "Report" ${whereLive(
                 'Report',
                 '"Report"."id" IN ($1, $2)',
-            )} -- [2,4]`,
+            )} -- [${first.id},${second.id}]`,
         );
     });
 
     it('insert gives a new report exactly the roles named', async () => {
+        const [first, , second] = await threeRoles();
         const { result, error, sql } = await recorder.observe(() =>
             module.get(ReportService).insert({
-                name: 'P1 report',
+                name: 'New report',
                 description: 'Invented',
                 resources: 'patient',
-                roles: [3, 5],
+                roles: [first.id, second.id],
             }),
         );
 
         expect(error).toBeUndefined();
-        const stored = await module
-            .get<Repository<Report>>(getRepositoryToken(Report))
-            .findOne({ where: { id: result.id }, relations: ['roles'] });
-        expect(stored.roles.map(role => role.id).sort()).toEqual([3, 5]);
+        const stored = await Report.findOne({
+            where: { id: result.id },
+            relations: ['roles'],
+        });
+        expect(stored.roles.map(role => role.id).sort()).toEqual([
+            first.id,
+            second.id,
+        ]);
         expect(sql).toContain(
             `SELECT ... FROM "role" "Role" ${whereLive(
                 'Role',
                 '"Role"."id" IN ($1, $2)',
-            )} -- [3,5]`,
+            )} -- [${first.id},${second.id}]`,
         );
     });
 
     it('update gives a report exactly the roles named', async () => {
+        const [first, replaced, second] = await threeRoles();
+        const report = await newReport({ roles: [replaced] });
         const { error, sql } = await recorder.observe(() =>
             module.get(ReportService).update({
-                id: 1,
+                id: report.id,
                 update: {
-                    name: 'Report',
+                    name: 'Renamed report',
                     description: 'Invented',
                     resources: 'patient',
-                    roles: [4, 6],
+                    roles: [first.id, second.id],
                 },
             }),
         );
 
         expect(error).toBeUndefined();
-        const stored = await module
-            .get<Repository<Report>>(getRepositoryToken(Report))
-            .findOne({ where: { id: 1 }, relations: ['roles'] });
-        expect(stored.roles.map(role => role.id).sort()).toEqual([4, 6]);
+        const stored = await Report.findOne({
+            where: { id: report.id },
+            relations: ['roles'],
+        });
+        expect(stored.roles.map(role => role.id).sort()).toEqual([
+            first.id,
+            second.id,
+        ]);
         expect(sql).toContain(
             `SELECT ... FROM "role" "Role" ${whereLive(
                 'Role',
                 '"Role"."id" IN ($1, $2)',
-            )} -- [4,6]`,
+            )} -- [${first.id},${second.id}]`,
         );
     });
 });

@@ -4,18 +4,17 @@ import { Assessment } from 'src/modules/assessment/models/assessment.model';
 import { AssessmentType } from 'src/modules/assessment/models/assessment-type.model';
 import { AssessmentService } from 'src/modules/assessment/services/assessment.service';
 import { Caregiver } from 'src/modules/caregiver/models/caregiver.model';
+import { Patient } from 'src/modules/patient/models/patient.model';
 import { PatientQueryService } from 'src/modules/patient/providers/patient-query.service';
 import { QuestionnaireAssessmentService } from 'src/modules/questionnaire/services/questionnaire-assessment.service';
 import { User } from 'src/modules/user/models/user.model';
 import { lookupModule, StatementRecorder, whereLive } from './database';
+import { newAssessment, newPatient } from './rows';
 
-// Ticket 07, 07_D, P1 (T2): deleteAssessment looks the assessment up by id,
-// then, in one transaction, deletes the row (unless it only cancels) and has
-// the Mongo side delete or cancel the document: the transaction commits
-// when that succeeds and rolls back when it fails. P3 runs it on the
-// injected connection, which TypeORM 0.3 needs. The lookup is P2's
-// `findOne({ where: { id } })`; v1.1.6's `findOneOrFail(id)` sent
-// `"id" IN ($1)` without a LIMIT, for the same row and the same message.
+// deleteAssessment looks the assessment up by id, then, in one transaction,
+// deletes the row (unless it only cancels) and has the Mongo side delete or
+// cancel the document: the transaction commits when that succeeds and rolls
+// back when it fails. The Mongo side is a stub here.
 
 const MISSING = 999999;
 
@@ -27,15 +26,17 @@ function byId(id: number): string {
     )} LIMIT 1 -- [${id}]`;
 }
 
-describe('deleteAssessment (P1, T2)', () => {
+describe('deleteAssessment', () => {
     let module: TestingModule;
     let recorder: StatementRecorder;
+    let service: AssessmentService;
+    let assessment: Assessment;
     const deleteDocument = jest.fn();
 
     beforeAll(async () => {
         ({ module, recorder } = await lookupModule(
-            'lookups_delete',
-            [Assessment, AssessmentType, Caregiver, User],
+            'mhira_test_delete_assessment',
+            [Assessment, AssessmentType, Caregiver, Patient, User],
             [
                 AssessmentService,
                 {
@@ -45,72 +46,77 @@ describe('deleteAssessment (P1, T2)', () => {
                 { provide: PatientQueryService, useValue: {} },
             ],
         ));
+        service = module.get(AssessmentService);
+    });
+
+    beforeEach(async () => {
+        assessment = await newAssessment(await newPatient());
     });
 
     afterEach(() => deleteDocument.mockReset());
     afterAll(() => module.close());
 
+    /** Whether the assessment's row is still there. */
+    async function stored(): Promise<boolean> {
+        return (
+            (await Assessment.count({
+                where: { id: assessment.id },
+                withDeleted: true,
+            })) === 1
+        );
+    }
+
     it('deletes the row and the document in one transaction, which commits', async () => {
         const start = recorder.statements.length;
         const { error, sql } = await recorder.observe(() =>
-            module.get(AssessmentService).deleteAssessment(4, false),
+            service.deleteAssessment(assessment.id, false),
         );
         const transaction = recorder.statements.slice(start + 1);
+        const deletion = `DELETE FROM "assessment" WHERE "id" IN ($1) -- [${assessment.id}]`;
+
         expect(error).toBeUndefined();
         expect(deleteDocument).toHaveBeenCalledWith(
-            '63cfdc2c47f5b40024688e7d',
+            assessment.questionnaireAssessmentId,
             false,
         );
-        // Not found: undefined on TypeORM 0.2, null on 0.3.
-        expect(
-            (await Assessment.findOne({
-                where: { id: 4 },
-                withDeleted: true,
-            })) ?? null,
-        ).toBeNull();
-        expect(sql).toEqual([
-            byId(4),
-            'DELETE FROM "assessment" WHERE "id" IN ($1) -- [4]',
-        ]);
-        expect(transaction).toEqual([
-            'START TRANSACTION',
-            'DELETE FROM "assessment" WHERE "id" IN ($1) -- [4]',
-            'COMMIT',
-        ]);
+        expect(await stored()).toBe(false);
+        expect(sql).toEqual([byId(assessment.id), deletion]);
+        expect(transaction).toEqual(['START TRANSACTION', deletion, 'COMMIT']);
     });
 
     it('rolls the row back when the document cannot be deleted', async () => {
         deleteDocument.mockRejectedValue(new Error('the Mongo side failed'));
         const start = recorder.statements.length;
         const { error } = await recorder.observe(() =>
-            module.get(AssessmentService).deleteAssessment(3, false),
+            service.deleteAssessment(assessment.id, false),
         );
         const transaction = recorder.statements.slice(start + 1);
+
         expect(error).toEqual(new Error('the Mongo side failed'));
-        expect((await Assessment.findOne({ where: { id: 3 } })).id).toBe(3);
+        expect(await stored()).toBe(true);
         expect(transaction).toEqual([
             'START TRANSACTION',
-            'DELETE FROM "assessment" WHERE "id" IN ($1) -- [3]',
+            `DELETE FROM "assessment" WHERE "id" IN ($1) -- [${assessment.id}]`,
             'ROLLBACK',
         ]);
     });
 
     it('only cancels: the row stays, and the transaction holds no statement', async () => {
         const { error, sql } = await recorder.observe(() =>
-            module.get(AssessmentService).deleteAssessment(1),
+            service.deleteAssessment(assessment.id),
         );
         expect(error).toBeUndefined();
         expect(deleteDocument).toHaveBeenCalledWith(
-            '63c67b43ea6e670024c8bca1',
+            assessment.questionnaireAssessmentId,
             true,
         );
-        expect((await Assessment.findOne({ where: { id: 1 } })).id).toBe(1);
-        expect(sql).toEqual([byId(1)]);
+        expect(await stored()).toBe(true);
+        expect(sql).toEqual([byId(assessment.id)]);
     });
 
     it('refuses a missing assessment before the transaction', async () => {
         const { error, sql } = await recorder.observe(() =>
-            module.get(AssessmentService).deleteAssessment(MISSING, false),
+            service.deleteAssessment(MISSING, false),
         );
         expect(error).toBeInstanceOf(EntityNotFoundError);
         expect(error.message).toBe(

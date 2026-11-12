@@ -3,7 +3,11 @@ import { TestingModule } from '@nestjs/testing';
 import { Patient } from 'src/modules/patient/models/patient.model';
 import { PatientQueryService } from 'src/modules/patient/providers/patient-query.service';
 import { PatientStatusService } from 'src/modules/patient/providers/patient-status.service';
-import { PatientResolver } from 'src/modules/patient/resolvers/patient.resolver';
+import {
+    CreateOnePatientInput,
+    PatientResolver,
+} from 'src/modules/patient/resolvers/patient.resolver';
+import { CreateOneRoleInput } from 'src/modules/permission/dtos/create-one-role.input';
 import { RoleCode } from 'src/modules/permission/enums/role-code.enum';
 import { Role } from 'src/modules/permission/models/role.model';
 import { PermissionService } from 'src/modules/permission/providers/permission.service';
@@ -14,10 +18,11 @@ import { QuestionnaireScriptService } from 'src/modules/questionnaire/services/q
 import { User } from 'src/modules/user/models/user.model';
 import { UserCrudService } from 'src/modules/user/providers/user-crud.service';
 import { lookupModule, StatementRecorder, whereLive } from './database';
+import { newPatient, newRole } from './rows';
 
-// Ticket 07, 07_D, P1 (T2): the `findOne({ field })` calls on roles and
-// patients, with a value that exists and one that does not: the role codes
-// the backend seeds and gives new users, a role's name, and a new patient's
+// The lookups of one row by a column on roles and patients, with a value
+// that exists and one that does not: the role codes the backend creates on
+// its first start and gives new users, a role's name, and a new patient's
 // medical record number.
 
 /** The statement of `findOne({ where: { column: value } })` on a soft-deletable entity. */
@@ -33,15 +38,14 @@ function byColumn(
     )} LIMIT 1 -- ${JSON.stringify([value])}`;
 }
 
-const SUPER_ADMIN = { id: 1 } as User;
-
-describe('findOne by a column, roles and patients (P1, T2)', () => {
+describe('lookups by a column, roles and patients', () => {
     let module: TestingModule;
     let recorder: StatementRecorder;
+    let superAdmin: User;
 
     beforeAll(async () => {
         ({ module, recorder } = await lookupModule(
-            'lookups_roles',
+            'mhira_test_roles',
             [Patient, Role, User],
             [
                 PermissionService,
@@ -54,11 +58,15 @@ describe('findOne by a column, roles and patients (P1, T2)', () => {
                 { provide: QuestionnaireScriptService, useValue: {} },
             ],
         ));
+        // What the backend does on its first start: it creates the two
+        // system roles and a super admin.
+        await module.get(PermissionService).onModuleInit();
+        superAdmin = await User.findOneOrFail({ where: { isSuperUser: true } });
     });
 
     afterAll(() => module.close());
 
-    it('the permission seeding finds both system roles, and creates one that is missing', async () => {
+    it('a later start finds both system roles, and creates one that is missing', async () => {
         const seeding = module.get(PermissionService);
         const present = await recorder.observe(() => seeding.onModuleInit());
         expect(present.error).toBeUndefined();
@@ -92,11 +100,11 @@ describe('findOne by a column, roles and patients (P1, T2)', () => {
         const users = module.get(UserCrudService);
         const { result, error, sql } = await recorder.observe(() =>
             users.createOne({
-                username: 'p1-lookup-user',
-                password: 'P1-lookup-pass!',
+                username: 'new.user',
+                password: 'An invented passw0rd!',
                 active: true,
-                firstName: 'P',
-                lastName: 'One',
+                firstName: 'Sam',
+                lastName: 'New',
             }),
         );
         expect(error).toBeUndefined();
@@ -114,42 +122,51 @@ describe('findOne by a column, roles and patients (P1, T2)', () => {
         // Constructed as Nest would, without the authorizer the generated
         // resolver methods use: createOneRole is written by hand and has none.
         const roles = new RoleResolver(module.get(RoleCrudService));
+        await newRole({ name: 'Clinician' });
         const taken = await recorder.observe(() =>
             roles.createOneRole(
-                { role: { name: 'Admin', hierarchy: 99 } } as any,
-                SUPER_ADMIN,
+                ({
+                    role: { name: 'Clinician', hierarchy: 99 },
+                } as unknown) as CreateOneRoleInput,
+                superAdmin,
             ),
         );
         expect(taken.error).toEqual(
             new BadRequestException('Role with same name already exists'),
         );
-        expect(taken.sql).toEqual([byColumn('role', 'Role', 'name', 'Admin')]);
+        expect(taken.sql).toEqual([
+            byColumn('role', 'Role', 'name', 'Clinician'),
+        ]);
 
         const free = await recorder.observe(() =>
             roles.createOneRole(
-                { role: { name: 'P1 role', hierarchy: 99 } } as any,
-                SUPER_ADMIN,
+                ({
+                    role: { name: 'Nurse', hierarchy: 99 },
+                } as unknown) as CreateOneRoleInput,
+                superAdmin,
             ),
         );
         expect(free.error).toBeUndefined();
-        expect(free.result.name).toBe('P1 role');
-        expect(free.sql[0]).toBe(byColumn('role', 'Role', 'name', 'P1 role'));
+        expect(free.result.name).toBe('Nurse');
+        expect(free.sql[0]).toBe(byColumn('role', 'Role', 'name', 'Nurse'));
     });
 
     it('createOnePatient refuses a medical record number that exists, and goes on with a new one', async () => {
         const patients = module.get(PatientResolver);
+        // The resolver reads the input under its GraphQL name, `patient`.
         const patient = (medicalRecordNo: string) =>
-            ({
+            (({
                 patient: {
                     medicalRecordNo,
-                    firstName: 'P',
-                    lastName: 'One',
+                    firstName: 'Alex',
+                    lastName: 'New',
                     departmentIds: [],
                 },
-            } as any);
+            } as unknown) as CreateOnePatientInput);
+        await newPatient({ medicalRecordNo: 'MRN-1' });
 
         const taken = await recorder.observe(() =>
-            patients.createOnePatient(patient('MRN-00150'), SUPER_ADMIN),
+            patients.createOnePatient(patient('MRN-1'), superAdmin),
         );
         expect(taken.error).toEqual(
             new BadRequestException(
@@ -157,16 +174,16 @@ describe('findOne by a column, roles and patients (P1, T2)', () => {
             ),
         );
         expect(taken.sql).toContain(
-            byColumn('patient', 'Patient', 'medicalRecordNo', 'MRN-00150'),
+            byColumn('patient', 'Patient', 'medicalRecordNo', 'MRN-1'),
         );
 
         const free = await recorder.observe(() =>
-            patients.createOnePatient(patient('P1-LOOKUP-1'), SUPER_ADMIN),
+            patients.createOnePatient(patient('MRN-2'), superAdmin),
         );
         expect(free.error).toBeUndefined();
-        expect(free.result.medicalRecordNo).toBe('P1-LOOKUP-1');
+        expect(free.result.medicalRecordNo).toBe('MRN-2');
         expect(free.sql).toContain(
-            byColumn('patient', 'Patient', 'medicalRecordNo', 'P1-LOOKUP-1'),
+            byColumn('patient', 'Patient', 'medicalRecordNo', 'MRN-2'),
         );
     });
 });

@@ -1,11 +1,24 @@
 {
-    "moduleFileExtensions": ["js", "json", "ts"],
+    "moduleFileExtensions": [
+        "js",
+        "json",
+        "ts"
+    ],
     "rootDir": "..",
-    "roots": ["<rootDir>/test/db"],
+    "roots": [
+        "<rootDir>/test/db"
+    ],
     "testEnvironment": "node",
     "testRegex": "\\.db-test\\.ts$",
     "transform": {
-        "/node_modules/@ptc-org/nestjs-query-typeorm/node_modules/uuid/.+\\.js$": ["ts-jest", { "tsconfig": { "allowJs": true } }],
+        "/node_modules/@ptc-org/nestjs-query-typeorm/node_modules/uuid/.+\\.js$": [
+            "ts-jest",
+            {
+                "tsconfig": {
+                    "allowJs": true
+                }
+            }
+        ],
         "^.+\\.(t|j)s$": "ts-jest"
     },
     "transformIgnorePatterns": [
@@ -13,5 +26,8 @@
     ],
     "moduleNameMapper": {
         "^src/(.*)$": "<rootDir>/src/$1"
-    }
+    },
+    "setupFiles": [
+        "<rootDir>/test/services.ts"
+    ]
 }

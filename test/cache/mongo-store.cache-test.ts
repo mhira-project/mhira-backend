@@ -3,12 +3,13 @@ import { createConnection, Connection, mongo } from 'mongoose';
 import { createCacheStore } from 'src/shared/cache/cache-store';
 import { CacheService } from 'src/shared/cache/providers/cache.service';
 import { MONGO_CACHE_COLLECTION } from 'src/shared/cache/stores/mongo-cache.store';
+import { MONGO_URL } from '../services';
 
-// Ticket 07, step 17 (decision C): the Mongo cache store reads and writes
-// the `cacheManager` collection as v1.1.6's cache-manager-mongodb 0.3 did.
-// The documents and indexes expected here were measured on v1.1.6 with
-// CACHE_STORE=mongo (follow-up item 9, .local/t07e/item9-cacheManager-1.1.6.txt).
-// Needs MHIRA_TEST_MONGO_URL, a database it may drop.
+// The Mongo cache store reads and writes the `cacheManager` collection as
+// v1.1.6 did through cache-manager-mongodb 0.3, so sessions and failed-login
+// counters survive an upgrade from 1.1.6 and a way back. The documents and
+// indexes expected here are the ones v1.1.6 writes with CACHE_STORE=mongo.
+// The test drops the database it is given.
 
 describe('the Mongo cache store', () => {
     let connection: Connection;
@@ -23,7 +24,7 @@ describe('the Mongo cache store', () => {
         // which Jest's CommonJS sandbox refuses, and the handshake then goes
         // out without its client metadata. Handing the driver the module it
         // would import keeps the test on the driver's own code path.
-        connection = await createConnection(process.env.MHIRA_TEST_MONGO_URL, {
+        connection = await createConnection(MONGO_URL, {
             runtimeAdapters: { os },
         }).asPromise();
         await connection.db.dropDatabase();

@@ -2,29 +2,22 @@ import { Provider } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NestjsQueryTypeOrmModule } from '@ptc-org/nestjs-query-typeorm';
+import { readdirSync } from 'fs';
 import { join } from 'path';
 import { Client } from 'pg';
-import * as typeorm from 'typeorm';
-import { Logger, QueryRunner } from 'typeorm';
+import { DataSource, Logger, QueryRunner } from 'typeorm';
 import { TYPEORM_WHERE_VALUES } from 'src/config/config.service';
+import { POSTGRES_URL } from '../services';
 
-// The database the lookup tests run against (ticket 07, 07_D, P1): a
-// Postgres 13 server, given by MHIRA_TEST_POSTGRES_URL, that has a database
-// holding the seed (MHIRA_TEST_POSTGRES_TEMPLATE, default `seed`). Each test
-// file works on a copy of it made fresh for the file, so the tests can write
-// and leave nothing behind in the template. Run with `npm run test:db`.
+// The database tests run the backend's own code against a real Postgres.
+// Each test file gets a database of its own, created empty and brought to
+// the current schema by the migrations in src/migrations, exactly as a new
+// installation is. A file then creates the few rows it needs, so the tests
+// depend on no data from anywhere else. Run with `npm run test:db`.
 
-/** Whether TypeORM 0.3 is installed (DataSource came with it): the tests run on 0.2 (P1, P2) and again on 0.3 (step 11). */
-export const TYPEORM_0_3 = 'DataSource' in typeorm;
-
-/**
- * The conditions of a WHERE clause as the installed TypeORM writes them:
- * 0.2 joins them with AND, 0.3 also puts each condition, and all of them
- * together, in parentheses. The same conditions and parameters, so the
- * same rows.
- */
+/** The conditions of a WHERE clause as TypeORM writes them: each in parentheses, and all of them together. */
 export function conditions(...parts: string[]): string {
-    return TYPEORM_0_3 ? `((${parts.join(') AND (')}))` : parts.join(' AND ');
+    return `((${parts.join(') AND (')}))`;
 }
 
 /** A WHERE clause on a soft-deletable entity: the conditions, and the row not deleted. */
@@ -34,37 +27,63 @@ export function whereLive(entity: string, ...parts: string[]): string {
     )} ) AND ( "${entity}"."deletedAt" IS NULL )`;
 }
 
-const url = process.env.MHIRA_TEST_POSTGRES_URL;
-const template = process.env.MHIRA_TEST_POSTGRES_TEMPLATE ?? 'seed';
+// Four migrations rewrite documents in Mongo and change nothing in the
+// Postgres schema; the database tests leave them out and need no Mongo.
+const MONGO_MIGRATIONS = [
+    '1645105081399-QuestionnaireVersion.ts',
+    '1650359016504-CleanQuestionnaireVersions.ts',
+    '1683209802553-AssessmentStatus.ts',
+    '1689180681401-QuestionnaireOldVersions.ts',
+];
+const MIGRATIONS_DIR = join(__dirname, '../../src/migrations');
+const POSTGRES_MIGRATIONS = readdirSync(MIGRATIONS_DIR)
+    .filter(file => !MONGO_MIGRATIONS.includes(file))
+    .map(file => join(MIGRATIONS_DIR, file));
 
-/** Creates database `name` as a fresh copy of the template, replacing any earlier copy, and returns its connection settings. */
+/** Creates database `name` empty, replacing any earlier one, runs the migrations on it and returns its connection settings. */
 export async function freshDatabase(name: string) {
-    if (!url) {
-        throw new Error(
-            'MHIRA_TEST_POSTGRES_URL is not set: the lookup tests need a Postgres server with the seed (see test/db/database.ts).',
-        );
-    }
-    const server = new URL(url);
+    const server = new URL(POSTGRES_URL);
     const settings = {
+        type: 'postgres' as const,
         host: server.hostname,
         port: Number(server.port || 5432),
         username: decodeURIComponent(server.username),
         password: decodeURIComponent(server.password),
     };
     const admin = new Client({
-        ...settings,
+        host: settings.host,
+        port: settings.port,
         user: settings.username,
+        password: settings.password,
         database: 'postgres',
     });
-    await admin.connect();
+    try {
+        await admin.connect();
+    } catch (error) {
+        throw new Error(
+            `No Postgres at ${settings.host}:${settings.port} (${error.message}). Start the test servers with \`npm run test:services\`.`,
+        );
+    }
     try {
         await admin.query(`DROP DATABASE IF EXISTS "${name}"`);
-        await admin.query(`CREATE DATABASE "${name}" TEMPLATE "${template}"`);
+        await admin.query(`CREATE DATABASE "${name}"`);
     } finally {
         await admin.end();
     }
+
+    const migrations = new DataSource({
+        ...settings,
+        database: name,
+        migrations: POSTGRES_MIGRATIONS,
+    });
+    await migrations.initialize();
+    try {
+        await migrations.runMigrations();
+    } finally {
+        await migrations.destroy();
+    }
+
     return {
-        type: 'postgres' as const,
         ...settings,
         database: name,
         // The entities as the app finds them (TYPEORM_ENTITIES_DIR).
@@ -141,8 +160,8 @@ function withParameters(query: string, parameters?: unknown[]): string {
 }
 
 /**
- * A Nest testing module on a fresh copy of the seed (`name`), with TypeORM
- * as the app configures it, the repositories and the generated query
+ * A Nest testing module on a fresh database (`name`), with TypeORM as the
+ * app configures it, the repositories and the generated query
  * services of `entities`, and `providers` (the code under test and stubs
  * for what it needs beyond Postgres). Every statement goes to `recorder`.
  */

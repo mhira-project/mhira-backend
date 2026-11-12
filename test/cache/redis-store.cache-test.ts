@@ -2,23 +2,18 @@ import { createClient } from '@keyv/redis';
 import { createCacheStore } from 'src/shared/cache/cache-store';
 import { CacheService } from 'src/shared/cache/providers/cache.service';
 import { Connection } from 'mongoose';
+import { REDIS_URL } from '../services';
 
-// Ticket 07, step 17: the Redis cache stores what v1.1.6 stored through
-// cache-manager-redis-store 2 (`SETEX <prefix><key> <ttl> JSON.stringify(value)`),
-// so sessions and failed-login counters survive the upgrade and a
-// rollback. Needs REDIS_HOST and REDIS_PORT of a Redis to write to; run it
-// against every Redis major an installation may have (follow-up item 10).
+// The Redis cache stores what v1.1.6 stored through cache-manager-redis-store 2
+// (`SETEX <prefix><key> <ttl> JSON.stringify(value)`), so sessions and
+// failed-login counters survive an upgrade from 1.1.6 and a way back. The
+// test flushes the Redis it is given.
 
 const PREFIX = 'mhira:production:default:';
 const UNUSED_CONNECTION = (undefined as unknown) as Connection;
 
 describe('the Redis cache store', () => {
-    const redis = createClient({
-        socket: {
-            host: process.env.REDIS_HOST,
-            port: Number(process.env.REDIS_PORT),
-        },
-    });
+    const redis = createClient({ url: REDIS_URL });
     let cache: CacheService;
 
     beforeAll(async () => {
@@ -69,7 +64,9 @@ describe('the Redis cache store', () => {
             await createCacheStore('redis', UNUSED_CONNECTION),
         );
         await Promise.all(
-            ['a', 'b', 'c'].map(id => fresh.set(`active-sessions:${id}`, 1, 60)),
+            ['a', 'b', 'c'].map(id =>
+                fresh.set(`active-sessions:${id}`, 1, 60),
+            ),
         );
         expect(await fresh.get('active-sessions:c')).toBe(1);
         await fresh.onModuleDestroy();
