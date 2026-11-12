@@ -52,7 +52,7 @@ import { ScheduleModule } from '@nestjs/schedule';
             // see that shape.
             autoTransformHttpErrors: false,
             includeStacktraceInErrorResponses: false,
-            // Apollo 4 refuses requests a browser may send without a
+            // Apollo Server refuses requests a browser may send without a
             // preflight unless they carry one of these headers. A logged-in
             // client sends Authorization, which is not CORS-safelisted, so
             // it is a valid signal too; JSON requests need none (decision H).

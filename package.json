@@ -105,13 +105,16 @@
         "rootDir": "src",
         "testRegex": ".spec.ts$",
         "transform": {
+            "/node_modules/@ptc-org/nestjs-query-typeorm/node_modules/uuid/.+\\.js$": ["ts-jest", { "tsconfig": { "allowJs": true } }],
             "^.+\\.(t|j)s$": "ts-jest"
         },
+        "transformIgnorePatterns": [
+            "^(?!.*/@ptc-org/nestjs-query-typeorm/node_modules/uuid/).*/node_modules/"
+        ],
         "coverageDirectory": "../coverage",
         "testEnvironment": "node",
         "moduleNameMapper": {
-            "^src/(.*)$": "<rootDir>/$1",
-            "^uuid$": "<rootDir>/../node_modules/uuid"
+            "^src/(.*)$": "<rootDir>/$1"
         }
     },
     "config": {

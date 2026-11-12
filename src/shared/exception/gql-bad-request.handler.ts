@@ -2,7 +2,6 @@ import {
     ArgumentsHost,
     Catch,
     BadRequestException,
-    HttpException,
     Logger,
 } from '@nestjs/common';
 import { GqlContextType, GqlExceptionFilter } from '@nestjs/graphql';
@@ -13,14 +12,15 @@ import { UserInputError } from './graphql-errors';
 export class GqlBadRequestHandler implements GqlExceptionFilter {
     private readonly logger = new Logger(GqlBadRequestHandler.name);
 
-    catch(exception: HttpException, host: ArgumentsHost) {
+    catch(exception: BadRequestException, host: ArgumentsHost) {
         // A request whose JSON body does not parse never reaches GraphQL:
-        // Nest hands Express's error here as a BadRequestException. v1.1.6
-        // threw the GraphQL error below for it too; nothing caught it, Node
-        // 14 printed an unhandled rejection warning and the request never got
-        // an answer (B62). From Node 15 on that rejection ends the process,
-        // so it is logged instead and the request still gets no answer. A
-        // runtime adaptation like B02's and B52's, not the fix of B62. The
+        // Nest hands the parser's error here as a BadRequestException.
+        // v1.1.6 threw the GraphQL error below for it too; nothing caught
+        // it, so the request never got an answer (B62), and from Node 15
+        // until Express 5 (step 21) the rejection ended the process.
+        // Express 5 catches it and would answer 500, which is neither
+        // v1.1.6's behaviour nor B62's fix (a 400, ticket 12's), so the
+        // request is logged and left unanswered as v1.1.6 leaves it. The
         // parser's message is not logged: from Node 20 on it quotes the
         // body it could not parse.
         if (host.getType<GqlContextType>() !== 'graphql') {

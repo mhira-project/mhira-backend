@@ -5,10 +5,13 @@
     "testEnvironment": "node",
     "testRegex": "\\.cache-test\\.ts$",
     "transform": {
+        "/node_modules/@ptc-org/nestjs-query-typeorm/node_modules/uuid/.+\\.js$": ["ts-jest", { "tsconfig": { "allowJs": true } }],
         "^.+\\.(t|j)s$": "ts-jest"
     },
+    "transformIgnorePatterns": [
+        "^(?!.*/@ptc-org/nestjs-query-typeorm/node_modules/uuid/).*/node_modules/"
+    ],
     "moduleNameMapper": {
-        "^src/(.*)$": "<rootDir>/src/$1",
-        "^uuid$": "<rootDir>/node_modules/uuid"
+        "^src/(.*)$": "<rootDir>/src/$1"
     }
 }
