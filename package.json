@@ -45,7 +45,7 @@
         "@ptc-org/nestjs-query-core": "10.0.3",
         "@ptc-org/nestjs-query-graphql": "10.0.3",
         "@ptc-org/nestjs-query-typeorm": "10.0.3",
-        "argon2": "^0.26.2",
+        "argon2": "^0.45.2",
         "bcryptjs": "^2.4.3",
         "bipsms": "^0.6.8",
         "bluebird": "^3.7.2",

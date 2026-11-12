@@ -47,7 +47,7 @@ export class Hash {
 
     static async argon2Hash(value: string): Promise<string> {
 
-        const argon2Config = {
+        const argon2Config: argon2.HashOptions = {
             type: argon2.argon2id,
             memoryCost: 1024,
             parallelism: 2,
