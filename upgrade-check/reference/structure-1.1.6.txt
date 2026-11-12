@@ -1,0 +1,418 @@
+# Structure of a fresh installation, made by evaluate.mjs --reference (README.md, "For the maintainer").
+postgres extension plpgsql 1.0
+postgres schema public
+postgres table public.access_token BASE TABLE
+postgres table public.assessment BASE TABLE
+postgres table public.assessment_type BASE TABLE
+postgres table public.caregiver BASE TABLE
+postgres table public.department BASE TABLE
+postgres table public.department_mail_template BASE TABLE
+postgres table public.disclaimer BASE TABLE
+postgres table public.emergency_contact BASE TABLE
+postgres table public.informant BASE TABLE
+postgres table public.mail_template BASE TABLE
+postgres table public.migrations BASE TABLE
+postgres table public.patient BASE TABLE
+postgres table public.patient_caregiver BASE TABLE
+postgres table public.patient_case_manager BASE TABLE
+postgres table public.patient_department BASE TABLE
+postgres table public.patient_status BASE TABLE
+postgres table public.permission BASE TABLE
+postgres table public.questionnaire_script BASE TABLE
+postgres table public.questionnaire_script_report BASE TABLE
+postgres table public.relationship_type BASE TABLE
+postgres table public.report BASE TABLE
+postgres table public.report_role BASE TABLE
+postgres table public.role BASE TABLE
+postgres table public.role_permission BASE TABLE
+postgres table public.setting BASE TABLE
+postgres table public.user BASE TABLE
+postgres table public.user_department BASE TABLE
+postgres table public.user_permission BASE TABLE
+postgres table public.user_previous_password BASE TABLE
+postgres table public.user_role BASE TABLE
+postgres column public.access_token.createdAt timestamp without time zone not null default now()
+postgres column public.access_token.expiresAt timestamp without time zone not null
+postgres column public.access_token.id character varying not null
+postgres column public.access_token.isRevoked boolean not null default false
+postgres column public.access_token.updatedAt timestamp without time zone not null default now()
+postgres column public.access_token.userId integer not null
+postgres column public.assessment.assessmentTypeId integer
+postgres column public.assessment.clinicianId integer
+postgres column public.assessment.createdAt timestamp without time zone not null default now()
+postgres column public.assessment.date timestamp without time zone
+postgres column public.assessment.deleted boolean default false
+postgres column public.assessment.deletedAt timestamp without time zone
+postgres column public.assessment.deliveryDate timestamp without time zone
+postgres column public.assessment.emailReminder boolean
+postgres column public.assessment.emailStatus character varying
+postgres column public.assessment.expirationDate timestamp without time zone
+postgres column public.assessment.id integer not null default nextval('assessment_id_seq'::regclass)
+postgres column public.assessment.informantCaregiverRelation character varying
+postgres column public.assessment.informantClinicianId integer
+postgres column public.assessment.informantType character varying
+postgres column public.assessment.isActive boolean not null default true
+postgres column public.assessment.mailTemplateId integer
+postgres column public.assessment.note character varying
+postgres column public.assessment.patientId integer not null
+postgres column public.assessment.questionnaireAssessmentId character varying not null
+postgres column public.assessment.receiverEmail character varying
+postgres column public.assessment.status character varying not null default 'PENDING'::character varying
+postgres column public.assessment.submissionDate timestamp without time zone
+postgres column public.assessment.updatedAt timestamp without time zone not null default now()
+postgres column public.assessment.uuid character varying
+postgres column public.assessment_type.createdAt timestamp without time zone not null default now()
+postgres column public.assessment_type.deletedAt timestamp without time zone
+postgres column public.assessment_type.id integer not null default nextval('assessment_type_id_seq'::regclass)
+postgres column public.assessment_type.name character varying not null
+postgres column public.assessment_type.status character varying
+postgres column public.assessment_type.updatedAt timestamp without time zone not null default now()
+postgres column public.caregiver.apartment character varying
+postgres column public.caregiver.country character varying
+postgres column public.caregiver.createdAt timestamp without time zone not null default now()
+postgres column public.caregiver.deletedAt timestamp without time zone
+postgres column public.caregiver.email character varying
+postgres column public.caregiver.firstName character varying
+postgres column public.caregiver.id integer not null default nextval('caregiver_id_seq'::regclass)
+postgres column public.caregiver.lastName character varying
+postgres column public.caregiver.middleName character varying
+postgres column public.caregiver.number character varying
+postgres column public.caregiver.phone character varying not null
+postgres column public.caregiver.place character varying
+postgres column public.caregiver.postalCode character varying
+postgres column public.caregiver.street character varying
+postgres column public.caregiver.updatedAt timestamp without time zone not null default now()
+postgres column public.department.active boolean not null default true
+postgres column public.department.createdAt timestamp without time zone not null default now()
+postgres column public.department.deletedAt timestamp without time zone
+postgres column public.department.description character varying
+postgres column public.department.id integer not null default nextval('department_id_seq'::regclass)
+postgres column public.department.name character varying not null
+postgres column public.department.updatedAt timestamp without time zone not null default now()
+postgres column public.department_mail_template.departmentId integer not null
+postgres column public.department_mail_template.mailTemplateId integer not null
+postgres column public.disclaimer.description character varying not null
+postgres column public.disclaimer.type character varying not null
+postgres column public.disclaimer.updatedAt timestamp without time zone
+postgres column public.emergency_contact.createdAt timestamp without time zone not null default now()
+postgres column public.emergency_contact.deletedAt timestamp without time zone
+postgres column public.emergency_contact.email character varying
+postgres column public.emergency_contact.firstName character varying not null
+postgres column public.emergency_contact.id integer not null default nextval('emergency_contact_id_seq'::regclass)
+postgres column public.emergency_contact.lastName character varying not null
+postgres column public.emergency_contact.middleName character varying
+postgres column public.emergency_contact.patientId integer not null
+postgres column public.emergency_contact.phone character varying
+postgres column public.emergency_contact.updatedAt timestamp without time zone not null default now()
+postgres column public.informant.address character varying
+postgres column public.informant.createdAt timestamp without time zone not null default now()
+postgres column public.informant.deletedAt timestamp without time zone
+postgres column public.informant.email character varying
+postgres column public.informant.firstName character varying not null
+postgres column public.informant.id integer not null default nextval('informant_id_seq'::regclass)
+postgres column public.informant.lastName character varying not null
+postgres column public.informant.middleName character varying
+postgres column public.informant.patientId integer not null
+postgres column public.informant.phone character varying
+postgres column public.informant.relationshipTypeId integer
+postgres column public.informant.updatedAt timestamp without time zone not null default now()
+postgres column public.mail_template.body character varying
+postgres column public.mail_template.createdAt timestamp without time zone not null default now()
+postgres column public.mail_template.deletedAt timestamp without time zone
+postgres column public.mail_template.id integer not null default nextval('mail_template_id_seq'::regclass)
+postgres column public.mail_template.isPublic boolean default false
+postgres column public.mail_template.module character varying
+postgres column public.mail_template.name character varying
+postgres column public.mail_template.status character varying
+postgres column public.mail_template.subject character varying
+postgres column public.mail_template.updatedAt timestamp without time zone not null default now()
+postgres column public.migrations.id integer not null default nextval('migrations_id_seq'::regclass)
+postgres column public.migrations.name character varying not null
+postgres column public.migrations.timestamp bigint not null
+postgres column public.patient.active boolean not null default true
+postgres column public.patient.address character varying
+postgres column public.patient.addressApartment character varying
+postgres column public.patient.addressCountryCode character(2)
+postgres column public.patient.addressNumber character varying
+postgres column public.patient.addressPlace character varying
+postgres column public.patient.addressPostalCode character varying
+postgres column public.patient.addressStreet character varying
+postgres column public.patient.birthCountryCode character(2)
+postgres column public.patient.birthDate date
+postgres column public.patient.createdAt timestamp without time zone not null default now()
+postgres column public.patient.deleted boolean default false
+postgres column public.patient.deletedAt timestamp without time zone
+postgres column public.patient.email character varying
+postgres column public.patient.firstName character varying not null
+postgres column public.patient.gender character varying
+postgres column public.patient.id integer not null default nextval('patient_id_seq'::regclass)
+postgres column public.patient.lastName character varying not null
+postgres column public.patient.medicalRecordNo character varying
+postgres column public.patient.middleName character varying
+postgres column public.patient.nationality character varying
+postgres column public.patient.phone character varying
+postgres column public.patient.phone2 character varying
+postgres column public.patient.statusId integer
+postgres column public.patient.updatedAt timestamp without time zone not null default now()
+postgres column public.patient_caregiver.caregiverId integer not null
+postgres column public.patient_caregiver.createdAt timestamp without time zone not null default now()
+postgres column public.patient_caregiver.deletedAt timestamp without time zone
+postgres column public.patient_caregiver.emergency boolean default false
+postgres column public.patient_caregiver.id integer not null default nextval('patient_caregiver_id_seq'::regclass)
+postgres column public.patient_caregiver.note text
+postgres column public.patient_caregiver.patientId integer not null
+postgres column public.patient_caregiver.relation character varying
+postgres column public.patient_caregiver.updatedAt timestamp without time zone not null default now()
+postgres column public.patient_case_manager.patientId integer not null
+postgres column public.patient_case_manager.userId integer not null
+postgres column public.patient_department.departmentId integer not null
+postgres column public.patient_department.patientId integer not null
+postgres column public.patient_status.createdAt timestamp without time zone not null default now()
+postgres column public.patient_status.deletedAt timestamp without time zone
+postgres column public.patient_status.description character varying
+postgres column public.patient_status.id integer not null default nextval('patient_status_id_seq'::regclass)
+postgres column public.patient_status.name character varying not null
+postgres column public.patient_status.updatedAt timestamp without time zone not null default now()
+postgres column public.permission.createdAt timestamp without time zone not null default now()
+postgres column public.permission.deletedAt timestamp without time zone
+postgres column public.permission.group character varying not null default 'default'::character varying
+postgres column public.permission.id integer not null default nextval('permission_id_seq'::regclass)
+postgres column public.permission.name character varying not null
+postgres column public.permission.updatedAt timestamp without time zone not null default now()
+postgres column public.questionnaire_script.createdAt timestamp without time zone not null default now()
+postgres column public.questionnaire_script.creator character varying
+postgres column public.questionnaire_script.deletedAt timestamp without time zone
+postgres column public.questionnaire_script.id integer not null default nextval('questionnaire_script_id_seq'::regclass)
+postgres column public.questionnaire_script.name character varying not null
+postgres column public.questionnaire_script.questionnaireId character varying not null
+postgres column public.questionnaire_script.repositoryLink character varying
+postgres column public.questionnaire_script.scriptText character varying not null
+postgres column public.questionnaire_script.updatedAt timestamp without time zone not null default now()
+postgres column public.questionnaire_script.version character varying
+postgres column public.questionnaire_script_report.questionnaireScriptId integer not null
+postgres column public.questionnaire_script_report.reportId integer not null
+postgres column public.relationship_type.createdAt timestamp without time zone not null default now()
+postgres column public.relationship_type.deletedAt timestamp without time zone
+postgres column public.relationship_type.id integer not null default nextval('relationship_type_id_seq'::regclass)
+postgres column public.relationship_type.name character varying not null
+postgres column public.relationship_type.updatedAt timestamp without time zone not null default now()
+postgres column public.report.anonymus boolean
+postgres column public.report.appName character varying
+postgres column public.report.createdAt timestamp without time zone not null default now()
+postgres column public.report.deletedAt timestamp without time zone
+postgres column public.report.description character varying not null
+postgres column public.report.id integer not null default nextval('report_id_seq'::regclass)
+postgres column public.report.name character varying not null
+postgres column public.report.repositoryLink character varying
+postgres column public.report.resources character varying not null
+postgres column public.report.status boolean
+postgres column public.report.updatedAt timestamp without time zone not null default now()
+postgres column public.report.url character varying
+postgres column public.report_role.reportId integer not null
+postgres column public.report_role.roleId integer not null
+postgres column public.role.code character varying
+postgres column public.role.createdAt timestamp without time zone not null default now()
+postgres column public.role.deletedAt timestamp without time zone
+postgres column public.role.hierarchy integer not null default 1000
+postgres column public.role.id integer not null default nextval('role_id_seq'::regclass)
+postgres column public.role.name character varying not null
+postgres column public.role.updatedAt timestamp without time zone not null default now()
+postgres column public.role_permission.permissionId integer not null
+postgres column public.role_permission.roleId integer not null
+postgres column public.setting.key character varying not null
+postgres column public.setting.value character varying
+postgres column public.user.acceptedTerm boolean default false
+postgres column public.user.active boolean not null default true
+postgres column public.user.address character varying
+postgres column public.user.birthDate timestamp without time zone
+postgres column public.user.createdAt timestamp without time zone not null default now()
+postgres column public.user.deletedAt timestamp without time zone
+postgres column public.user.email character varying
+postgres column public.user.failedLoginAttempts integer default 0
+postgres column public.user.firstName character varying not null
+postgres column public.user.gender character varying
+postgres column public.user.id integer not null default nextval('user_id_seq'::regclass)
+postgres column public.user.isSuperUser boolean not null default false
+postgres column public.user.lastName character varying not null
+postgres column public.user.middleName character varying
+postgres column public.user.nationality character varying
+postgres column public.user.password character varying not null
+postgres column public.user.passwordExpiresAt timestamp without time zone
+postgres column public.user.phone character varying
+postgres column public.user.updatedAt timestamp without time zone not null default now()
+postgres column public.user.username character varying not null
+postgres column public.user.workID character varying
+postgres column public.user_department.departmentId integer not null
+postgres column public.user_department.userId integer not null
+postgres column public.user_permission.permissionId integer not null
+postgres column public.user_permission.userId integer not null
+postgres column public.user_previous_password.createdAt timestamp without time zone not null default now()
+postgres column public.user_previous_password.id integer not null default nextval('user_previous_password_id_seq'::regclass)
+postgres column public.user_previous_password.password character varying not null
+postgres column public.user_previous_password.userId integer not null
+postgres column public.user_role.roleId integer not null
+postgres column public.user_role.userId integer not null
+postgres index public.access_token.PK_f20f028607b2603deabd8182d12 CREATE UNIQUE INDEX "PK_f20f028607b2603deabd8182d12" ON public.access_token USING btree (id)
+postgres index public.assessment.PK_c511a7dc128256876b6b1719401 CREATE UNIQUE INDEX "PK_c511a7dc128256876b6b1719401" ON public.assessment USING btree (id)
+postgres index public.assessment_type.PK_ab3af1c886a0939a6a7a702827d CREATE UNIQUE INDEX "PK_ab3af1c886a0939a6a7a702827d" ON public.assessment_type USING btree (id)
+postgres index public.caregiver.PK_114bf658fe2b416245381f89be0 CREATE UNIQUE INDEX "PK_114bf658fe2b416245381f89be0" ON public.caregiver USING btree (id)
+postgres index public.caregiver.UQ_7483516d931f434dadc0112cf60 CREATE UNIQUE INDEX "UQ_7483516d931f434dadc0112cf60" ON public.caregiver USING btree (phone)
+postgres index public.department.PK_9a2213262c1593bffb581e382f5 CREATE UNIQUE INDEX "PK_9a2213262c1593bffb581e382f5" ON public.department USING btree (id)
+postgres index public.department.UQ_471da4b90e96c1ebe0af221e07b CREATE UNIQUE INDEX "UQ_471da4b90e96c1ebe0af221e07b" ON public.department USING btree (name)
+postgres index public.department_mail_template.department_mail_template_pkey CREATE UNIQUE INDEX department_mail_template_pkey ON public.department_mail_template USING btree ("departmentId", "mailTemplateId")
+postgres index public.disclaimer.disclaimer_pkey CREATE UNIQUE INDEX disclaimer_pkey ON public.disclaimer USING btree (type)
+postgres index public.emergency_contact.PK_922933ddef34a7e1ed99ae692ce CREATE UNIQUE INDEX "PK_922933ddef34a7e1ed99ae692ce" ON public.emergency_contact USING btree (id)
+postgres index public.informant.PK_94eb2c5bcfa24d8ca2e9f865aeb CREATE UNIQUE INDEX "PK_94eb2c5bcfa24d8ca2e9f865aeb" ON public.informant USING btree (id)
+postgres index public.mail_template.mail_template_pkey CREATE UNIQUE INDEX mail_template_pkey ON public.mail_template USING btree (id)
+postgres index public.migrations.PK_8c82d7f526340ab734260ea46be CREATE UNIQUE INDEX "PK_8c82d7f526340ab734260ea46be" ON public.migrations USING btree (id)
+postgres index public.patient.PK_8dfa510bb29ad31ab2139fbfb99 CREATE UNIQUE INDEX "PK_8dfa510bb29ad31ab2139fbfb99" ON public.patient USING btree (id)
+postgres index public.patient.UQ_f5e2bc64979a1139ead31f4de6f CREATE UNIQUE INDEX "UQ_f5e2bc64979a1139ead31f4de6f" ON public.patient USING btree ("medicalRecordNo")
+postgres index public.patient_caregiver.PK_835a0fa676526ee26379524b5fd CREATE UNIQUE INDEX "PK_835a0fa676526ee26379524b5fd" ON public.patient_caregiver USING btree (id)
+postgres index public.patient_caregiver.UQ_d1984b08df9e3fba76965be4aa3 CREATE UNIQUE INDEX "UQ_d1984b08df9e3fba76965be4aa3" ON public.patient_caregiver USING btree ("patientId", "caregiverId")
+postgres index public.patient_case_manager.IDX_275a8c948995619d309b03d292 CREATE INDEX "IDX_275a8c948995619d309b03d292" ON public.patient_case_manager USING btree ("userId")
+postgres index public.patient_case_manager.IDX_aa473141a0ec650bce571d36b6 CREATE INDEX "IDX_aa473141a0ec650bce571d36b6" ON public.patient_case_manager USING btree ("patientId")
+postgres index public.patient_case_manager.PK_c0d1be43914a65c5089420f9976 CREATE UNIQUE INDEX "PK_c0d1be43914a65c5089420f9976" ON public.patient_case_manager USING btree ("patientId", "userId")
+postgres index public.patient_department.IDX_1401cd1dd854e226777e3b4fc2 CREATE INDEX "IDX_1401cd1dd854e226777e3b4fc2" ON public.patient_department USING btree ("patientId")
+postgres index public.patient_department.IDX_e6491f20bfe6c21a708d362549 CREATE INDEX "IDX_e6491f20bfe6c21a708d362549" ON public.patient_department USING btree ("departmentId")
+postgres index public.patient_department.PK_e7ab054764fdd17e31c8d30833d CREATE UNIQUE INDEX "PK_e7ab054764fdd17e31c8d30833d" ON public.patient_department USING btree ("patientId", "departmentId")
+postgres index public.patient_status.PK_36d8f3934760efc66ab3c8f4f2b CREATE UNIQUE INDEX "PK_36d8f3934760efc66ab3c8f4f2b" ON public.patient_status USING btree (id)
+postgres index public.permission.PK_3b8b97af9d9d8807e41e6f48362 CREATE UNIQUE INDEX "PK_3b8b97af9d9d8807e41e6f48362" ON public.permission USING btree (id)
+postgres index public.questionnaire_script.PK_a486e98875eace5a6257fd6b2f9 CREATE UNIQUE INDEX "PK_a486e98875eace5a6257fd6b2f9" ON public.questionnaire_script USING btree (id)
+postgres index public.questionnaire_script_report.IDX_6d65a158f4b7b750b2966f0eac CREATE INDEX "IDX_6d65a158f4b7b750b2966f0eac" ON public.questionnaire_script_report USING btree ("reportId")
+postgres index public.questionnaire_script_report.IDX_dbe4c661ea2447fb4c48befba9 CREATE INDEX "IDX_dbe4c661ea2447fb4c48befba9" ON public.questionnaire_script_report USING btree ("questionnaireScriptId")
+postgres index public.questionnaire_script_report.PK_f2d7c347433149e7f4a0ae1da0e CREATE UNIQUE INDEX "PK_f2d7c347433149e7f4a0ae1da0e" ON public.questionnaire_script_report USING btree ("questionnaireScriptId", "reportId")
+postgres index public.relationship_type.PK_625c996ea49905f48fb8d3ebd32 CREATE UNIQUE INDEX "PK_625c996ea49905f48fb8d3ebd32" ON public.relationship_type USING btree (id)
+postgres index public.report.PK_99e4d0bea58cba73c57f935a546 CREATE UNIQUE INDEX "PK_99e4d0bea58cba73c57f935a546" ON public.report USING btree (id)
+postgres index public.report_role.IDX_dfe51bc94484e59713aa9f35bb CREATE INDEX "IDX_dfe51bc94484e59713aa9f35bb" ON public.report_role USING btree ("reportId")
+postgres index public.report_role.IDX_e9df64b680b9a489f3b5b92499 CREATE INDEX "IDX_e9df64b680b9a489f3b5b92499" ON public.report_role USING btree ("roleId")
+postgres index public.report_role.PK_92c09ae855bd4b108343fc7b72a CREATE UNIQUE INDEX "PK_92c09ae855bd4b108343fc7b72a" ON public.report_role USING btree ("reportId", "roleId")
+postgres index public.role.PK_b36bcfe02fc8de3c57a8b2391c2 CREATE UNIQUE INDEX "PK_b36bcfe02fc8de3c57a8b2391c2" ON public.role USING btree (id)
+postgres index public.role.UQ_ee999bb389d7ac0fd967172c41f CREATE UNIQUE INDEX "UQ_ee999bb389d7ac0fd967172c41f" ON public.role USING btree (code)
+postgres index public.role_permission.IDX_72e80be86cab0e93e67ed1a7a9 CREATE INDEX "IDX_72e80be86cab0e93e67ed1a7a9" ON public.role_permission USING btree ("permissionId")
+postgres index public.role_permission.IDX_e3130a39c1e4a740d044e68573 CREATE INDEX "IDX_e3130a39c1e4a740d044e68573" ON public.role_permission USING btree ("roleId")
+postgres index public.role_permission.PK_b42bbacb8402c353df822432544 CREATE UNIQUE INDEX "PK_b42bbacb8402c353df822432544" ON public.role_permission USING btree ("roleId", "permissionId")
+postgres index public.setting.PK_1c4c95d773004250c157a744d6e CREATE UNIQUE INDEX "PK_1c4c95d773004250c157a744d6e" ON public.setting USING btree (key)
+postgres index public.user.PK_cace4a159ff9f2512dd42373760 CREATE UNIQUE INDEX "PK_cace4a159ff9f2512dd42373760" ON public."user" USING btree (id)
+postgres index public.user.UQ_78a916df40e02a9deb1c4b75edb CREATE UNIQUE INDEX "UQ_78a916df40e02a9deb1c4b75edb" ON public."user" USING btree (username)
+postgres index public.user_department.IDX_013f9981d38eee99e524d8431b CREATE INDEX "IDX_013f9981d38eee99e524d8431b" ON public.user_department USING btree ("userId")
+postgres index public.user_department.IDX_2ed07e4ed964953c7799206cf6 CREATE INDEX "IDX_2ed07e4ed964953c7799206cf6" ON public.user_department USING btree ("departmentId")
+postgres index public.user_department.PK_e9eb3bd561dde9b9f1ce2b467e7 CREATE UNIQUE INDEX "PK_e9eb3bd561dde9b9f1ce2b467e7" ON public.user_department USING btree ("userId", "departmentId")
+postgres index public.user_permission.IDX_a592f2df24c9d464afd71401ff CREATE INDEX "IDX_a592f2df24c9d464afd71401ff" ON public.user_permission USING btree ("permissionId")
+postgres index public.user_permission.IDX_deb59c09715314aed1866e18a8 CREATE INDEX "IDX_deb59c09715314aed1866e18a8" ON public.user_permission USING btree ("userId")
+postgres index public.user_permission.PK_1cf6c7f47d0655afa389e1bd594 CREATE UNIQUE INDEX "PK_1cf6c7f47d0655afa389e1bd594" ON public.user_permission USING btree ("userId", "permissionId")
+postgres index public.user_previous_password.PK_111c7d3a7b907b32df75a40c464 CREATE UNIQUE INDEX "PK_111c7d3a7b907b32df75a40c464" ON public.user_previous_password USING btree (id)
+postgres index public.user_role.IDX_ab40a6f0cd7d3ebfcce082131f CREATE INDEX "IDX_ab40a6f0cd7d3ebfcce082131f" ON public.user_role USING btree ("userId")
+postgres index public.user_role.IDX_dba55ed826ef26b5b22bd39409 CREATE INDEX "IDX_dba55ed826ef26b5b22bd39409" ON public.user_role USING btree ("roleId")
+postgres index public.user_role.PK_7b4e17a669299579dfa55a3fc35 CREATE UNIQUE INDEX "PK_7b4e17a669299579dfa55a3fc35" ON public.user_role USING btree ("userId", "roleId")
+postgres constraint public.access_token.FK_9949557d0e1b2c19e5344c171e9 FOREIGN KEY ("userId") REFERENCES "user"(id) ON DELETE CASCADE
+postgres constraint public.access_token.PK_f20f028607b2603deabd8182d12 PRIMARY KEY (id)
+postgres constraint public.assessment.FK_afc70332afbf0ed1cb481e2e49f FOREIGN KEY ("assessmentTypeId") REFERENCES assessment_type(id) ON UPDATE CASCADE
+postgres constraint public.assessment.FK_f8b8c1abf7db4a29db9beca52a0 FOREIGN KEY ("patientId") REFERENCES patient(id) ON DELETE CASCADE
+postgres constraint public.assessment.FK_fd1fdcb990f1fd615cfbaf3b12a FOREIGN KEY ("clinicianId") REFERENCES "user"(id)
+postgres constraint public.assessment.PK_c511a7dc128256876b6b1719401 PRIMARY KEY (id)
+postgres constraint public.assessment.assessment_mailTemplateId_fkey FOREIGN KEY ("mailTemplateId") REFERENCES mail_template(id)
+postgres constraint public.assessment_type.PK_ab3af1c886a0939a6a7a702827d PRIMARY KEY (id)
+postgres constraint public.caregiver.PK_114bf658fe2b416245381f89be0 PRIMARY KEY (id)
+postgres constraint public.caregiver.UQ_7483516d931f434dadc0112cf60 UNIQUE (phone)
+postgres constraint public.department.PK_9a2213262c1593bffb581e382f5 PRIMARY KEY (id)
+postgres constraint public.department.UQ_471da4b90e96c1ebe0af221e07b UNIQUE (name)
+postgres constraint public.department_mail_template.department_mail_template_pkey PRIMARY KEY ("departmentId", "mailTemplateId")
+postgres constraint public.disclaimer.disclaimer_pkey PRIMARY KEY (type)
+postgres constraint public.emergency_contact.FK_ce876c18cfee282fea8bcc5abc1 FOREIGN KEY ("patientId") REFERENCES patient(id) ON DELETE CASCADE
+postgres constraint public.emergency_contact.PK_922933ddef34a7e1ed99ae692ce PRIMARY KEY (id)
+postgres constraint public.informant.FK_d51350d0437b8aec48e0abc94bd FOREIGN KEY ("patientId") REFERENCES patient(id) ON DELETE CASCADE
+postgres constraint public.informant.FK_e97e1d5f4369c959a2079651736 FOREIGN KEY ("relationshipTypeId") REFERENCES relationship_type(id)
+postgres constraint public.informant.PK_94eb2c5bcfa24d8ca2e9f865aeb PRIMARY KEY (id)
+postgres constraint public.mail_template.mail_template_pkey PRIMARY KEY (id)
+postgres constraint public.migrations.PK_8c82d7f526340ab734260ea46be PRIMARY KEY (id)
+postgres constraint public.patient.FK_4f7642e83eac852c242b8422068 FOREIGN KEY ("statusId") REFERENCES patient_status(id)
+postgres constraint public.patient.PK_8dfa510bb29ad31ab2139fbfb99 PRIMARY KEY (id)
+postgres constraint public.patient.UQ_f5e2bc64979a1139ead31f4de6f UNIQUE ("medicalRecordNo")
+postgres constraint public.patient_caregiver.FK_0db340ec8753c91db3dba218fd8 FOREIGN KEY ("caregiverId") REFERENCES caregiver(id)
+postgres constraint public.patient_caregiver.FK_a4b2a1d0f22f3f2c38aaf18f9e4 FOREIGN KEY ("patientId") REFERENCES patient(id) ON DELETE CASCADE
+postgres constraint public.patient_caregiver.PK_835a0fa676526ee26379524b5fd PRIMARY KEY (id)
+postgres constraint public.patient_caregiver.UQ_d1984b08df9e3fba76965be4aa3 UNIQUE ("patientId", "caregiverId")
+postgres constraint public.patient_case_manager.FK_275a8c948995619d309b03d2920 FOREIGN KEY ("userId") REFERENCES "user"(id)
+postgres constraint public.patient_case_manager.FK_aa473141a0ec650bce571d36b69 FOREIGN KEY ("patientId") REFERENCES patient(id) ON DELETE CASCADE
+postgres constraint public.patient_case_manager.PK_c0d1be43914a65c5089420f9976 PRIMARY KEY ("patientId", "userId")
+postgres constraint public.patient_department.FK_1401cd1dd854e226777e3b4fc2e FOREIGN KEY ("patientId") REFERENCES patient(id) ON DELETE CASCADE
+postgres constraint public.patient_department.FK_e6491f20bfe6c21a708d3625491 FOREIGN KEY ("departmentId") REFERENCES department(id)
+postgres constraint public.patient_department.PK_e7ab054764fdd17e31c8d30833d PRIMARY KEY ("patientId", "departmentId")
+postgres constraint public.patient_status.PK_36d8f3934760efc66ab3c8f4f2b PRIMARY KEY (id)
+postgres constraint public.permission.PK_3b8b97af9d9d8807e41e6f48362 PRIMARY KEY (id)
+postgres constraint public.questionnaire_script.PK_a486e98875eace5a6257fd6b2f9 PRIMARY KEY (id)
+postgres constraint public.questionnaire_script_report.FK_6d65a158f4b7b750b2966f0eac5 FOREIGN KEY ("reportId") REFERENCES report(id) ON UPDATE CASCADE ON DELETE CASCADE
+postgres constraint public.questionnaire_script_report.FK_dbe4c661ea2447fb4c48befba91 FOREIGN KEY ("questionnaireScriptId") REFERENCES questionnaire_script(id) ON UPDATE CASCADE ON DELETE CASCADE
+postgres constraint public.questionnaire_script_report.PK_f2d7c347433149e7f4a0ae1da0e PRIMARY KEY ("questionnaireScriptId", "reportId")
+postgres constraint public.relationship_type.PK_625c996ea49905f48fb8d3ebd32 PRIMARY KEY (id)
+postgres constraint public.report.PK_99e4d0bea58cba73c57f935a546 PRIMARY KEY (id)
+postgres constraint public.report_role.FK_dfe51bc94484e59713aa9f35bba FOREIGN KEY ("reportId") REFERENCES report(id) ON UPDATE CASCADE ON DELETE CASCADE
+postgres constraint public.report_role.FK_e9df64b680b9a489f3b5b924992 FOREIGN KEY ("roleId") REFERENCES role(id)
+postgres constraint public.report_role.PK_92c09ae855bd4b108343fc7b72a PRIMARY KEY ("reportId", "roleId")
+postgres constraint public.role.PK_b36bcfe02fc8de3c57a8b2391c2 PRIMARY KEY (id)
+postgres constraint public.role.UQ_ee999bb389d7ac0fd967172c41f UNIQUE (code)
+postgres constraint public.role_permission.FK_72e80be86cab0e93e67ed1a7a9a FOREIGN KEY ("permissionId") REFERENCES permission(id) ON DELETE CASCADE
+postgres constraint public.role_permission.FK_e3130a39c1e4a740d044e685730 FOREIGN KEY ("roleId") REFERENCES role(id) ON UPDATE CASCADE ON DELETE CASCADE
+postgres constraint public.role_permission.PK_b42bbacb8402c353df822432544 PRIMARY KEY ("roleId", "permissionId")
+postgres constraint public.setting.PK_1c4c95d773004250c157a744d6e PRIMARY KEY (key)
+postgres constraint public.user.PK_cace4a159ff9f2512dd42373760 PRIMARY KEY (id)
+postgres constraint public.user.UQ_78a916df40e02a9deb1c4b75edb UNIQUE (username)
+postgres constraint public.user_department.FK_013f9981d38eee99e524d8431bb FOREIGN KEY ("userId") REFERENCES "user"(id) ON UPDATE CASCADE ON DELETE CASCADE
+postgres constraint public.user_department.FK_2ed07e4ed964953c7799206cf64 FOREIGN KEY ("departmentId") REFERENCES department(id)
+postgres constraint public.user_department.PK_e9eb3bd561dde9b9f1ce2b467e7 PRIMARY KEY ("userId", "departmentId")
+postgres constraint public.user_permission.FK_a592f2df24c9d464afd71401ff6 FOREIGN KEY ("permissionId") REFERENCES permission(id)
+postgres constraint public.user_permission.FK_deb59c09715314aed1866e18a81 FOREIGN KEY ("userId") REFERENCES "user"(id) ON UPDATE CASCADE ON DELETE CASCADE
+postgres constraint public.user_permission.PK_1cf6c7f47d0655afa389e1bd594 PRIMARY KEY ("userId", "permissionId")
+postgres constraint public.user_previous_password.FK_1195e80c0f35054a84b1045c7c2 FOREIGN KEY ("userId") REFERENCES "user"(id) ON DELETE CASCADE
+postgres constraint public.user_previous_password.PK_111c7d3a7b907b32df75a40c464 PRIMARY KEY (id)
+postgres constraint public.user_role.FK_ab40a6f0cd7d3ebfcce082131fd FOREIGN KEY ("userId") REFERENCES "user"(id) ON UPDATE CASCADE ON DELETE CASCADE
+postgres constraint public.user_role.FK_dba55ed826ef26b5b22bd39409b FOREIGN KEY ("roleId") REFERENCES role(id)
+postgres constraint public.user_role.PK_7b4e17a669299579dfa55a3fc35 PRIMARY KEY ("userId", "roleId")
+postgres sequence public.assessment_id_seq integer
+postgres sequence public.assessment_type_id_seq integer
+postgres sequence public.caregiver_id_seq integer
+postgres sequence public.department_id_seq integer
+postgres sequence public.emergency_contact_id_seq integer
+postgres sequence public.informant_id_seq integer
+postgres sequence public.mail_template_id_seq integer
+postgres sequence public.migrations_id_seq integer
+postgres sequence public.patient_caregiver_id_seq integer
+postgres sequence public.patient_id_seq integer
+postgres sequence public.patient_status_id_seq integer
+postgres sequence public.permission_id_seq integer
+postgres sequence public.questionnaire_script_id_seq integer
+postgres sequence public.relationship_type_id_seq integer
+postgres sequence public.report_id_seq integer
+postgres sequence public.role_id_seq integer
+postgres sequence public.user_id_seq integer
+postgres sequence public.user_previous_password_id_seq integer
+postgres migration Initial1641630038228
+postgres migration AddAssesmentsUUID1643737094818
+postgres migration Caregivers1643899056854
+postgres migration Reports1644501851916
+postgres migration QuestionnaireVersion1645105081399
+postgres migration QuestionnaireScripts1647594443498
+postgres migration ReportPermission1649060292752
+postgres migration AssessmentFields1649340146370
+postgres migration AssessmentExpirationFields1649403519834
+postgres migration CleanQuestionnaireVersions1650359016504
+postgres migration Disclaimer1650556053178
+postgres migration UserAcceptedTerm1651061611792
+postgres migration DeleteCascadePatients1651139429314
+postgres migration AssessmentInformant1651740038228
+postgres migration AssessmentType1654507311250
+postgres migration InsertAssessmentTypesByName1654780819593
+postgres migration ExtraDisclaimers1654865143493
+postgres migration DeleteCascadeUsers1664531282964
+postgres migration AssessmentEmail1670418679065
+postgres migration EmailTemplateEntity1670604146131
+postgres migration AssessmentSubmissionDate1670939760212
+postgres migration AddDeletedColumn1672322359355
+postgres migration InsertAssessmentTemplate1673356457978
+postgres migration TemplatesDepartmentRelation1676554616779
+postgres migration AssessmentStatus1683188215805
+postgres migration QuestionnaireOldVersions1689180681401
+mongo collection questionnaires type collection
+mongo collection questionnaires options {}
+mongo index questionnaires _id_ {"v":2,"key":{"_id":1},"name":"_id_"}
+mongo index questionnaires language_1_abbreviation_1 {"v":2,"key":{"language":1,"abbreviation":1},"name":"language_1_abbreviation_1","background":true,"unique":true}

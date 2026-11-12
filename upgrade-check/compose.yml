@@ -1,0 +1,86 @@
+# The throwaway stack rehearse.sh restores a backup into. It is not an
+# installation: no port is published, and the network is internal, so
+# nothing in it can reach the outside world. That matters because the
+# backend's mail cron sends every due reminder it finds in the data: here
+# it cannot reach any mail server, and no patient gets a message.
+#
+# rehearse.sh sets the variables below; the stack is removed with its
+# volumes when the rehearsal ends.
+
+services:
+  postgres:
+    image: ${PG_IMAGE:-postgres:13-alpine}
+    environment:
+      - POSTGRES_DB=${PG_DB}
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASSWORD=${PG_PASSWORD}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  mongo:
+    image: ${MONGO_IMAGE:-mongo:5}
+    volumes:
+      - mongo:/data/db
+    networks:
+      - internal
+
+  redis:
+    image: ${REDIS_IMAGE:-redis:7-alpine}
+    networks:
+      - internal
+
+  # The backend as the shipped mhira-docker compose file configures and
+  # starts it (the image's own command, `node dist/main`, which runs the
+  # migrations itself), with throwaway secrets, SQL logging off (logged
+  # statements carry their values, which are the installation's data) and a
+  # mail host that does not exist. SUPERADMIN_* stay unset: the restored
+  # data has its super admin, and a name set here would make the backend add
+  # another.
+  mhira-backend:
+    image: ${BACKEND_IMAGE}
+    platform: ${BACKEND_PLATFORM}
+    restart: "no"
+    environment:
+      - SECRET=${THROWAWAY_SECRET}
+      - SERVER_PORT=3000
+      - TYPEORM_CONNECTION=postgres
+      - TYPEORM_HOST=postgres
+      - TYPEORM_USERNAME=${PG_USER}
+      - TYPEORM_DATABASE=${PG_DB}
+      - TYPEORM_PASSWORD=${PG_PASSWORD}
+      - TYPEORM_PORT=5432
+      - TYPEORM_SYNCHRONIZE=false
+      - TYPEORM_LOGGING=false
+      - TYPEORM_ENTITIES_DIR=/../**/*.model.{js,ts}
+      - TYPEORM_MIGRATIONS_TABLE_NAME=migrations
+      - TYPEORM_MIGRATIONS=./dist/migrations/*.js
+      - TYPEORM_MIGRATIONS_DIR=src/migrations
+      - TYPEORM_MIGRATIONS_RUN=true
+      - CACHE_STORE=redis
+      - REDIS_HOST=redis
+      - MONGODB_CONNECTION_STRING=mongodb://mongo:27017/${MONGO_DB}
+      - GRAPHQL_PLAYGROUND_ENABLED=false
+      - MAIL_HOST=mail.invalid
+      - MAIL_PORT=25
+      - MAIL_SECURE=false
+      - MAIL_USER=
+      - MAIL_PASS=
+      - SENDER_MAIL=upgrade-check@mail.invalid
+      - FRONTEND_ENCRYPTION_KEY=${THROWAWAY_SECRET}
+      - APP_URL=http://upgrade-check.invalid
+    depends_on:
+      - postgres
+      - mongo
+      - redis
+    networks:
+      - internal
+
+networks:
+  internal:
+    internal: true
+
+volumes:
+  postgres:
+  mongo:
