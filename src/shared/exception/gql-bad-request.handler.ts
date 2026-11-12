@@ -20,10 +20,12 @@ export class GqlBadRequestHandler implements GqlExceptionFilter {
         // 14 printed an unhandled rejection warning and the request never got
         // an answer (B62). From Node 15 on that rejection ends the process,
         // so it is logged instead and the request still gets no answer. A
-        // runtime adaptation like B02's and B52's, not the fix of B62.
+        // runtime adaptation like B02's and B52's, not the fix of B62. The
+        // parser's message is not logged: from Node 20 on it quotes the
+        // body it could not parse.
         if (host.getType<GqlContextType>() !== 'graphql') {
             this.logger.error(
-                `${exception.message}: a request refused before GraphQL, left unanswered as v1.1.6 leaves it (B62)`,
+                'A request body that does not parse, refused before GraphQL and left unanswered as v1.1.6 leaves it (B62)',
             );
             return;
         }

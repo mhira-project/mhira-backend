@@ -56,18 +56,19 @@ describe('GqlBadRequestHandler', () => {
     );
     afterEach(() => jest.restoreAllMocks());
 
-    it('throws nothing for a request outside GraphQL, and logs it', () => {
+    it('throws nothing for a request outside GraphQL, and logs it without the body', () => {
         const host = new ExecutionContextHost([]);
         host.setType('http');
+        // From Node 20 on, JSON.parse's message quotes the body it could not parse.
+        const exception = new BadRequestException(
+            'Unexpected token \'x\', "xpassword=S3cret" is not valid JSON',
+        );
 
         expect(
-            new GqlBadRequestHandler().catch(
-                new BadRequestException('Unexpected end of JSON input'),
-                host,
-            ),
+            new GqlBadRequestHandler().catch(exception, host),
         ).toBeUndefined();
         expect(Logger.prototype.error).toHaveBeenCalledWith(
-            'Unexpected end of JSON input: a request refused before GraphQL, left unanswered as v1.1.6 leaves it (B62)',
+            'A request body that does not parse, refused before GraphQL and left unanswered as v1.1.6 leaves it (B62)',
         );
     });
 
