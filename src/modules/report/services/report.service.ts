@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from 'src/modules/permission/models/role.model';
 import { In, Repository } from 'typeorm';
-import { idAsSent } from 'src/shared/helpers/graphql-id.helper';
+import { whereIdAsSent } from 'src/shared/helpers/graphql-id.helper';
 import { ReportInput, UpdateOneReportInput } from '../dtos/report-input';
 import { InjectQueryService, QueryService } from '@ptc-org/nestjs-query-core';
 import { ConnectionType } from '@ptc-org/nestjs-query-graphql';
@@ -50,7 +50,7 @@ export class ReportService {
         const { roles, ...rest } = update;
         const report = await this.reportRepository.findOne({
             relations: ['roles'],
-            where: { id: idAsSent(id) },
+            where: whereIdAsSent<Report>(id),
         });
 
         const findRoles = await this.roleRepository.find({

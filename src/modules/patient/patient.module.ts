@@ -18,17 +18,6 @@ import { CaseManagerResolver } from './resolvers/case-manager.resolver';
 import { InformantResolver } from './resolvers/informant.resolver';
 import { PatientResolver } from './resolvers/patient.resolver';
 import { PatientQueryService } from './providers/patient-query.service';
-import { QuestionnaireAssessmentService } from '../questionnaire/services/questionnaire-assessment.service';
-import {
-    AssessmentSchema,
-    QuestionnaireAssessment,
-} from '../questionnaire/models/questionnaire-assessment.schema';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Answer, AnswerSchema } from '../questionnaire/models/answer.schema';
-import {
-    Questionnaire,
-    QuestionnaireSchema,
-} from '../questionnaire/models/questionnaire.schema';
 import { QuestionnaireModule } from '../questionnaire/questionnaire.module';
 import { PatientStatusService } from './providers/patient-status.service';
 import { Assessment } from '../assessment/models/assessment.model';
@@ -37,17 +26,6 @@ const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
     imports: [
         QuestionnaireModule,
-        MongooseModule.forFeature([
-            {
-                name: QuestionnaireAssessment.name,
-                schema: AssessmentSchema,
-            },
-            { name: Answer.name, schema: AnswerSchema },
-            {
-                name: Questionnaire.name,
-                schema: QuestionnaireSchema,
-            },
-        ]),
         NestjsQueryGraphQLModule.forFeature({
             // import the NestjsQueryTypeOrmModule to register the entity with typeorm
             // and provide a QueryService
@@ -150,7 +128,6 @@ const guards = [GqlAuthGuard, PermissionGuard];
         PatientResolver,
         InformantResolver,
         PatientQueryService,
-        QuestionnaireAssessmentService,
         PatientStatusService,
     ],
     exports: [PatientQueryService],

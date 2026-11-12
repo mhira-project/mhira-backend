@@ -6,17 +6,7 @@ import { Assessment } from './models/assessment.model';
 import { PermissionGuard } from '../permission/guards/permission.guard';
 import { AssessmentService } from './services/assessment.service';
 import { AssessmentResolver } from './resolvers/assessment.resolver';
-import { MongooseModule } from '@nestjs/mongoose';
-import {
-    AssessmentSchema,
-    QuestionnaireAssessment,
-} from '../questionnaire/models/questionnaire-assessment.schema';
-import { Answer, AnswerSchema } from '../questionnaire/models/answer.schema';
-import { QuestionnaireAssessmentService } from '../questionnaire/services/questionnaire-assessment.service';
-import {
-    Questionnaire,
-    QuestionnaireSchema,
-} from '../questionnaire/models/questionnaire.schema';
+import { QuestionnaireModule } from '../questionnaire/questionnaire.module';
 import { PatientModule } from '../patient/patient.module';
 import { PublicAssessmentResolver } from './resolvers/public.assesment.resolver';
 import { User } from '../user/models/user.model';
@@ -28,17 +18,7 @@ import { AssessmentType } from './models/assessment-type.model';
 const guards = [GqlAuthGuard, PermissionGuard];
 @Module({
     imports: [
-        MongooseModule.forFeature([
-            {
-                name: QuestionnaireAssessment.name,
-                schema: AssessmentSchema,
-            },
-            { name: Answer.name, schema: AnswerSchema },
-            {
-                name: Questionnaire.name,
-                schema: QuestionnaireSchema,
-            },
-        ]),
+        QuestionnaireModule,
         NestjsQueryGraphQLModule.forFeature({
             // import the NestjsQueryTypeOrmModule to register the entity with typeorm
             // and provide a QueryService
@@ -71,7 +51,6 @@ const guards = [GqlAuthGuard, PermissionGuard];
         AssessmentTypeService,
         AssessmentTypeResolver,
         AssessmentResolver,
-        QuestionnaireAssessmentService,
         PublicAssessmentResolver,
     ],
 })

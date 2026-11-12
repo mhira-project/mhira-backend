@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Types } from 'mongoose';
-import { DataSource, EntityNotFoundError, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { findByIdOrFail } from 'src/shared/helpers/repository.helper';
 import {
     CreateFullAssessmentInput,
     UpdateFullAssessmentInput,
@@ -240,7 +241,8 @@ export class AssessmentService {
 
     async updateAssessment(assessmentInput: UpdateFullAssessmentInput) {
         // find postgres assessment
-        const assessment = await this.findAssessmentOrFail(
+        const assessment = await findByIdOrFail(
+            this.assessmentRepository,
             assessmentInput.assessmentId,
         );
 
@@ -335,7 +337,7 @@ export class AssessmentService {
     }
 
     public async deleteAssessment(id: number, statusCancel = true) {
-        const assessment = await this.findAssessmentOrFail(id);
+        const assessment = await findByIdOrFail(this.assessmentRepository, id);
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
@@ -357,7 +359,7 @@ export class AssessmentService {
     }
 
     async archiveOneAssessment(id: number) {
-        const assessment = await this.findAssessmentOrFail(id);
+        const assessment = await findByIdOrFail(this.assessmentRepository, id);
 
         if (assessment.deleted) {
             throw Error('This assessment is already archived!');
@@ -365,19 +367,6 @@ export class AssessmentService {
 
         await this.assessmentRepository.update(id, { deleted: true });
 
-        return assessment;
-    }
-
-    /**
-     * The assessment with this id, or v1.1.6's EntityNotFoundError, whose
-     * message prints the id ("matching: 999999"); findOneOrFail with
-     * `where` would print the options object instead.
-     */
-    private async findAssessmentOrFail(id: number): Promise<Assessment> {
-        const assessment = await this.assessmentRepository.findOne({
-            where: { id },
-        });
-        if (!assessment) throw new EntityNotFoundError(Assessment, id);
         return assessment;
     }
 

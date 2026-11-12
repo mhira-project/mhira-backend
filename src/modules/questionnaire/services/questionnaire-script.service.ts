@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { idAsSent } from 'src/shared/helpers/graphql-id.helper';
+import { whereIdAsSent } from 'src/shared/helpers/graphql-id.helper';
 import {
     CreateQuestionnaireScriptInput,
     UpdateQuestionnaireScriptInput,
@@ -112,7 +112,7 @@ export class QuestionnaireScriptService {
         const questionnaireScript = await this.questionnaireScriptRepository.findOne(
             {
                 relations: ['reports'],
-                where: { id: idAsSent(id) },
+                where: whereIdAsSent<QuestionnaireScript>(id),
             },
         );
 

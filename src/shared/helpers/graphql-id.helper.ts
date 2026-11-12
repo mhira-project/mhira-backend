@@ -1,11 +1,15 @@
+import { FindOptionsWhere } from 'typeorm';
+
 /**
- * A GraphQL `ID` argument (`string | number`, a string at run time) as the
- * condition on an integer primary key. It goes to Postgres as it came, as
- * v1.1.6 sends it: Postgres casts it, and refuses "abc" with v1.1.6's
- * message, where `Number()` would send NaN. TypeORM's condition types know
- * the column as a number only, so the value is typed as one here and
- * nowhere else; use it inside the `where` only (ticket 07, P2).
+ * The condition on an integer primary key for a GraphQL `ID` argument
+ * (`string | number`, a string at run time). The id goes to Postgres as it
+ * came, as v1.1.6 sends it: Postgres casts it, and refuses "abc" with
+ * v1.1.6's message, where `Number()` would send NaN (ticket 07, P2).
+ * TypeORM's condition types know the column as a number only, so the
+ * condition, not the id, is typed for the entity.
  */
-export function idAsSent(id: string | number): number {
-    return id as number;
+export function whereIdAsSent<Entity extends { id: number }>(
+    id: string | number,
+): FindOptionsWhere<Entity> {
+    return { id } as FindOptionsWhere<Entity>;
 }
