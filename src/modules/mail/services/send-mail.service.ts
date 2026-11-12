@@ -37,13 +37,13 @@ export class SendMailService {
 
             // Not awaited, so every due reminder is sent at once. From Node 15
             // on an unhandled rejection ends the process, and the reminder,
-            // still SCHEDULED, would end it again a minute later (BUGS.md,
-            // B52). A reminder that fails before its status is written is
+            // still SCHEDULED, would end it again a minute later.
+            // A reminder that fails before its status is written is
             // logged here and stays SCHEDULED, so the next run tries it again.
             selectAssessment.forEach(assessmentInfo => {
                 this.sendEmail(assessmentInfo).catch((error: unknown) =>
                     this.logger.error(
-                        `checkAssessmentEmails: the reminder of assessment ${assessmentInfo.id} failed and stays SCHEDULED (B52)`,
+                        `checkAssessmentEmails: the reminder of assessment ${assessmentInfo.id} failed and stays SCHEDULED`,
                         error instanceof Error ? error.stack : String(error),
                     ),
                 );

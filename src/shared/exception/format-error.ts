@@ -5,7 +5,7 @@ import { isNullOrMissingVariableError } from './null-or-missing-variable-error';
  * The GraphQL module's `formatError`: every error reaches the client with
  * the message, path and extensions Apollo Server formatted, and without
  * the `locations` Apollo 4 adds, which v1.1.6 never sent. One compatibility
- * measure of ticket 07: a missing or null variable keeps v1.1.6's code
+ * measure of the stack upgrade: a missing or null variable keeps v1.1.6's code
  * (isNullOrMissingVariableError).
  */
 export function formatError(

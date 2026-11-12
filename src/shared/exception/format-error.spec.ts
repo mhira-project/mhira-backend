@@ -7,12 +7,12 @@ import { Assessment } from 'src/modules/assessment/models/assessment.model';
 import { formatError } from './format-error';
 import { UserInputError } from './graphql-errors';
 
-// Ticket 07: what a client receives for an error, from the installed Apollo
-// Server running the module's formatError without stack traces, as
-// app.module.ts configures it. Pinned per error kind (07_D, T3): the code,
-// the top-level message and the path. From Apollo 4 (step 15) no error
-// carries `extensions.exception` (decision F), and formatError leaves out
-// the `locations` Apollo 4 adds, which v1.1.6 never sent.
+// What a client receives for an error, from the installed Apollo Server
+// running the module's formatError without stack traces, as app.module.ts
+// configures it. Pinned per error kind: the code, the top-level message and
+// the path. From Apollo 4 no error carries `extensions.exception`, and
+// formatError leaves out the `locations` Apollo 4 adds, which v1.1.6 never
+// sent.
 
 /** Apollo Server with one query, `assessment(id: Int!)`, whose resolver throws what `throwing` gives. */
 async function server(throwing: () => Error = () => new Error('unused')) {
@@ -75,10 +75,9 @@ const SQL =
     'SELECT "Patient"."id" FROM "patient" "Patient" WHERE "Patient"."id" = $1';
 
 describe('formatError through Apollo Server', () => {
-    // Step 08: Apollo 3 and 4 relabel a missing or null variable
-    // BAD_USER_INPUT; v1.1.6 (Apollo 2) sent INTERNAL_SERVER_ERROR, recorded
-    // for eight operations with a null id (ticket 04's wrong-input section),
-    // and relabelled only a value its type refuses, recorded for fourteen.
+    // Apollo 3 and later relabel a missing or null variable
+    // BAD_USER_INPUT; v1.1.6 (Apollo 2) sent INTERNAL_SERVER_ERROR,
+    // and relabelled only a value its type refuses.
     it.each([
         [
             'null for a non-null variable',
@@ -121,7 +120,7 @@ describe('formatError through Apollo Server', () => {
         });
     });
 
-    it('an uncaught HttpException keeps its message and code, without exception (decision F, T3)', async () => {
+    it('an uncaught HttpException keeps its message and code, without exception', async () => {
         expect(
             await received(new NotFoundException('No patient found')),
         ).toEqual({
@@ -131,7 +130,7 @@ describe('formatError through Apollo Server', () => {
         });
     });
 
-    it('the input check: messages stay, without exception (decision F, T3)', async () => {
+    it('the input check: messages stay, without exception', async () => {
         const messages = [
             'input.name must be shorter than or equal to 15 characters',
         ];
@@ -149,7 +148,7 @@ describe('formatError through Apollo Server', () => {
         });
     });
 
-    it("TypeORM's EntityNotFoundError keeps its message and code, without exception (decisions F and K, T3)", async () => {
+    it("TypeORM's EntityNotFoundError keeps its message and code, without exception", async () => {
         expect(
             await received(new EntityNotFoundError(Assessment, 999999)),
         ).toEqual({
@@ -160,7 +159,7 @@ describe('formatError through Apollo Server', () => {
         });
     });
 
-    it("TypeORM's QueryFailedError keeps its message and code, and no longer sends the SQL (decision F, B55, T3)", async () => {
+    it("TypeORM's QueryFailedError keeps its message and code, and no longer sends the SQL", async () => {
         expect(
             await received(
                 new QueryFailedError(SQL, ['abc'], invalidInteger()),

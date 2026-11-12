@@ -99,7 +99,7 @@ class ConfigService {
             ...this.getTypeOrmConnection(),
             entities: [__dirname + this.getValue('TYPEORM_ENTITIES_DIR')],
             // The app never synchronizes its schema, whatever
-            // TYPEORM_SYNCHRONIZE says (ticket 07, decision I).
+            // TYPEORM_SYNCHRONIZE says.
             synchronize: false,
             logging: this.getValue('TYPEORM_LOGGING') === 'true',
             migrationsRun: this.getValue('TYPEORM_MIGRATIONS_RUN') === 'true',
@@ -113,7 +113,7 @@ class ConfigService {
      * The migration CLI's DataSource (src/data-source.ts, start.sh): the
      * variables TypeORM 0.2's CLI read itself, and no entity, since no
      * migration uses one. TYPEORM_MIGRATIONS_TABLE_NAME names the history
-     * table as it did, default `migrations` (ticket 07, decision I). The
+     * table as it did, default `migrations`. The
      * CLI itself switches synchronize off and logs every query, on 0.3 as
      * on 0.2.
      */

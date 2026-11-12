@@ -9,7 +9,7 @@ import { GraphQLError, Kind } from 'graphql';
  * 3 and 4 relabel all three before formatError sees them
  * (`isBadUserInputGraphQLError` in the request pipeline). formatError gives
  * these two v1.1.6's code back, with the same message and HTTP status: a
- * compatibility measure of ticket 07 (steps 08 and 15).
+ * compatibility measure of the stack upgrade (steps 08 and 15).
  *
  * Apollo 4 hands formatError its own UserInputError, which keeps the
  * coercion error's `nodes`.

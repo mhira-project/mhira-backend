@@ -10,9 +10,9 @@ import { GraphQLSchema, isNonNullType } from 'graphql';
  * generates (MHIRA's own arguments with a default declare `nullable`).
  * Non-null, an explicit `null` would be refused by GraphQL's own argument
  * check instead of reaching the validation pipe, which answers it with
- * BAD_USER_INPUT on v1.1.6 (ticket 07, follow-up item 8). v1.1.6's schema
+ * BAD_USER_INPUT on v1.1.6. v1.1.6's schema
  * has no non-null argument with a default, so the rule restores exactly
- * that. Ticket 07, step 15 (decision G).
+ * that.
  */
 export function nullableDefaultedArguments(
     schema: GraphQLSchema,

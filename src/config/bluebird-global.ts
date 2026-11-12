@@ -13,8 +13,8 @@ const NativePromise = global.Promise;
  * backend's own async functions return native promises, but whatever calls
  * the global Promise at run time (explicit `new Promise`, library
  * internals) gets Bluebird, whose unhandled rejections are printed as
- * warnings where native ones end the process (Node 15 and later). Ticket 07 step 17
- * replaces that store and installs Bluebird here, at the same point in the
+ * warnings where native ones end the process (Node 15 and later). The
+ * Keyv store replaces that store, and Bluebird is installed here, at the same point in the
  * load order, so the runtime stays v1.1.6's.
  *
  * The global is a private copy of Bluebird whose `allSettled` is the

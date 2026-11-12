@@ -26,12 +26,12 @@ export class AssessmentResolver {
         @Args('assessment') assessmentInput: AnswerAssessmentInput,
     ): Promise<QuestionnaireAssessment> {
         // The status change is awaited before the answer's save loads the
-        // document, so the two saves no longer race (BUGS.md, B02). As
+        // document, so the two saves no longer race. As
         // before, it comes first, also for an answer that is then refused,
         // and a failed status change is logged and dropped without stopping
         // the answer. The answer is still judged against the status the
         // request found: the status change reopens a completed, cancelled or
-        // expired assessment, which must go on refusing answers (B36).
+        // expired assessment, which must go on refusing answers.
         const statusOnArrival = await this.assessmentService.getStatus(
             assessmentInput.assessmentId,
         );
@@ -42,7 +42,7 @@ export class AssessmentResolver {
             )
             .catch((error: unknown) =>
                 this.logger.error(
-                    `addAnswer: the status change to PARTIALLY_COMPLETED of assessment ${assessmentInput.assessmentId} failed and was dropped (B02)`,
+                    `addAnswer: the status change to PARTIALLY_COMPLETED of assessment ${assessmentInput.assessmentId} failed and was dropped`,
                     error instanceof Error ? error.stack : String(error),
                 ),
             );

@@ -96,7 +96,7 @@ export class UserCrudResolver extends CRUDResolver(User, {
     }
 
     // The fork generates `add…` and `set…` together; setRolesOnUser and
-    // setDepartmentsOnUser go (ticket 06, decision 2), so these four are
+    // setDepartmentsOnUser go, so these four are
     // written here as the fork generated them: the same inputs, validation,
     // guards and service call.
     @Mutation(() => User)

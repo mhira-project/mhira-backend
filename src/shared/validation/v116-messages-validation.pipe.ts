@@ -85,10 +85,10 @@ function withCursorPagingLastPositiveFirst(
  *   object or array" instead of v1.1.6's "filter.nested property filter
  *   must be either object or array" (and with it, the parent's other
  *   constraints, which the pipe leaves out of a property that has
- *   children, would come back). Ticket 07, step 14.
+ *   children, would come back).
  * - A cursor paging `last` below 1 lists "must be a positive number"
  *   before "must not be less than 1", as the resolver library did up to
- *   version 2.5. Ticket 07, step 16.
+ *   version 2.5.
  *
  * No options: with any validator option the pipe returns the instance
  * turned back into a plain object instead of the original value, which
@@ -96,7 +96,7 @@ function withCursorPagingLastPositiveFirst(
  * `@Exclude`d upload fields (`main.ts`). The cursor paging measure needs
  * each error's `target`, which NestJS 11.2 leaves out by default, so
  * `validate` asks for it; the default exception factory sends only
- * messages, so no client sees it. Compatibility measures of ticket 07.
+ * messages, so no client sees it. Compatibility measures of the stack upgrade.
  */
 export class V116MessagesValidationPipe extends ValidationPipe {
     protected validate(

@@ -2,9 +2,8 @@ import { Connection } from 'mongoose';
 import { createCacheStore } from './cache-store';
 import { CacheService } from './providers/cache.service';
 
-// Ticket 07, step 17 and its review: the in-memory caches as v1.1.6 had
-// them (cache-manager 3.4.4's memory store, measured in the 1.1.6 image by
-// the review). `memory` was configured with `ttl: null`, so nothing expires
+// The in-memory caches as v1.1.6 had them (cache-manager 3.4.4's memory
+// store, measured in the 1.1.6 image). `memory` was configured with `ttl: null`, so nothing expires
 // by default; a CACHE_STORE that names no store made NestJS fall back to
 // its own defaults, a 5 s TTL.
 

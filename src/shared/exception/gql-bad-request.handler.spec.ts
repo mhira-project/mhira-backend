@@ -12,11 +12,9 @@ import { AddressInfo } from 'net';
 import { GqlBadRequestHandler } from './gql-bad-request.handler';
 import { UserInputError } from './graphql-errors';
 
-// Ticket 07, B62: a JSON body that does not parse reaches the global filter
-// outside GraphQL. v1.1.6's filter threw there, which left the request
-// unanswered; from Node 15 until Express 5 the rejection ended the process.
-// The image's behaviour, process included, is pinned by mhira-api-tests'
-// HTTP surface test (the container's restart count).
+// A JSON body that does not parse reaches the global filter outside GraphQL.
+// v1.1.6's filter threw there, which left the request unanswered; from
+// Node 15 until Express 5 the rejection ended the process.
 
 @Module({})
 class EmptyModule {}
@@ -67,7 +65,7 @@ describe('GqlBadRequestHandler', () => {
             new GqlBadRequestHandler().catch(exception, host),
         ).toBeUndefined();
         expect(Logger.prototype.error).toHaveBeenCalledWith(
-            'A request body that does not parse, refused before GraphQL and left unanswered as v1.1.6 leaves it (B62)',
+            'A request body that does not parse, refused before GraphQL and left unanswered as v1.1.6 leaves it',
         );
     });
 
@@ -125,7 +123,7 @@ describe('GqlBadRequestHandler', () => {
             try {
                 await logged;
                 expect(Logger.prototype.error).toHaveBeenCalledWith(
-                    expect.stringContaining('(B62)'),
+                    expect.stringContaining('left unanswered'),
                 );
                 // No route here, so Nest's 404. The filter has already
                 // returned for the first request; had Express answered it,

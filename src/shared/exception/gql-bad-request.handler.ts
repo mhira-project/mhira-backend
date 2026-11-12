@@ -16,16 +16,16 @@ export class GqlBadRequestHandler implements GqlExceptionFilter {
         // A request whose JSON body does not parse never reaches GraphQL:
         // Nest hands the parser's error here as a BadRequestException.
         // v1.1.6 threw the GraphQL error below for it too; nothing caught
-        // it, so the request never got an answer (B62), and from Node 15
+        // it, so the request never got an answer, and from Node 15
         // until Express 5 (step 21) the rejection ended the process.
         // Express 5 catches it and would answer 500, which is neither
-        // v1.1.6's behaviour nor B62's fix (a 400, ticket 12's), so the
+        // v1.1.6's behaviour nor the proper answer (a 400), so the
         // request is logged and left unanswered as v1.1.6 leaves it. The
         // parser's message is not logged: from Node 20 on it quotes the
         // body it could not parse.
         if (host.getType<GqlContextType>() !== 'graphql') {
             this.logger.error(
-                'A request body that does not parse, refused before GraphQL and left unanswered as v1.1.6 leaves it (B62)',
+                'A request body that does not parse, refused before GraphQL and left unanswered as v1.1.6 leaves it',
             );
             return;
         }

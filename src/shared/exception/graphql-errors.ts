@@ -6,7 +6,7 @@ import { GraphQLError } from 'graphql';
  * the extensions a caller adds before it, as Apollo 3's ApolloError built
  * them. Classes rather than plain GraphQLErrors because the answer path
  * tells its own validation errors apart with `instanceof UserInputError`.
- * Ticket 07, step 15.
+ *
  */
 abstract class GraphQLErrorWithCode extends GraphQLError {
     protected constructor(

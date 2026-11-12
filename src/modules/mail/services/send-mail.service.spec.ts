@@ -7,7 +7,7 @@ import { QuestionnaireAssessmentService } from 'src/modules/questionnaire/servic
 import { Repository } from 'typeorm';
 import { SendMailService } from './send-mail.service';
 
-// BUGS.md, B52: a reminder the mail cron cannot send must not end the
+// A reminder the mail cron cannot send must not end the
 // process. It is logged, keeps its SCHEDULED status for the next run, and
 // the other reminders of the same run are sent as before.
 
@@ -118,7 +118,7 @@ describe('SendMailService.checkAssessmentEmails', () => {
 
             expect(unhandled).toEqual([]);
             expect(loggedErrors).toEqual([
-                'checkAssessmentEmails: the reminder of assessment 1 failed and stays SCHEDULED (B52)',
+                'checkAssessmentEmails: the reminder of assessment 1 failed and stays SCHEDULED',
             ]);
             expect(update.mock.calls).toEqual([
                 [2, { emailStatus: AssessmentEmailStatus.SENT }],
@@ -146,7 +146,7 @@ describe('SendMailService.checkAssessmentEmails', () => {
             [1, { emailStatus: AssessmentEmailStatus.FAILED }],
         ]);
         expect(loggedErrors).toEqual([
-            'checkAssessmentEmails: the reminder of assessment 1 failed and stays SCHEDULED (B52)',
+            'checkAssessmentEmails: the reminder of assessment 1 failed and stays SCHEDULED',
         ]);
     });
 });

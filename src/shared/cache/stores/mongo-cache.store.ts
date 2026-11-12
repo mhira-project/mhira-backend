@@ -33,7 +33,7 @@ interface UnserialisedEntry {
  * `key`, which creates the collection if it does not exist yet; v1.1.6
  * made them only when it created the collection itself. Sessions and
  * failed-login counters written by either version are read by the other
- * (decision C, ticket 07 step 17).
+ *.
  */
 export class MongoCacheStore extends EventEmitter implements KeyvStoreAdapter {
     readonly opts = { collection: MONGO_CACHE_COLLECTION };

@@ -6,7 +6,7 @@ export const PATCHED_FORK_VERSION = '10.0.3';
  * Such a measure replaces private methods and reads private fields; a later
  * version can keep a method's name and change what it reads, and the
  * measure would then fail silently (in step 11's first attempt, every
- * batched relation list came back empty). Ticket 07, step 11.
+ * batched relation list came back empty).
  */
 export function assertPatchedForkVersion(measure: string): void {
     // eslint-disable-next-line @typescript-eslint/no-var-requires

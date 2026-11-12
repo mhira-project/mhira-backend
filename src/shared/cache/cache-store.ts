@@ -15,7 +15,7 @@ export interface CacheStoreHandle {
     explainFailure: (error: unknown) => unknown;
 }
 
-/** The message a request that needs Redis fails with while Redis cannot be reached (Ronan, 2026-11-11). */
+/** The message a request that needs Redis fails with while Redis cannot be reached. */
 export const REDIS_UNREACHABLE_MESSAGE =
     'Redis is not reachable, and this request needs it. Please try again later.';
 
@@ -73,7 +73,7 @@ async function firstConnection(
  * queue), and the client keeps reconnecting, so calls succeed again as
  * soon as Redis is back, in the same process. v1.1.6 ended the process
  * instead (an `error` event nobody listened to) and crash-looped; this
- * difference is registered (Ronan, 2026-11-11). An error Redis itself
+ * difference is in the changelog. An error Redis itself
  * answers (such as WRONGTYPE) is passed on as it is.
  */
 async function redisStore(logError: ErrorLogger): Promise<CacheStoreHandle> {
@@ -112,7 +112,7 @@ async function redisStore(logError: ErrorLogger): Promise<CacheStoreHandle> {
 /**
  * The cache store `CACHE_STORE` names, configured so that it stores what
  * v1.1.6 stored, with the same keys, values and TTLs, and so that a store
- * error rejects as it did on v1.1.6 (ticket 07 step 17). Every failed call
+ * error rejects as it did on v1.1.6. Every failed call
  * is logged once.
  */
 export async function createCacheStore(

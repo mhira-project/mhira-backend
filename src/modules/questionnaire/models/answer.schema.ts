@@ -15,7 +15,7 @@ export class Answer extends Document {
     // by comparing `question` as a string. Declared Mixed because that is
     // what @nestjs/mongoose has always made of the bare Types.ObjectId
     // here; an ObjectId cast would append a second answer instead of
-    // replacing it (BUGS.md, B04). Nothing populates `question`.
+    // replacing it. Nothing populates `question`.
     @Field(() => String)
     @Prop({ type: MongooseSchema.Types.Mixed })
     _id: Types.ObjectId;

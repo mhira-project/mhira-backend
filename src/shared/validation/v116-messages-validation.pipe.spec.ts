@@ -4,12 +4,11 @@ import { IsInt, IsNotEmpty, ValidateNested } from 'class-validator';
 import { getOrCreateCursorPagingType } from '@ptc-org/nestjs-query-graphql/src/types/query/paging';
 import { V116MessagesValidationPipe } from './v116-messages-validation.pipe';
 
-// Ticket 07, step 14: the messages v1.1.6 (class-validator 0.13) gave for a
-// @ValidateNested value that is neither an object nor an array. The
-// expected messages were measured on v1.1.6 (an explicit `filter: null`,
-// follow-up item 8) or follow from 0.13's tree as Nest's pipe flattens it.
-// Step 16: the order of a cursor paging `last`'s messages, measured on
-// v1.1.6 with the resolver library's own paging input.
+// The messages v1.1.6 (class-validator 0.13) gave for a @ValidateNested
+// value that is neither an object nor an array. The expected messages were
+// measured on v1.1.6 (an explicit `filter: null`) or follow from 0.13's tree
+// as Nest's pipe flattens it. Also the order of a cursor paging `last`'s
+// messages, measured on v1.1.6 with the resolver library's own paging input.
 
 class Paging {
     @IsInt()

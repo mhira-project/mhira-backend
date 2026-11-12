@@ -6,12 +6,12 @@ import { QuestionnaireAssessment } from '../models/questionnaire-assessment.sche
 import { QuestionnaireAssessmentService } from '../services/questionnaire-assessment.service';
 import { AssessmentResolver } from './assessment.resolver';
 
-// BUGS.md, B02: `addAnswer` changes the status to PARTIALLY_COMPLETED and
+// `addAnswer` changes the status to PARTIALLY_COMPLETED and
 // then saves the answer. The status change must have finished before the
 // answer's save starts, so the two never load and save the same document
 // side by side. A failed status change is logged and dropped, and the
 // answer is still saved; a refused answer still comes after the status
-// change, as on v1.1.6 (B36). Whether answers may be added is decided on
+// change, as on v1.1.6. Whether answers may be added is decided on
 // the status the request found, read before the status change reopens
 // the assessment.
 
@@ -111,7 +111,7 @@ describe('AssessmentResolver.addAnswer', () => {
             AssessmentStatus.OPEN_FOR_COMPLETION,
         );
         expect(loggedErrors).toEqual([
-            `addAnswer: the status change to PARTIALLY_COMPLETED of assessment ${ASSESSMENT_ID} failed and was dropped (B02)`,
+            `addAnswer: the status change to PARTIALLY_COMPLETED of assessment ${ASSESSMENT_ID} failed and was dropped`,
         ]);
         await settle();
         expect(unhandled).toEqual([]);

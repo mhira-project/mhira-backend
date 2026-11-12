@@ -3,8 +3,8 @@ import { UpdateSettingInput } from './update-setting.input';
 
 // What `updateSettings` accepts as `systemLocale` is what gets stored in
 // the settings. v1.1.6 validates it with validator 13.0.0's isLocale;
-// class-validator 0.13 brings a validator that accepts more (ticket 07,
-// decision E). These are v1.1.6's answers, and they must not change.
+// class-validator 0.13 brings a validator that accepts more. These are
+// v1.1.6's answers, and they must not change.
 
 // validator 13.0.0's own test fixtures for isLocale.
 const VALIDATOR_VALID = [
@@ -20,7 +20,8 @@ const VALIDATOR_VALID = [
 const VALIDATOR_INVALID = ['lo_POP', '12', '12_DD'];
 
 // The locales the frontend's settings page offers: moment 2.29.1's
-// `moment.locales()`. v1.1.6 rejects two of them (BUGS.md, B54).
+// `moment.locales()`. v1.1.6 rejects two of them, a known bug
+// these tests record as it is.
 const FRONTEND_REJECTED = ['oc-lnc', 'x-pseudo'];
 const FRONTEND_ACCEPTED = [
     'en',

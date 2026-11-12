@@ -30,8 +30,8 @@ function booleanComparison(operator: 'is' | 'isNot'): ComparisonSql {
  * The `is` and `isNot` filters as @nestjs-query wrote them up to v1.1.6 and
  * the fork up to 0.33: `IS [NOT] TRUE`, `IS [NOT] FALSE`, `IS [NOT] NULL`.
  * The fork 2.0 writes `= TRUE`, `!= TRUE` and so on, and `isNot` then
- * leaves out the rows whose column is NULL. A compatibility measure of
- * ticket 07 (step 11), applied once before the app starts; it refuses to
+ * leaves out the rows whose column is NULL. A compatibility measure
+ * of the stack upgrade (step 11), applied once before the app starts; it refuses to
  * run on another fork version (assertPatchedForkVersion) or one without
  * these two methods.
  */

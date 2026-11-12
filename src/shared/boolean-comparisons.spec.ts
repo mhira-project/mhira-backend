@@ -1,8 +1,8 @@
 import { SQLComparisonBuilder } from '@ptc-org/nestjs-query-typeorm/src/query';
 import { restoreBooleanComparisons } from './boolean-comparisons';
 
-// Ticket 07, step 11: the `is` and `isNot` filters write v1.1.6's SQL on
-// the fork 2.0, where `isNot: true` would otherwise leave out NULL rows.
+// The `is` and `isNot` filters write the SQL v1.1.6 wrote. The resolver
+// library alone would have `isNot: true` leave out the NULL rows.
 
 describe('restoreBooleanComparisons', () => {
     beforeAll(() => restoreBooleanComparisons());

@@ -7,9 +7,8 @@ import {
 
 // What `updateQuestionnaire` may store as a questionnaire's status. v1.1.6
 // (Mongoose 5) refuses null with the enum validator's error, which reaches
-// the client in full; from Mongoose 8 the enum validator lets null through
-// (ticket 07, step 07). These are v1.1.6's answers, and they must not
-// change.
+// the client in full; from Mongoose 8 the enum validator lets null through.
+// These are v1.1.6's answers, and they must not change.
 
 const QuestionnaireModel = model(Questionnaire.name, QuestionnaireSchema);
 

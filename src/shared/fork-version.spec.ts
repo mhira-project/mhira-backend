@@ -1,7 +1,8 @@
 import { assertPatchedForkVersion, PATCHED_FORK_VERSION } from './fork-version';
 
-// Ticket 07, step 11: the fork compatibility measures run only on the fork
-// version they were checked against.
+// The backend's corrections to the resolver library
+// (@ptc-org/nestjs-query-typeorm) run only on the version they were checked
+// against.
 
 const FORK_PACKAGE = '@ptc-org/nestjs-query-typeorm/package.json';
 

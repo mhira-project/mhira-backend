@@ -55,7 +55,7 @@ import { ScheduleModule } from '@nestjs/schedule';
             // Apollo Server refuses requests a browser may send without a
             // preflight unless they carry one of these headers. A logged-in
             // client sends Authorization, which is not CORS-safelisted, so
-            // it is a valid signal too; JSON requests need none (decision H).
+            // it is a valid signal too; JSON requests need none.
             csrfPrevention: {
                 requestHeaders: [
                     'x-apollo-operation-name',

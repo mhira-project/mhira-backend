@@ -298,7 +298,7 @@ export class PatientResolver {
     }
 
     // The fork generates `add…` and `set…` together; setDepartmentsOnPatient
-    // goes (ticket 06, decision 2), so these two are written here as the
+    // goes, so these two are written here as the
     // fork generated them: the same inputs, validation, guards and service
     // call.
     @Mutation(() => Patient)
