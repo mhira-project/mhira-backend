@@ -1,47 +1,76 @@
 name: Run CI
-on: 
+on:
   push:
   pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [14.x]
-    
+
     steps:
-      
       - name: Copy repository
-        uses: actions/checkout@v2
-      
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/checkout@v7
+
+      # The Node version the Dockerfile and package.json's engines name
+      - name: Use the Node.js version of .nvmrc
+        uses: actions/setup-node@v7
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version-file: .nvmrc
+          cache: npm
 
       - name: Install npm dependencies
         run: npm ci
-      
+
       - name: Lint code
-        run: npm run lint
+        run: npm run lint:check
 
       - name: Build
         run: npm run build
 
-      - name: Archive build artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: dist-without-markdown
-          path: |
-            dist
-            !dist/**/*.md
-          
-      # - name: Run tests
-      #   run: npm run test
+  test:
+    runs-on: ubuntu-latest
 
-      # - name: SonarCloud Scan
-      #   uses: sonarsource/sonarcloud-github-action@master
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - name: Copy repository
+        uses: actions/checkout@v7
+
+      - name: Use the Node.js version of .nvmrc
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Start Postgres, Mongo and Redis
+        run: npm run test:services
+
+      - name: Database tests
+        run: npm run test:db
+
+      - name: Cache tests
+        run: npm run test:cache
+
+  image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Copy repository
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      # Builds the image the release workflow publishes, without pushing it
+      - name: Build the Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

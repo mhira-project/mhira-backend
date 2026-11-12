@@ -1,0 +1,12 @@
+# Keeps the build context to what the image is built from: the
+# Dockerfile installs dependencies and compiles inside the image.
+.git
+.github
+node_modules
+dist
+coverage
+upgrade-check
+*.log
+.env
+.env.*
+!.env-sample

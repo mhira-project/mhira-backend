@@ -6,50 +6,59 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [14.x]
-    
-    steps:
-      
-      - name: Copy repository
-        uses: actions/checkout@v2
-      
-      # Docker build and push
-      - name: Set up QEMU for multi-architecture docker builds
-        uses: docker/setup-qemu-action@v1
-      
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+    env:
+      IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
 
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+    steps:
+      - name: Copy repository
+        uses: actions/checkout@v7
+
+      # The image is tagged with package.json's version, so the release
+      # must be of that version: a release from a tree whose version was
+      # not raised would otherwise publish under the previous version.
+      - name: Check that the release tag is package.json's version
+        id: version
+        run: |
+          version=$(jq -r .version package.json)
+          tag=${GITHUB_REF_NAME#v}
+          if [ "$tag" != "$version" ]; then
+            echo "::error::The release tag is $GITHUB_REF_NAME, and package.json says $version. Raise the version in package.json and package-lock.json first."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Set up QEMU for multi-architecture docker builds
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
 
       - name: Login to DockerHub
-        uses: docker/login-action@v1 
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
-      - name: Get version from package.json
-        id: extractver
-        run: echo "PACKAGE_JSON=$(jq -c . < package.json)" >> $GITHUB_ENV
-        
+
+      # Installations pull their version's tag, so a published version is
+      # never replaced.
+      - name: Refuse to replace a published version
+        run: |
+          if docker buildx imagetools inspect "$IMAGE:${{ steps.version.outputs.version }}" > /dev/null 2>&1; then
+            echo "::error::$IMAGE:${{ steps.version.outputs.version }} is published already. Release a new version instead."
+            exit 1
+          fi
+
+      # The platforms the Node image of the Dockerfile exists for
       - name: Build and push
         id: docker_build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v7
         with:
           context: .
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ fromJson(env.PACKAGE_JSON).version }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          tags: ${{ env.IMAGE }}:${{ steps.version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
