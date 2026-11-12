@@ -6,7 +6,7 @@
     "private": true,
     "license": "UNLICENSED",
     "engines": {
-        "node": "^20.20.2"
+        "node": "^22.23.5"
     },
     "scripts": {
         "commit": "cz",

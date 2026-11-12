@@ -1,7 +1,7 @@
 # One Node image for both stages, so native modules (argon2) are built for
 # the libc they run on. Pinned by the digest of the multi-platform index;
 # the tag is for the reader.
-ARG NODE_IMAGE=node:20.20.2-alpine3.23@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293
+ARG NODE_IMAGE=node:22.23.5-alpine3.23@sha256:6868d4695b947ee120bffaa463fecd68cde370d7bfec92955e7c8ac576b4f475
 
 ### Development container build #####################################
 FROM ${NODE_IMAGE} AS builder
