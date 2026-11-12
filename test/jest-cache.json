@@ -8,6 +8,7 @@
         "^.+\\.(t|j)s$": "ts-jest"
     },
     "moduleNameMapper": {
-        "^src/(.*)$": "<rootDir>/src/$1"
+        "^src/(.*)$": "<rootDir>/src/$1",
+        "^uuid$": "<rootDir>/node_modules/uuid"
     }
 }

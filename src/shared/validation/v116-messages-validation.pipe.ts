@@ -1,6 +1,6 @@
 import { ValidationPipe } from '@nestjs/common';
 import { PagingStrategies } from '@ptc-org/nestjs-query-graphql';
-import { ValidationError } from 'class-validator';
+import { ValidationError, ValidatorOptions } from 'class-validator';
 
 /** class-validator's constraint for a `@ValidateNested` property whose value is neither an object nor an array. */
 const NESTED_VALIDATION = 'nestedValidation';
@@ -90,10 +90,28 @@ function withCursorPagingLastPositiveFirst(
  *   before "must not be less than 1", as the resolver library did up to
  *   version 2.5. Ticket 07, step 16.
  *
- * No options: any would change what the bare pipe does (`main.ts`).
- * Compatibility measures of ticket 07.
+ * No options: with any validator option the pipe returns the instance
+ * turned back into a plain object instead of the original value, which
+ * renames the fork's input fields to their properties and drops the
+ * `@Exclude`d upload fields (`main.ts`). The cursor paging measure needs
+ * each error's `target`, which NestJS 11.2 leaves out by default, so
+ * `validate` asks for it; the default exception factory sends only
+ * messages, so no client sees it. Compatibility measures of ticket 07.
  */
 export class V116MessagesValidationPipe extends ValidationPipe {
+    protected validate(
+        object: object,
+        validatorOptions?: ValidatorOptions,
+    ): Promise<ValidationError[]> | ValidationError[] {
+        return super.validate(object, {
+            ...validatorOptions,
+            validationError: {
+                ...validatorOptions?.validationError,
+                target: true,
+            },
+        });
+    }
+
     protected flattenValidationErrors(
         validationErrors: ValidationError[],
     ): string[] {

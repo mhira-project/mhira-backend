@@ -1,5 +1,5 @@
 import { ValidationPipe } from '@nestjs/common';
-import { Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, ValidateNested } from 'class-validator';
 import { getOrCreateCursorPagingType } from '@ptc-org/nestjs-query-graphql/src/types/query/paging';
 import { V116MessagesValidationPipe } from './v116-messages-validation.pipe';
@@ -46,8 +46,25 @@ async function messages(
     return 'passed';
 }
 
+/** An input whose GraphQL field name differs from its property, as the fork declares `input`, with an `@Exclude`d field like the uploads. */
+class Renamed {
+    @Expose({ name: 'role' })
+    @IsNotEmpty()
+    input: object;
+
+    @Exclude()
+    upload: object;
+}
+
 describe('V116MessagesValidationPipe', () => {
     const pipe = new V116MessagesValidationPipe();
+
+    it('gives back the value it was given, as the bare pipe does', async () => {
+        const value = { role: { name: 'r' }, upload: { file: 1 } };
+        expect(
+            await pipe.transform(value, { type: 'body', metatype: Renamed }),
+        ).toBe(value);
+    });
 
     it("an explicit null gives v1.1.6's message, with the property as its path", async () => {
         expect(

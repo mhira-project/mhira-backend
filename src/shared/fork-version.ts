@@ -1,5 +1,5 @@
 /** The version of @ptc-org/nestjs-query-typeorm that package.json pins and that restoreBooleanComparisons was checked against. */
-export const PATCHED_FORK_VERSION = '9.4.0';
+export const PATCHED_FORK_VERSION = '10.0.3';
 
 /**
  * Refuses to apply a compatibility measure to another version of the fork.

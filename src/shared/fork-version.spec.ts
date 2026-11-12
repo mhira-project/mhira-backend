@@ -1,4 +1,4 @@
-import { assertPatchedForkVersion } from './fork-version';
+import { assertPatchedForkVersion, PATCHED_FORK_VERSION } from './fork-version';
 
 // Ticket 07, step 11: the fork compatibility measures run only on the fork
 // version they were checked against.
@@ -13,13 +13,13 @@ describe('assertPatchedForkVersion', () => {
     });
 
     it('refuses another fork version, naming the measure', () => {
-        jest.doMock(FORK_PACKAGE, () => ({ version: '9.4.1' }));
+        jest.doMock(FORK_PACKAGE, () => ({ version: '0.0.1' }));
         jest.isolateModules(() => {
             const isolated: typeof import('./fork-version') = require('./fork-version');
             expect(() =>
                 isolated.assertPatchedForkVersion('a measure'),
             ).toThrow(
-                'a measure was checked against @ptc-org/nestjs-query-typeorm 9.4.0, and 9.4.1 is installed',
+                `a measure was checked against @ptc-org/nestjs-query-typeorm ${PATCHED_FORK_VERSION}, and 0.0.1 is installed`,
             );
         });
     });

@@ -22,7 +22,6 @@ import { CaregiverModule } from './modules/caregiver/caregiver.module';
 import { ReportModule } from './modules/report/report.module';
 import { DisclaimerModule } from './modules/disclaimer/disclaimer.module';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { MailModule } from './modules/mail/mail.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
@@ -53,10 +52,6 @@ import { ScheduleModule } from '@nestjs/schedule';
             // see that shape.
             autoTransformHttpErrors: false,
             includeStacktraceInErrorResponses: false,
-            // v1.1.6 (Apollo 2) answers an operation that fails before it
-            // runs, a variable coercion error among them, with HTTP 400;
-            // Apollo 4 answers 200 unless this is on.
-            status400ForVariableCoercionErrors: true,
             // Apollo 4 refuses requests a browser may send without a
             // preflight unless they carry one of these headers. A logged-in
             // client sends Authorization, which is not CORS-safelisted, so
