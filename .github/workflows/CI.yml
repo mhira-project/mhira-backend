@@ -55,8 +55,18 @@ jobs:
       - name: Cache tests
         run: npm run test:cache
 
+  # Builds the image the release workflow publishes, without pushing it,
+  # each platform on a runner of its own architecture
   image:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
 
     steps:
       - name: Copy repository
@@ -65,12 +75,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
-      # Builds the image the release workflow publishes, without pushing it
       - name: Build the Docker image
         uses: docker/build-push-action@v7
         with:
           context: .
-          platforms: linux/amd64
+          platforms: linux/${{ matrix.arch }}
           push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.arch }}

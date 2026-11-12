@@ -1,37 +1,38 @@
 name: Release prod version to Docker Hub
+# Publishing a GitHub release publishes its image. Run by hand, it
+# publishes the version of package.json on the chosen branch, for a
+# release whose run did not finish.
 on:
   release:
     types: [published]
+  workflow_dispatch:
+
+env:
+  IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
 
 jobs:
-  build:
+  version:
     runs-on: ubuntu-latest
-    env:
-      IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
+    timeout-minutes: 10
+    outputs:
+      version: ${{ steps.version.outputs.version }}
 
     steps:
       - name: Copy repository
         uses: actions/checkout@v7
 
-      # The image is tagged with package.json's version, so the release
+      # The image is tagged with package.json's version, so a release
       # must be of that version: a release from a tree whose version was
       # not raised would otherwise publish under the previous version.
       - name: Check that the release tag is package.json's version
         id: version
         run: |
           version=$(jq -r .version package.json)
-          tag=${GITHUB_REF_NAME#v}
-          if [ "$tag" != "$version" ]; then
+          if [ "$GITHUB_EVENT_NAME" = release ] && [ "${GITHUB_REF_NAME#v}" != "$version" ]; then
             echo "::error::The release tag is $GITHUB_REF_NAME, and package.json says $version. Raise the version in package.json and package-lock.json first."
             exit 1
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
-
-      - name: Set up QEMU for multi-architecture docker builds
-        uses: docker/setup-qemu-action@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
 
       - name: Login to DockerHub
         uses: docker/login-action@v4
@@ -48,17 +49,62 @@ jobs:
             exit 1
           fi
 
-      # The platforms the Node image of the Dockerfile exists for
-      - name: Build and push
-        id: docker_build
+  # Each platform is built on a runner of its own architecture: under
+  # emulation, Node 24's `npm ci` for arm64 never finishes.
+  build:
+    needs: version
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+
+    steps:
+      - name: Copy repository
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push the ${{ matrix.arch }} image
         uses: docker/build-push-action@v7
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/${{ matrix.arch }}
           push: true
-          tags: ${{ env.IMAGE }}:${{ steps.version.outputs.version }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          provenance: false
+          tags: ${{ env.IMAGE }}:${{ needs.version.outputs.version }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.arch }}
 
-      - name: Image digest
-        run: echo ${{ steps.docker_build.outputs.digest }}
+  # One tag for both platforms, made of the two images above
+  publish:
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Publish the multi-platform tag
+        run: |
+          docker buildx imagetools create -t "$IMAGE:${{ needs.version.outputs.version }}" \
+            "$IMAGE:${{ needs.version.outputs.version }}-amd64" "$IMAGE:${{ needs.version.outputs.version }}-arm64"
+          docker buildx imagetools inspect "$IMAGE:${{ needs.version.outputs.version }}"
