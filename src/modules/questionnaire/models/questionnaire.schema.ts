@@ -106,9 +106,17 @@ export class Questionnaire extends Document {
     updatedAt: Date;
 }
 
+/**
+ * Compatibility measure: Mongoose 5 to 8 add `background: true` to an index
+ * that does not name the option, Mongoose 9 does not. Stating it keeps a
+ * fresh installation's index spec as every earlier version created it.
+ * MongoDB 4.2 and later ignore the option beyond storing it, and treat the
+ * index as the same with or without it, so existing installations are
+ * untouched either way.
+ */
 export const QuestionnaireSchema = SchemaFactory.createForClass(
     Questionnaire,
-).index({ language: 1, abbreviation: 1 }, { unique: true });
+).index({ language: 1, abbreviation: 1 }, { unique: true, background: true });
 
 interface IQuestion {
     _id: Types.ObjectId;
